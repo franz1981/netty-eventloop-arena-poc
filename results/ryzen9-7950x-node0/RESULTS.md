@@ -1,7 +1,7 @@
 # Reference results - ryzen9-7950x, one NUMA node
 
 Every number below was produced on this machine and is reproduced here verbatim from
-`netty-bench/docs/BACKLOG.md`, block **B2. Event-loop cycle arena**, and re-derived from the json
+the maintainer's private backlog (block B2, event-loop cycle arena) and re-derived from the json
 files in this directory with `../../summarize.py`.
 
 Machine and settings:

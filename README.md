@@ -187,7 +187,7 @@ End to end (`E2EServer`, logging off, SUT node 0 / h2load node 1):
 | h2 allocator share of event-loop CPU samples | 11.03% | 9.25% | narrow filter; wide filter 14.75% -> 12.18% |
 | h1 / h2 RSS with a fixed 1 GiB pre-touched heap, smaps at 12 s | 1298 / 1307 MB | 1281 / 1301 MB | mimalloc port 1297 / 1300 |
 
-Where the event-loop CPU goes on these servers (same profiles, `tools/asprof-loop-breakdown.py` in netty-bench):
+Where the event-loop CPU goes on these servers (same profiles, [`tools/asprof-loop-breakdown.py`](tools/asprof-loop-breakdown.py); the allocator-share filters are [`tools/asprof-alloc-share.py`](tools/asprof-alloc-share.py)):
 socket write path 40-45%, HTTP codec and response building 35-47%, socket read 5-7%, select 3-5%, allocator 8-11%.
 The arena removes roughly a fifth of the allocator's slice; it cannot touch the other 90%. That is the whole
 end-to-end story: the allocator claim holds (see the cycle cell: 23.5 ns per allocate+release pair against 49.3 for
