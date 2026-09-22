@@ -14,11 +14,15 @@ Machine and settings:
 | JDK | 21 (`21+35-LTS-2513`), `-XX:MaxRAM=60g` |
 | glibc / kernel | 2.42 / 7.1 (`7.1.13-100.fc43.x86_64`) |
 | date | 2026-09-22 |
-| code | sections 1-4: netty `dec589d0eb`; sections 2b and 5: the later PoC build, now pinned at `26bd14b195` (`expt/event-loop-arena`). Harness = lao 1.2 + this PoC's benchmark commits |
+| code | sections 1-4: netty `dec589d0eb`; sections 2b and 5: the PoC build `26bd14b195`; **section 6 (v3): netty `3dad84f578`**, the pinned commit (`expt/event-loop-arena`). Harness = lao 1.2 + this PoC's benchmark commits, now `e9fa807` |
 | JMH | 3 forks, 10x1 s warmup, 10x1 s measurement |
 
 Fork-to-fork sd on the harness heap cells is about 8% on this box: **3 forks resolve ~10%, not 3%.**
 Differences smaller than that are not differences.
+
+**Sections 1-5 describe the earlier arena builds. The current code is v3: see
+[section 6](#6-v3---the-designed-event-loop-arena).** The earlier sections are kept because they are
+the only measurements of those builds; do not read them as statements about the pinned commit.
 
 ## 1. CycleScopedAllocBenchmark - the scope-aligned case
 
@@ -233,3 +237,144 @@ same block before using any of them, so all of those views pointed at the last p
 corrupted DATA frames. **Fixed** on the PoC branch in commit `05604aa1c2` ("per-buffer NIO views"):
 each `ArenaBuf` keeps its own cached duplicate for `internalNioBuffer` and slices a fresh view in
 `nioBuffer` / `nioBuffers`.
+
+## 6. v3 - the designed event-loop arena
+
+Everything in this section was measured on **2026-09-22**, on the machine described at the top of
+this file: **2300 MHz fixed, node 0**. Code: netty `3dad84f578` (`expt/event-loop-arena`, 6 commits
+on the `26bd14b195` of sections 2b and 5); harness: netty-allocator `e9fa807`, which adds the
+`-Dexpt.hookEvery` driver described below. Raw data: **`arena-v3/`**.
+
+v3 is a rewrite, not a tuning of the build measured in sections 2b and 5: fixed 256 KiB blocks, flat
+block metadata (ids and parallel columns, no block object), a size cap above which the request is
+handed to adaptive, and a public `endOfIteration()` hook instead of `endOfCycle()`. The knobs and
+the JFR events are listed in the README.
+
+### 6.1 `CycleScopedAllocBenchmark`, k=64, FIFO, MIXED - 3 forks
+
+JMH `avgt 30` = 3 forks x 10 iterations. The score is per invocation, i.e. **per 64 allocate/release
+pairs**, not per buffer. Data: `arena-v3/cycle/cycle-v3b.{log,json}`.
+
+| space | ARENA | ADAPTIVE |
+|---|---|---|
+| heap | **2221.306 +- 45.082** ns | 3344.521 +- 101.462 ns |
+| direct | **2171.036 +- 3.447** ns | 3253.377 +- 32.830 ns |
+
+The arena served **83.33%** of the allocations in these cells (`arenaShare=83.33%` on every
+`ARENATELE` line of that log). That share is not a measurement of the arena's reach: the MIXED size
+table has 12 entries, of which 16384 and 32768 are above the default `arena.cap=8192` and are
+delegated to adaptive - 10/12 = 83.33% exactly. The remaining 16.67% is adaptive's own cost inside
+the ARENA column.
+
+### 6.2 `ByteBufAllocatorAllocPatternBenchmark` with the hook driven every 64 ops - 3 forks
+
+E_COMMERCE, heap, 1 thread, 1024 live, `enableReadWrite=true`, `-Dexpt.hookEvery=64`. Data:
+`arena-v3/micro/t1-heap-hook64-v3b.log` (ARENA) and `arena-v3/micro/t1-heap-v3b.log` (ADAPTIVE).
+
+| allocator | ns/op |
+|---|---|
+| ARENA, hook every 64 ops | **65.184 +- 2.090** |
+| ADAPTIVE | 83.584 +- 0.503 |
+
+Counters on the ARENA run: `arenaShare=88.27%`, `blocksHeap=7`, `pinned=4`, `maxPinnedHeap=7`.
+
+**The hook is driven by the harness, not by an event loop.** The benchmark thread is not an event
+loop, so nothing would ever close an iteration; `-Dexpt.hookEvery=N` calls `endOfIteration()` every
+N allocations from the benchmark state. N=64 is a choice, and the score depends on it.
+
+### 6.3 The 0%-share cells measure the delegate detour, not the arena
+
+The ARENA cells run **without** the driver print `arenaShare=0.00%` and `hooks=0`: the blocks fill,
+nothing is ever reset, and every allocation goes to adaptive. Those cells measure
+**adaptive plus the arena's delegate detour** and nothing else.
+
+`-prof perfnorm`, 1 fork, same cell (E_COMMERCE heap 1t 1024 live):
+
+| build | instructions/op | ns/op | file |
+|---|---|---|---|
+| ADAPTIVE | 600.432 | 85.938 +- 0.094 | `arena-v3/prof/perfnorm-v3-adaptive.txt` |
+| ARENA, 0% share, after the detour fix | 632.570 | 85.332 +- 0.082 | `arena-v3/prof/perfnorm-v3b-arena-0share.txt` |
+| ARENA, 0% share, before the fix | 682.821 | 88.284 +- 0.051 | `arena-v3/prof/perfnorm-v3-arena.txt` |
+
+Detour cost against the ADAPTIVE row: **+32.1 instructions/op after the fix, +82.4 before**. (The v3
+agent report quotes +33 and +82; the arithmetic on these three files gives +32.1 and +82.4.) For
+comparison, the same cell **with** the hook driven every 64 ops is 413.631 instructions/op at
+62.880 ns/op (`arena-v3/prof/perfnorm-v3b-hook64.txt`, 1 fork).
+
+### 6.4 Lifecycle-topology counters
+
+One window per workload, arena build, 4 event loops, servers and labels as in
+`../topology/labels.txt`. The figures are the process-wide `ARENATELE` line of each
+`arena-v3/topology/w*-arena-server.log`; per-loop `ARENALOOP` lines are in the same files.
+
+| workload | arena share | maxPinned | violations |
+|---|---|---|---|
+| W1 HTTP/1.1 snoop, 4 KiB POST | 99.99% | 0 | 0 |
+| W2 HTTP/2 hello | 95.85% | 0 | 0 |
+| W3 HTTP/2 echo, 64 KiB body, small windows | 95.86% | 7 | 0 |
+| W4 HTTP/1.1 chunked echo, slow readers | 86.92% | 4 | 0 |
+| W5 aggregator, 256 KiB POST | 11.85% | 4 | 0 |
+| W6a proxy, outbound on the SAME loop | 99.97% | 0 | 0 |
+| W6b proxy, outbound on a SEPARATE loop | 0.25% | 64 (all pinned) | **2,140** |
+
+**W6b is the negative test**, not a failure to fix: buffers allocated on one loop are released on
+another, the arena refuses them, 64 blocks stay pinned and 2,140 confinement violations are counted.
+It is there to show the counter fires when confinement is broken. W5 at 11.85% is the aggregator:
+the aggregated body is above the cap and is delegated.
+
+### 6.5 End to end - 2M requests, 3 runs per build
+
+`run-e2e.sh`, logging off, server pinned on node 0, h2load on node 1, 2,000,000 requests per run,
+all succeeded. Data: `arena-v3/e2e/`.
+
+| run | h1 ADAPTIVE | h1 ARENA | h2 ADAPTIVE | h2 ARENA |
+|---|---|---|---|---|
+| 1 | 177,191 | 178,079 | 388,480 | 385,920 |
+| 2 | 176,115 | 178,487 | 389,652 | 387,329 |
+| 3 | 177,787 | 176,437 | 390,394 | 391,597 |
+
+**Throughput did not change.** The three runs of each build overlap the three runs of the other on
+both protocols, in both directions.
+
+`perf stat` on the server process, divided by the 2,000,000 requests of the run:
+
+| run | h1 ADAPTIVE instr/req | h1 ARENA instr/req | h1 ADAPTIVE cyc/req | h1 ARENA cyc/req |
+|---|---|---|---|---|
+| 1 | 105,929 | 105,324 | 76,800 | 76,439 |
+| 2 | 105,289 | 105,084 | 76,613 | 76,328 |
+| 3 | 107,308 | 105,252 | 77,768 | 76,648 |
+| mean | **106.2k** | **105.2k** | **77.1k** | **76.5k** |
+
+The v3 report quotes `cycles 76.8k -> 76.4k`, which are the run-1 values; the three-run means are
+77.1k -> 76.5k. Either way the difference is about 1%, and **adaptive's own three runs span 1.9% on
+instructions per request**, so three runs do not separate the two builds on this counter either.
+
+On HTTP/2 the counters are unchanged: ADAPTIVE 40,970 / 40,382 / 41,090 instructions per request
+against ARENA 40,658 / 41,425 / 40,688.
+
+### 6.6 async-profiler: allocator share of event-loop CPU samples
+
+**One profile per build**, 14 s, CPU samples, collapsed stacks in `arena-v3/e2e/*-prof.collapsed`.
+
+The v3 report quotes **h1 8.24% -> 7.40%** and **h2 14.75% -> 12.18%**. The frame filter behind
+those four numbers is not recorded with the data, and no script that produces them is in the
+benchmark repo.
+
+Recomputing from the copied `.collapsed` files with an explicit filter - samples whose stack
+contains `SingleThreadIoEventLoop.run` (the event-loop denominator), of which those whose stack also
+contains `AdaptivePoolingAllocator`, `AdaptiveByteBufAllocator`, `CycleArenaAllocator` or `ArenaBuf`
+- gives **h1 7.72% -> 7.15%** and **h2 11.03% -> 9.25%**. Same direction, different magnitude. Which
+filter produced the quoted numbers is unknown, so both are recorded here instead of one.
+
+What both agree on: the allocator's share of event-loop CPU samples is **single-digit to low-double-digit
+percent** and the arena build's share is lower than adaptive's on both protocols, in one profile each.
+One profile is one sample; this is not a distribution.
+
+### 6.7 What section 6 does not establish
+
+- Throughput: unchanged (6.5). The only quantities that move are the allocator's share of loop CPU
+  samples and, by about 1% and inside adaptive's own spread, instructions per request on HTTP/1.1.
+- The 32-thread and `-Dexpt.randomRelease=true` cells were **not** re-measured on the v3 build.
+- Topology and end-to-end are single windows per workload.
+- 6.1 and 6.2 are the arena's best case with the hook driven artificially, exactly as sections 1
+  and 2 were for the earlier build.

@@ -11,7 +11,11 @@ than by a general-purpose allocator. The general allocator stays as the fallback
 else: buffers that escape the cycle, cross threads, or arrive when the arena is full.
 
 The PoC is `io.netty.buffer.CycleArenaAllocator` (in the `netty` submodule, branch
-`expt/event-loop-arena`, ~700 lines):
+`expt/event-loop-arena`).
+
+> **The bullet list below describes the first two builds**, which sections 1-5 of `RESULTS.md`
+> measure. The pinned commit is **v3**, a rewrite with different knobs and a different hook: see
+> [v3 - the current build](#v3---the-current-build) and [`docs/design.md`](docs/design.md).
 
 - one arena per thread, with two spaces - **heap and direct**. A block's memory is a chunk buffer
   taken from the same `AdaptivePoolingAllocator.ChunkAllocator` the `AdaptiveByteBufAllocator` uses,
@@ -42,6 +46,52 @@ properties.
 allocation goes to the arena. In a real design that decision is a hint from the Netty code that
 knows the lifecycle, not something the allocator guesses.
 
+## v3 - the current build
+
+The pinned commit `3dad84f578` is a rewrite against [`docs/design.md`](docs/design.md) (draft 3),
+whose metadata layout comes from the survey of ten allocators in
+[`docs/layout-survey.md`](docs/layout-survey.md). What it changes against the build described above:
+
+- **fixed 256 KiB blocks** (`-Darena.blockSize`), at most `-Darena.maxBlocks` (default 8) per space;
+  no doubling. A pinned block must be cheap to leave pinned;
+- **a size cap**: `-Darena.cap` (default 8192). A request above it is handed straight to adaptive,
+  which keeps the bytes most likely to survive the iteration out of the arena;
+- **flat block metadata** - block ids and parallel columns, no block object per block;
+- **`-Darena.maxObjects`** (default 16384) bounds the per-space buffer-object pool; past it,
+  allocation delegates;
+- **`-Darena.debug`** checks that no block is reused before a hook; folded away when false;
+- the end-of-cycle hook is now the **public `endOfIteration()`**, called from netty's own
+  end-of-iteration hook on an event loop. `arena.release`, `arena.hook`, `arena.retainBytes` and
+  `endOfCycle()` are gone.
+
+### Driving the hook off an event loop
+
+The harness thread is not an event loop, so it never closes an iteration and the arena never reuses
+a block. `netty-allocator` (`e9fa807`) adds **`-Dexpt.hookEvery=N`** to
+`ByteBufAllocatorAllocPatternBenchmark`: every N allocations the benchmark state calls
+`endOfIteration()`. The default 0 leaves the arena hookless - and those runs measure adaptive plus
+the delegate detour, not the arena. `CycleScopedAllocBenchmark` calls `endOfIteration()` at the end
+of every invocation, because one invocation there *is* one event-loop iteration.
+
+### JFR events
+
+Modelled on the JDK's TLAB events and emitted **only on cold boundaries** - a block switch, the
+hook, a delegate allocation, a confinement violation - so the bump and release paths carry no event
+instruction, exactly as `jdk.ObjectAllocationInNewTLAB` carries none in the TLAB fast path. All are
+disabled by default. Source: `buffer/src/main/java/io/netty/buffer/ArenaEvents.java`.
+
+| event | analogue in the JDK | fields |
+|---|---|---|
+| `io.netty.ArenaBlockSwitch` | `jdk.ObjectAllocationInNewTLAB` | `bytesBumped`, `allocations`, `liveAtRetire`, `blockId`, `next` (REUSE / GROWTH / DELEGATE), `space` (HEAP / DIRECT) |
+| `io.netty.ArenaAllocationOutside` | `jdk.ObjectAllocationOutsideTLAB` | `size`, `reason` (CAP / BOUND / OBJECTS / OFF_LOOP), `space` |
+| `io.netty.ArenaAllocationSample` | `jdk.ObjectAllocationSample` | `weight` (bytes bumped since the previous sample), `allocations`, `space` |
+| `io.netty.ArenaIteration` | - | `blocksReset`, `pinned`, `bytesBumped`, `allocations`, `delegated`, `hooks` (how many hooks this event stands for), `space` |
+| `io.netty.ArenaConfinementViolation` | - | `owner`, `offender`, `operation` (RETAIN / RELEASE); keeps stack traces |
+
+`ArenaIteration` and `ArenaAllocationSample` are emitted once every **`-Darena.jfr.period`** hooks
+(default 1000). The period is manual because the JFR API this module compiles against has no
+throttle annotation.
+
 ## What each benchmark measures, and what it cannot show
 
 | benchmark | measures | cannot show |
@@ -57,7 +107,63 @@ knows the lifecycle, not something the allocator guesses.
 ## Measured results
 
 Full tables, per-cell numbers and every caveat: **[`results/ryzen9-7950x-node0/RESULTS.md`](results/ryzen9-7950x-node0/RESULTS.md)**.
-Headline, on the reference machine described below, 3 forks:
+
+### v3, the pinned build - measured 2026-09-22, 2300 MHz, node 0
+
+Raw data: `results/ryzen9-7950x-node0/arena-v3/`. Details and caveats:
+[RESULTS.md section 6](results/ryzen9-7950x-node0/RESULTS.md#6-v3---the-designed-event-loop-arena).
+
+- **Scope-aligned (`CycleScopedAllocBenchmark`, k=64, FIFO, MIXED, 3 forks).** Score is per 64
+  allocate/release pairs: heap ARENA **2221.3** vs ADAPTIVE **3344.5** ns, direct ARENA **2171.0**
+  vs ADAPTIVE **3253.4** ns. The arena served 83.33% of the allocations - exactly the 10 of 12 MIXED
+  sizes at or below `arena.cap=8192`; the 16 KiB and 32 KiB sizes are delegated to adaptive inside
+  the ARENA column.
+- **Steady-state harness with the hook driven (E_COMMERCE heap, 1 thread, 1024 live, 3 forks,
+  `-Dexpt.hookEvery=64`):** ARENA **65.18 +- 2.09** vs ADAPTIVE **83.58 +- 0.50** ns/op, arena share
+  88.27%, `maxPinned` 7 blocks. The hook is driven by the harness; N=64 is a choice and the score
+  depends on it.
+- **The harness cells that print `arenaShare=0.00%` measure the delegate detour and nothing else** -
+  the benchmark thread never closes an iteration, the blocks fill and every allocation goes to
+  adaptive. Against ADAPTIVE's 600.4 instructions/op on that cell (perfnorm, 1 fork): **+32
+  instructions/op after the detour fix** (632.6) and **+82 before** it (682.8). The v3 report quotes
+  +33; the three perfnorm files give +32.1 and +82.4.
+- **Lifecycle topology, one window per workload, process-wide `ARENATELE` counters:**
+
+  | workload | arena share | maxPinned | confinement violations |
+  |---|---|---|---|
+  | W1 HTTP/1.1 snoop | 99.99% | 0 | 0 |
+  | W2 HTTP/2 hello | 95.85% | 0 | 0 |
+  | W3 HTTP/2 echo, small windows | 95.86% | 7 | 0 |
+  | W4 HTTP/1.1 chunked echo, slow readers | 86.92% | 4 | 0 |
+  | W5 aggregator, 256 KiB POST | 11.85% | 4 | 0 |
+  | W6a proxy, outbound on the SAME loop | 99.97% | 0 | 0 |
+  | W6b proxy, outbound on a SEPARATE loop | 0.25% | 64 | **2,140** |
+
+  W6b is a **negative test**: the outbound channel runs on another loop, the arena refuses those
+  buffers, every block stays pinned and the violation counter fires 2,140 times. That is the counter
+  working, not a regression.
+- **End to end, 2M requests per run, 3 runs per build, logging off, server pinned on node 0:**
+  HTTP/1.1 ADAPTIVE 177.2 / 176.1 / 177.8k req/s against ARENA 178.1 / 178.5 / 176.4k; HTTP/2
+  ADAPTIVE 388.5 / 389.7 / 390.4k against ARENA 385.9 / 387.3 / 391.6k. **End-to-end throughput did
+  not change.** What moved: HTTP/1.1 instructions per request 106.2k -> 105.2k (three-run means) and
+  cycles per request 76.8k -> 76.4k (run 1; the three-run means are 77.1k -> 76.5k); HTTP/2
+  instructions per request unchanged. Adaptive's own three runs span
+  1.9% on instructions per request, so even that 1% is inside the run-to-run spread of three runs.
+- **async-profiler, one profile per build:** the allocator's share of event-loop CPU samples is
+  8.24% -> 7.40% on HTTP/1.1 and 14.75% -> 12.18% on HTTP/2. The frame filter behind these four
+  numbers is not recorded with the data; a recomputation from the collapsed stacks with an explicit
+  allocator-class filter gives 7.72% -> 7.15% and 11.03% -> 9.25% - same direction, different
+  magnitude. RESULTS.md section 6.6 states both and does not pick one.
+
+**What v3 measured, stated plainly: end-to-end throughput did not change.** The measured effect is
+the allocator's share of event-loop CPU samples and, on HTTP/1.1, instructions per request. The
+microbenchmark wins in the first two bullets are the scope-aligned best case with the hook driven
+artificially.
+
+### The earlier builds
+
+Sections 1-5 of RESULTS.md, on the reference machine described below, 3 forks. **These are not the
+pinned code** - they measure `dec589d0eb` and `26bd14b195`:
 
 - **Scope-aligned (`CycleScopedAllocBenchmark`, heap, 1 thread, 12 cells):** ARENA 25-28 ns per
   buffer vs ADAPTIVE 44-51 and MIMALLOC 47-53 - 40-50% below adaptive on every cell.
@@ -118,8 +224,8 @@ git submodule update --init
 
 | submodule | repository | branch | pinned commit |
 |---|---|---|---|
-| `netty` | `https://github.com/franz1981/netty.git` | `expt/event-loop-arena` | `26bd14b195` |
-| `netty-allocator` | `https://github.com/franz1981/netty-allocator.git` | `cycle-arena-bench` | `1041207` |
+| `netty` | `https://github.com/franz1981/netty.git` | `expt/event-loop-arena` | `3dad84f578` |
+| `netty-allocator` | `https://github.com/franz1981/netty-allocator.git` | `cycle-arena-bench` | `e9fa807` |
 
 > **Neither branch is pushed yet.** `git submodule update --init` cannot work from a fresh clone
 > until `expt/event-loop-arena` is pushed to `franz1981/netty` and `cycle-arena-bench` to
@@ -127,8 +233,9 @@ git submodule update --init
 > were added from local paths and `.git/config` still points at them; `.gitmodules` carries the
 > GitHub URLs, so `git submodule sync` will switch a clone over once the branches exist.
 
-`netty-allocator` is lao's harness (`neoionet/netty-allocator`) with three commits on top of its
-`1.2` head: the cycle benchmark, the harness additions, and nothing else. `ARENA` there resolves to
+`netty-allocator` is lao's harness (`neoionet/netty-allocator`) with four commits on top of its
+`1.2` head: the cycle benchmark, the harness additions, the `-Dexpt.hookEvery` hook driver, and
+nothing else. `ARENA` there resolves to
 `io.netty.buffer.CycleArenaAllocator` from the `netty` submodule - the class has exactly one source
 of truth.
 
@@ -335,10 +442,17 @@ a decoder/cumulator or an aggregator; **v** = crosses an iteration, HTTP/2 flow 
   spelled out in `results/ryzen9-7950x-node0/topology/README.md`.
 - The `.jfr` recordings (706 MB) are not in this repository; `topology/run.sh` regenerates them.
 
-A design plan built on these numbers is in
-[`docs/design.md`](docs/design.md) - **design (draft 3, final; implementation in progress on the
-netty submodule branch)**. Draft 1 is kept beside it as
-[`docs/design-draft1.md`](docs/design-draft1.md) so the review trail is visible.
+## Documents
+
+- [`docs/design.md`](docs/design.md) - the design plan built on these numbers (draft 3, final).
+  **v3, the pinned netty commit `3dad84f578`, implements it**; the deviations the implementing agent
+  recorded are in-place capacity growth above the cap, an object pool per space, `DELEGATED` as a
+  column slot, a manual JFR period and a public `endOfIteration()`.
+- [`docs/layout-survey.md`](docs/layout-survey.md) - block/arena metadata layouts read from the
+  source of ten allocators (mimalloc, TigerBeetle, G1, Zig, protobuf, folly, pmr and others). It is
+  where v3's flat block metadata comes from: only mimalloc, TigerBeetle and G1 keep per-block
+  liveness at all, and no precedent stores an int block id in the buffer object.
+- [`docs/design-draft1.md`](docs/design-draft1.md) - draft 1, kept so the review trail is visible.
 
 ## Reference machine
 
