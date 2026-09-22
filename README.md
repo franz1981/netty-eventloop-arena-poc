@@ -245,7 +245,9 @@ git clone --recurse-submodules https://github.com/franz1981/netty-eventloop-aren
 | `netty` | `https://github.com/franz1981/netty.git` | `expt/event-loop-arena` | `2b961262d6` |
 | `netty-allocator` | `https://github.com/franz1981/netty-allocator.git` | `cycle-arena-bench` | `e9fa807` |
 
-Both branches are on GitHub at the pinned commits, so a fresh clone resolves them.
+Both branches are on GitHub, but `netty` is pinned at `2b961262d6` while the GitHub branch still
+ends at `3dad84f578` at the time of writing: until those two commits are pushed, a fresh clone
+cannot resolve the `netty` submodule and has to be pointed at a local checkout of the branch.
 
 `netty-allocator` is lao's harness (`neoionet/netty-allocator`) with four commits on top of its
 `1.2` head: the cycle benchmark, the harness additions, the `-Dexpt.hookEvery` hook driver, and
