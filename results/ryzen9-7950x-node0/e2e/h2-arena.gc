@@ -1,0 +1,8 @@
+[0.002s][info][gc] Using G1
+[1.733s][info][gc] GC(0) Pause Young (Concurrent Start) (Metadata GC Threshold) 92M->14M(2048M) 6.306ms
+[1.733s][info][gc] GC(1) Concurrent Mark Cycle
+[1.739s][info][gc] GC(1) Pause Remark 15M->15M(2048M) 1.072ms
+[1.740s][info][gc] GC(1) Pause Cleanup 15M->15M(2048M) 0.171ms
+[1.749s][info][gc] GC(1) Concurrent Mark Cycle 15.910ms
+[2.076s][info][gc] GC(2) Pause Young (Prepare Mixed) (G1 Evacuation Pause) 106M->14M(2048M) 6.037ms
+[2.510s][info][gc] GC(3) Pause Young (Mixed) (G1 Evacuation Pause) 186M->18M(2048M) 1.962ms

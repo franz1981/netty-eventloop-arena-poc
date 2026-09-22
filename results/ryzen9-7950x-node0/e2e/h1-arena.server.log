@@ -1,0 +1,2 @@
+READY arena h1 8080 loops=8
+ARENATELE arena=3489820 fallback=0 blockReuse=0 grow=0 lifoPop=0 unpooledObjects=0
