@@ -15,6 +15,14 @@ import json, os, re, sys, glob
 RSS = re.compile(r'cRSS-pRSS:\[\s*\d+\s*,\s*(\d+)\s*\]')
 
 
+def num(v):
+    """JMH writes "NaN" (a string) for scoreError when a single fork/iteration gives no spread."""
+    try:
+        return float(v)
+    except (TypeError, ValueError):
+        return float('nan')
+
+
 def peak_rss(json_path):
     data = os.path.splitext(json_path)[0] + '.data'
     if not os.path.exists(data):
@@ -73,7 +81,7 @@ def main(argv):
             print('%-11s %-5s %-4s %-6s %-6s %8.1f %8.1f %7.1f %5d' % (
                 p.get('allocatorType', '?'), b['benchmark'].split('.')[-1].replace('cycle', ''),
                 k, p.get('releaseOrder', '?'), p.get('sizes', '?'),
-                m['score'], m['scoreError'], m['score'] / k, b.get('forks', 0)))
+                num(m['score']), num(m['scoreError']), num(m['score']) / k, b.get('forks', 0)))
         print()
 
     if harness:
@@ -93,13 +101,13 @@ def main(argv):
             print('%-11s %-12s %-7s %-4d %-3s %8.1f %8.1f %5d  %s' % (
                 p.get('allocatorType', '?'), p.get('sizePattern', '?'),
                 p.get('MAX_LIVE_BUFFERS', '?'), b.get('threads', 0),
-                p.get('enableReadWrite', '?')[:1], m['score'], m['scoreError'],
+                str(p.get('enableReadWrite', '?'))[:1], num(m['score']), num(m['scoreError']),
                 b.get('forks', 0), rss_s + '   [' + os.path.basename(f) + ']'))
         print()
 
     for f, b in other:
         print('%s: %s %.1f %s' % (os.path.basename(f), b['benchmark'].split('.')[-1],
-                                  b['primaryMetric']['score'], b['primaryMetric']['scoreUnit']))
+                                  num(b['primaryMetric']['score']), b['primaryMetric']['scoreUnit']))
     return 0
 
 

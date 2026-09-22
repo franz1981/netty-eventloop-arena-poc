@@ -41,11 +41,15 @@ echo "==> building the harness against $NETTY_VERSION"
 mkdir -p "$ROOT/target"
 cp "$ROOT/netty-allocator/benchmark/target/benchmarks.jar" "$ROOT/target/benchmarks.jar"
 
-# sanity: the arena class in the jar must be the netty one, and there must be no harness copy
-if ! unzip -l "$ROOT/target/benchmarks.jar" | grep -q 'io/netty/buffer/CycleArenaAllocator\.class'; then
-    echo "FAILED: io.netty.buffer.CycleArenaAllocator is not in the jar" >&2; exit 1
-fi
-if unzip -l "$ROOT/target/benchmarks.jar" | grep -q 'microbenchmark/CycleArenaAllocator\.class'; then
-    echo "FAILED: a harness copy of CycleArenaAllocator is in the jar" >&2; exit 1
-fi
+# sanity: the arena class in the jar must be the netty one, and there must be no harness copy.
+# The listing is taken once: "unzip -l | grep -q" would die on SIGPIPE under 'set -o pipefail'.
+LISTING="$(unzip -l "$ROOT/target/benchmarks.jar")"
+case "$LISTING" in
+    *io/netty/buffer/CycleArenaAllocator.class*) ;;
+    *) echo "FAILED: io.netty.buffer.CycleArenaAllocator is not in the jar" >&2; exit 1 ;;
+esac
+case "$LISTING" in
+    *microbenchmark/CycleArenaAllocator.class*)
+        echo "FAILED: a harness copy of CycleArenaAllocator is in the jar" >&2; exit 1 ;;
+esac
 echo "==> target/benchmarks.jar ready ($(du -h "$ROOT/target/benchmarks.jar" | cut -f1))"
