@@ -384,12 +384,15 @@ One profile is one sample; this is not a distribution.
 `CycleScopedAllocBenchmark`, k=64, FIFO, `sizes=SMALL` (64/128/256/512 B: every request under the 8 KiB cap, so both
 arenas run at 100% share, `maxPinned=0`). Files: `arena-v3/cycle/small-v3.*` (final jar + adaptive), `small-v2.*` (first PoC jar).
 
-| cell | ADAPTIVE | ARENA v2 (first PoC) | ARENA v3 (final) |
-|---|---|---|---|
-| heap, ns per 64 pairs | 3157.1 (3207/3121/3143) | 1610.8 (1613/1606/1614) | 1502.1 (1568/1461/1478) |
-| direct, ns per 64 pairs | 3091.2 (3102/3100/3072) | 3060.1 (3070/3059/3052) | 1520.3 (1538/1401/1622) |
-| heap, ns per pair | 49.3 | 25.2 | 23.5 |
-| direct, ns per pair | 48.3 | 47.8 | 23.8 |
+| cell | ADAPTIVE | MIMALLOC (lao port) | ARENA v2 (first PoC) | ARENA v3 (final) |
+|---|---|---|---|---|
+| heap, ns per 64 pairs | 3157.1 (3207/3121/3143) | 2870.2 (2884/2880/2847) | 1610.8 (1613/1606/1614) | 1502.1 (1568/1461/1478) |
+| direct, ns per 64 pairs | 3091.2 (3102/3100/3072) | 2743.0 (2758/2738/2734) | 3060.1 (3070/3059/3052) | 1520.3 (1538/1401/1622) |
+| heap, ns per pair | 49.3 | 44.8 | 25.2 | 23.5 |
+| direct, ns per pair | 48.3 | 42.9 | 47.8 | 23.8 |
+
+MIMALLOC files: `arena-v3/cycle/small-mi.*` (same jar, same flags, run right after). Where the arena applies, v3 is −47%
+against the mimalloc port, which itself is −9% (heap) / −11% (direct) against adaptive on this cell.
 
 v3 is −52% against adaptive on both spaces where the arena applies, level with or better than the first PoC on heap,
 and twice as fast as it on direct. The gap to v2 seen on `sizes=MIXED` (section 6.2) is the cap: 16 and 32 KiB requests
