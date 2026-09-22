@@ -3,7 +3,6 @@ import io.netty.buffer.ByteBufAllocator;
 import io.netty.channel.*;
 import io.netty.channel.nio.NioIoHandler;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
-import io.netty.example.arena.CycleArenaEndOfCycleHandler;
 
 /** E2E launcher: same example pipelines as netty's HttpSnoopServer (h1) / Http2Server (h2), allocator chosen by arg. */
 public class E2EServer {
@@ -27,11 +26,8 @@ public class E2EServer {
         ChannelHandler child = new ChannelInitializer<Channel>() {
             @Override protected void initChannel(Channel ch) {
                 ch.pipeline().addLast(init);
-                // -Darena.e2e.readCompleteHook=true: the per-channel alternative to -Darena.hook=iteration.
-                // Last in the pipeline, so every inbound handler has seen this read cycle first.
-                if (Boolean.getBoolean("arena.e2e.readCompleteHook")) {
-                    ch.pipeline().addLast(CycleArenaEndOfCycleHandler.INSTANCE);
-                }
+                // v3: the arena closes its iteration from the event loop's own tail-task hook; the earlier
+                // per-channel channelReadComplete handler was dropped (netty commit 58a79ebd42).
             }
         };
         ServerBootstrap b = new ServerBootstrap();

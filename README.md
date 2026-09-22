@@ -33,8 +33,8 @@ The PoC is `io.netty.buffer.CycleArenaAllocator` (in the `netty` submodule, bran
 - with `hook`, `-Darena.hook=iteration` (the default) makes the first allocation on an event loop
   register a tail task with netty's own `executeAfterEventLoopIteration`; `-Darena.hook=off` leaves
   closing a cycle to whoever calls `endOfCycle()` - for instance
-  `io.netty.example.arena.CycleArenaEndOfCycleHandler`, which `E2EServer` appends to every pipeline
-  under `-Darena.e2e.readCompleteHook=true`. `trim()` is explicit only;
+  (v2 only) `io.netty.example.arena.CycleArenaEndOfCycleHandler`; v3 dropped it and closes the iteration from
+  the event loop's tail-task hook. `trim()` is explicit only;
 - buffer objects come from a lazily filled per-arena array with an `int` free stack; past that array
   they are ordinary garbage (`arena.objects`).
 

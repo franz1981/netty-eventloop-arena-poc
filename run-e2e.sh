@@ -16,8 +16,8 @@
 #     heap:        JVM_OPTS=-Dio.netty.noPreferDirect=true
 #     direct:      (nothing)
 #     hook/iter:   ARENA_PROPS="-Darena.release=hook -Darena.hook=iteration"
-#     hook/readCompl: ARENA_PROPS="-Darena.release=hook -Darena.hook=off -Darena.e2e.readCompleteHook=true"
-#   The last one makes E2EServer append io.netty.example.arena.CycleArenaEndOfCycleHandler to every
+#   (v3: the readCompleteHook variant no longer exists; the arena is closed by the event loop's tail-task hook.)
+#   The former handler line is kept in the v2 results only:
 #   channel pipeline - it needs the example module of the pinned netty submodule.
 #
 # The example pipelines log every HTTP/2 frame at INFO.  That logging, not the allocator, is the
