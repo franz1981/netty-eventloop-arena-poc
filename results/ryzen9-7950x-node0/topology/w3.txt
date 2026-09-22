@@ -1,0 +1,64 @@
+================================================================================================
+WORKLOAD W3 HTTP/2 echo of a 64 KiB body, 4 KiB client flow-control windows, 8 conn x 16 streams   (w3.tsv)
+================================================================================================
+events: AllocateBuffer=1386060 FreeBuffer=1363184 ReallocateBuffer=22903 IterationEnd=294450
+pairs=1385797  unpaired releases (alloc before window)=290  still live at window end=263  truncated stacks=179696  address reused with no release event=0
+BALANCE CHECK: allocs(1386060) - pairs(1385797) - live-at-end(263) - reuse(0) = 0  (must be 0)
+event-loop threads with markers: 4  iterations total=294450  with reads>0=265381 (90.1%)
+
+(a) lifetime in event-loop ITERATIONS of the allocating thread
+     iters : 0=97.83%  1=0.00%  2-3=0.00%  4-7=0.00%  8+=2.17%
+  read-its : 0=97.83%  1=0.00%  2-3=0.00%  4-7=0.00%  8+=2.17%   (only iterations that saw >=1 channelRead)
+  iters p50=0 p90=0 p99=661 p99.9=1084 max=1636
+  wall-clock lifetime us: p50=11.2 p90=21.2 p99=21903.6 p99.9=34623.8 max=424240.8
+
+(b) released on the allocating thread: 100.000%  (cross-thread: 0)
+
+(c) nesting class at release: only=0.05%  youngest=0.00%  oldest=1.24%  middle=98.71%
+     within same-iteration releases (1355657, 97.83% of all): only=0.05%  youngest=0.00%  oldest=0.05%  middle=99.90%
+
+(d) size bucket (power-of-two ceiling of the requested capacity)
+     131072=0.22%  65536=3.22%  32768=1.84%  16384=1.68%  8192=1.41%  4096=1.25%  2048=1.16%  1024=1.06%  512=6.38%  256=2.38%
+     exact sizes: 9=68.55%  64=7.33%  65536=3.22%  13=1.95%  32768=1.84%  16384=1.68%
+
+(e) release cause (first non-allocator frame of the FreeBuffer stack)
+     write-completion        74.528%  top site: io.netty.channel.ChannelOutboundBuffer.remove
+     decoder/cumulation      23.819%  top site: io.netty.handler.codec.ByteToMessageDecoder.channelRead
+     realloc-grow             1.653%  top site: io.netty.buffer.AdaptiveByteBuf.capacity
+
+    cause x lifetime-in-iterations (row %% of all pairs)
+    cause                         0        1      2-3      4-7       8+     share
+    write-completion        72.353%   0.000%   0.000%   0.000%   2.175%   74.528%
+    decoder/cumulation      23.819%   0.000%   0.000%   0.000%   0.000%   23.819%
+    realloc-grow             1.653%   0.000%   0.000%   0.000%   0.000%    1.653%
+
+    cause x size bucket (row %% of all pairs)
+    cause                         16        64       512     65536       256     32768
+    write-completion         71.428%    0.000%    0.000%    1.613%    0.926%    0.288%
+    decoder/cumulation        0.000%    7.264%    6.031%    1.611%    1.370%    1.555%
+    realloc-grow              0.000%    0.070%    0.344%    0.000%    0.087%    0.000%
+
+    max lifetime: 1636 iterations (18126.1 us), size=65536, cause=write-completion, site=io.netty.channel.ChannelOutboundBuffer.remove
+    max wall-clock: 424240.8 us (1059 iterations), size=131072, cause=write-completion
+
+(f) live buffers at end of iteration, per event-loop thread
+    thread                          iters  avgLive  maxLive   avgAlloc maxAlloc
+    multiThreadIoEventLoopGroup-3-1    66608    63.56       80       5.10       31
+    multiThreadIoEventLoopGroup-3-2    77853    65.32       85       4.43       39
+    multiThreadIoEventLoopGroup-3-3    79298    65.45       84       4.41       34
+    multiThreadIoEventLoopGroup-3-4    70691    64.49       85       4.98       41
+    live-at-marker over all markers: mean=64.760 p50=65 p90=72 p99=79 p99.9=83 max=85 ; markers with >0 live=294271 (99.94%)
+    allocations per iteration (all EL threads): mean=4.71 p50=4 p90=8 p99=17 max=41  zero-alloc iterations=9.9%
+    channelReads per iteration: mean=1.21 p50=1 p90=2 p99=5 max=16
+
+(g) the buffers that DO cross an iteration boundary (30140, 2.175% of pairs)
+     io.netty.channel.ChannelOutboundBuffer.remove               2.175% of all  iters p50=623 p99=1250 max=1636  bytes=1908.3 MiB
+     sizes of the crossing buffers: 131072=9.92%  65536=74.17%  32768=13.26%  16384=2.64%  8192=0.01%  4096=0.01%
+     bytes held across a boundary: 1908.3 MiB of 4653.0 MiB allocated in the window (41.01%)
+
+    diagnostics: pairs whose stack had no non-plumbing frame=0 (0.000%); pairs crossing >=1 marker=30140 (2.175%)
+
+HEADLINE CLASSIFICATION
+    ii-same-iter-out-of-order                 97.774%  (1354944)
+    iii-cross-iter-write-completion            2.175%  (30140)
+    i-same-iter-LIFO                           0.051%  (713)

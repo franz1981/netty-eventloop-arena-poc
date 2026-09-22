@@ -51,6 +51,7 @@ knows the lifecycle, not something the allocator guesses.
 | the same with `-Dexpt.randomRelease=true` | geometric lifetimes with the same mean | still a synthetic distribution, and still no application-level retention |
 | the JFR lifetime study (`run-lifetimes.sh`) | same-thread ratio and "allocations in between" for real buffers in two netty example servers | applications that retain buffers - aggregation, queues, backpressure. It is a **lower bound** on real lifetimes |
 | `-Dexpt.reuse=true` | reuse distance and 4 KiB page locality of the memory handed out | it is a probe for explaining a result, not a result |
+| the lifecycle-topology study (`topology/`) | buffer lifetime in event-loop iterations, nesting class at release, release cause, bytes crossing an iteration, across seven real pipelines | one short window per workload, NIO only, no derived-buffer events; it describes shapes, not converged numbers |
 | `run-e2e.sh` | a real example server under h2load: req/s, request latency, RSS over time, young GC count, arena counters | **it cannot distinguish allocators at all** on these servers - see below |
 
 ## Measured results
@@ -248,6 +249,94 @@ address with `lifetimes/lifetimes.py`.
 > in the recording. That produced one wrong sample before it was caught.
 
 The text event dump is multi-GB and is deleted unless `KEEP_EVENTS=1`.
+
+## Lifecycle topology
+
+The question the microbenchmarks cannot answer: in a real pipeline, **how long does a buffer live
+measured in event-loop iterations, in what order is it released, and who releases it?** The study in
+[`topology/`](topology/) answers it by recording, in one window of a running server:
+
+- `io.netty.AllocateBuffer` / `io.netty.FreeBuffer` / `io.netty.ReallocateBuffer` (the
+  `Reallocate` events are what balances the ledger when a buffer grows in place);
+- a `netty.IterationEnd` marker committed by a self-renewing tail task on every event loop, so a
+  buffer's lifetime can be counted in **iterations of its own loop**, not only in wall-clock time;
+- the **nesting class** at release - was this buffer the only live one, the youngest (LIFO), the
+  oldest, or in the middle of the live set;
+- the **release cause**, taken from the first non-plumbing frame of the `FreeBuffer` stack;
+- how many **bytes cross an iteration boundary**, which is the number a per-iteration arena would
+  have to keep.
+
+Seven pipelines, all NIO:
+
+```
+  w1  W1 HTTP/1.1 snoop, 4 KiB POST, 64 conn, h2load --h1
+  w2  W2 HTTP/2 hello, 16 conn x 32 streams, 4 KiB POST
+  w3  W3 HTTP/2 echo of a 64 KiB body, 4 KiB client flow-control windows, 8 conn x 16 streams
+  w4  W4 HTTP/1.1 chunked echo of a 256 KiB POST, 64 slow readers (4 KiB/20 ms), server SO_SNDBUF=16 KiB
+  w5  W5 HttpServerCodec + HttpObjectAggregator(1 MiB) + small OK, 256 KiB POST, 64 conn
+  w6a  W6a TCP proxy (HexDumpProxy topology) -> snoop backend, outbound on the SAME event loop, 4 KiB POST, 64 conn
+  w6b  W6b same proxy but the outbound channel on a SEPARATE event loop group, 4 KiB POST, 64 conn
+```
+
+Results (`results/ryzen9-7950x-node0/topology/`, copied exactly from `summary.txt`):
+
+```
+LIFETIME IN EVENT-LOOP ITERATIONS (share of paired buffers)
+wl        pairs        0        1      2-3      4-7       8+ x-thread
+w1       549633  100.00%    0.00%    0.00%    0.00%    0.00%    0.00%
+w2       568072  100.00%    0.00%    0.00%    0.00%    0.00%    0.00%
+w3      1385797   97.83%    0.00%    0.00%    0.00%    2.17%    0.00%
+w4         2496   91.35%    1.20%    0.00%    0.00%    7.45%    0.00%
+w5       332006   37.26%    5.32%    8.78%   10.03%   38.61%    0.00%
+w6a      310270  100.00%    0.00%    0.00%    0.00%    0.00%    0.00%
+w6b      254132   15.72%   17.66%   27.80%   31.86%    6.96%  100.00%
+
+HEADLINE CLASSES (share of paired buffers)
+wl             i         ii        iii         iv          v  vi-other
+w1        33.33%     66.67%      0.00%      0.00%      0.00%     0.00%
+w2         2.94%     97.06%      0.00%      0.00%      0.00%     0.00%
+w3         0.05%     97.77%      2.17%      0.00%      0.00%     0.00%
+w4         0.20%     91.15%      8.65%      0.00%      0.00%     0.00%
+w5         5.21%     32.05%      0.00%     62.74%      0.00%     0.00%
+w6a      100.00%      0.00%      0.00%      0.00%      0.00%     0.00%
+w6b        8.17%      7.56%     84.28%      0.00%      0.00%     0.00%
+
+BYTES AND OCCUPANCY
+wl       MiB alloc MiB crossing     %bytes   avgLive   maxLive  alloc/it  it/s/thr
+w1          2231.2          0.0      0.00%      0.00         0     39.39      3253
+w2          1081.6          0.0      0.00%      0.00         0    135.85       972
+w3          4653.0       1908.3     41.01%     64.76        85      4.71     25302
+w4            20.0          4.0     19.98%      1.04        72      0.00    525237
+w5         13386.2       9170.8     68.51%      3.23        34      0.32    239218
+w6a         2424.0          0.0      0.00%      0.00         0      0.80     90164
+w6b         1985.4       1673.2     84.28%      0.51        16      0.13    232206
+```
+
+Headline classes: **i** = same iteration, LIFO or only-live; **ii** = same iteration, out of order;
+**iii** = crosses an iteration, released by write completion; **iv** = crosses an iteration, held by
+a decoder/cumulator or an aggregator; **v** = crosses an iteration, HTTP/2 flow control;
+**vi** = anything else.
+
+### What limits this study
+
+- **One 1-1.5 s window per workload**, one run each. These are shapes, not converged numbers.
+- **NIO only.** No io_uring, so nothing here says anything about registered or provided buffers.
+- **No derived-buffer events.** Slices and duplicates do not fire allocate/free, so a buffer pinned
+  only by a derived reference is invisible.
+- **The iteration counter is inflated on idle loops.** The `IterationEnd` tail task is always
+  pending, so `hasTasks()` is always true and the selector never blocks. `control.txt` measures the
+  cost: on a saturated loop (W1) markers cost +3.3% CPU and no throughput, but on a near-idle loop
+  (W4) they cost **31x** CPU and turn the iteration counter into a spin counter. **On W4 read the
+  wall-clock column, not the iteration column.**
+- `jfr print` truncates timestamps to milliseconds, which cannot order 450k events/s, so
+  `Dump.java` uses the JFR API directly to get nanoseconds.
+- The recordings were made against a frozen classpath at netty `cfb23bcf63`, not the `26bd14b195`
+  this repository pins, and the exact h2load flags of W1/W2/W3/W5 were not recorded. Both are
+  spelled out in `results/ryzen9-7950x-node0/topology/README.md`.
+- The `.jfr` recordings (706 MB) are not in this repository; `topology/run.sh` regenerates them.
+
+A design plan built on these numbers is in [`docs/design.md`](docs/design.md) - **draft 1, under
+review**.
 
 ## Reference machine
 

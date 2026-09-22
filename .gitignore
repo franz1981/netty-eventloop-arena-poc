@@ -9,3 +9,7 @@ events.txt
 
 # the E_COMMERCE size pattern input (~190 MB, comes from lao's head-to-head material)
 e-commerce.jfr
+
+# topology study intermediates
+*.tsv
+__pycache__/

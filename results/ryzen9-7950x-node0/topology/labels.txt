@@ -1,0 +1,7 @@
+w1|W1 HTTP/1.1 snoop, 4 KiB POST, 64 conn, h2load --h1
+w2|W2 HTTP/2 hello, 16 conn x 32 streams, 4 KiB POST
+w3|W3 HTTP/2 echo of a 64 KiB body, 4 KiB client flow-control windows, 8 conn x 16 streams
+w4|W4 HTTP/1.1 chunked echo of a 256 KiB POST, 64 slow readers (4 KiB/20 ms), server SO_SNDBUF=16 KiB
+w5|W5 HttpServerCodec + HttpObjectAggregator(1 MiB) + small OK, 256 KiB POST, 64 conn
+w6a|W6a TCP proxy (HexDumpProxy topology) -> snoop backend, outbound on the SAME event loop, 4 KiB POST, 64 conn
+w6b|W6b same proxy but the outbound channel on a SEPARATE event loop group, 4 KiB POST, 64 conn

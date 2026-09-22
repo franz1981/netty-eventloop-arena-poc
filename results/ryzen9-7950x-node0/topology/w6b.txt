@@ -1,0 +1,68 @@
+================================================================================================
+WORKLOAD W6b same proxy but the outbound channel on a SEPARATE event loop group, 4 KiB POST, 64 conn   (w6b.tsv)
+================================================================================================
+events: AllocateBuffer=254136 FreeBuffer=254136 ReallocateBuffer=0 IterationEnd=2001161
+pairs=254132  unpaired releases (alloc before window)=4  still live at window end=4  truncated stacks=0  address reused with no release event=0
+BALANCE CHECK: allocs(254136) - pairs(254132) - live-at-end(4) - reuse(0) = 0  (must be 0)
+event-loop threads with markers: 8  iterations total=2001161  with reads>0=209740 (10.5%)
+
+(a) lifetime in event-loop ITERATIONS of the allocating thread
+     iters : 0=15.72%  1=17.66%  2-3=27.80%  4-7=31.86%  8+=6.96%
+  read-its : 0=15.72%  1=67.33%  2-3=16.34%  4-7=0.38%  8+=0.22%   (only iterations that saw >=1 channelRead)
+  iters p50=3 p90=7 p99=16 p99.9=327 max=1481
+  wall-clock lifetime us: p50=13.3 p90=28.4 p99=76.3 p99.9=2833.7 max=5893.9
+
+(b) released on the allocating thread: 0.000%  (cross-thread: 254132)
+      multiThreadIoEventLoopGroup-4-4 -> multiThreadIoEventLoopGroup-3-2 : 16754 (6.59%)
+      multiThreadIoEventLoopGroup-3-2 -> multiThreadIoEventLoopGroup-4-4 : 16753 (6.59%)
+      multiThreadIoEventLoopGroup-3-3 -> multiThreadIoEventLoopGroup-4-1 : 14741 (5.80%)
+      multiThreadIoEventLoopGroup-4-1 -> multiThreadIoEventLoopGroup-3-3 : 14739 (5.80%)
+      multiThreadIoEventLoopGroup-4-3 -> multiThreadIoEventLoopGroup-3-4 : 11758 (4.63%)
+      multiThreadIoEventLoopGroup-3-4 -> multiThreadIoEventLoopGroup-4-3 : 11757 (4.63%)
+
+(c) nesting class at release: only=58.63%  youngest=0.00%  oldest=30.91%  middle=10.46%
+     within same-iteration releases (39961, 15.72% of all): only=51.95%  youngest=0.00%  oldest=30.35%  middle=17.70%
+
+(d) size bucket (power-of-two ceiling of the requested capacity)
+     8192=100.00%
+     exact sizes: 8192=100.00%
+
+(e) release cause (first non-allocator frame of the FreeBuffer stack)
+     write-completion       100.000%  top site: io.netty.channel.ChannelOutboundBuffer.remove
+
+    cause x lifetime-in-iterations (row %% of all pairs)
+    cause                         0        1      2-3      4-7       8+     share
+    write-completion        15.725%  17.665%  27.797%  31.856%   6.957%  100.000%
+
+    cause x size bucket (row %% of all pairs)
+    cause                       8192
+    write-completion        100.000%
+
+    max lifetime: 1481 iterations (5853.5 us), size=8192, cause=write-completion, site=io.netty.channel.ChannelOutboundBuffer.remove
+    max wall-clock: 5893.9 us (1308 iterations), size=8192, cause=write-completion
+
+(f) live buffers at end of iteration, per event-loop thread
+    thread                          iters  avgLive  maxLive   avgAlloc maxAlloc
+    multiThreadIoEventLoopGroup-3-1   254800     0.33       12       0.12       16
+    multiThreadIoEventLoopGroup-3-2   242998     0.37       14       0.13       16
+    multiThreadIoEventLoopGroup-3-3   251962     0.33       13       0.13       16
+    multiThreadIoEventLoopGroup-3-4   189285     0.32       13       0.16       16
+    multiThreadIoEventLoopGroup-4-1   288223     0.64       16       0.11       15
+    multiThreadIoEventLoopGroup-4-2   233221     0.70       15       0.14       14
+    multiThreadIoEventLoopGroup-4-3   266780     0.73       14       0.12       16
+    multiThreadIoEventLoopGroup-4-4   273892     0.59       16       0.11       16
+    live-at-marker over all markers: mean=0.511 p50=0 p90=1 p99=5 p99.9=14 max=16 ; markers with >0 live=677331 (33.85%)
+    allocations per iteration (all EL threads): mean=0.13 p50=0 p90=1 p99=2 max=16  zero-alloc iterations=89.5%
+    channelReads per iteration: mean=0.13 p50=0 p90=1 p99=2 max=16
+
+(g) the buffers that DO cross an iteration boundary (214171, 84.275% of pairs)
+     io.netty.channel.ChannelOutboundBuffer.remove              84.275% of all  iters p50=3 p99=17 max=1481  bytes=1673.2 MiB
+     sizes of the crossing buffers: 8192=100.00%
+     bytes held across a boundary: 1673.2 MiB of 1985.4 MiB allocated in the window (84.28%)
+
+    diagnostics: pairs whose stack had no non-plumbing frame=0 (0.000%); pairs crossing >=1 marker=214171 (84.275%)
+
+HEADLINE CLASSIFICATION
+    iii-cross-iter-write-completion           84.275%  (214171)
+    i-same-iter-LIFO                           8.169%  (20759)
+    ii-same-iter-out-of-order                  7.556%  (19202)

@@ -1,0 +1,12 @@
+Instrumentation perturbation control (no JFR recording, 8 s load, server CPU from /proc/<pid>/stat utime+stime)
+Measured with ./control.sh
+
+  w1-mk  markers=true   serverCPU=27.37 s   250946.88 req/s
+  w1-no  markers=false  serverCPU=26.50 s   250319.50 req/s
+  w4-mk  markers=true   serverCPU=33.06 s   406 requests (client-limited)
+  w4-no  markers=false  serverCPU= 1.06 s   384 requests (client-limited)
+
+The IterationEnd tail task is always pending, so SingleThreadEventLoop.hasTasks() is always
+true and the selector never blocks. On a saturated loop (W1) that costs +3.3% CPU and no
+throughput. On a near-idle loop (W4) it costs 31x CPU and turns the iteration counter into a
+spin counter: use the wall-clock column for W4, not the iteration column.

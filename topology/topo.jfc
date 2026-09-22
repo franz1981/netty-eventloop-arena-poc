@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration version="2.0" label="netty buffer topology" description="AllocateBuffer (no stack), FreeBuffer (stack), event-loop IterationEnd">
+  <event name="io.netty.AllocateBuffer">
+    <setting name="enabled">true</setting>
+    <setting name="stackTrace">false</setting>
+  </event>
+  <event name="io.netty.FreeBuffer">
+    <setting name="enabled">true</setting>
+    <setting name="stackTrace">true</setting>
+  </event>
+  <event name="io.netty.ReallocateBuffer">
+    <setting name="enabled">true</setting>
+    <setting name="stackTrace">false</setting>
+  </event>
+  <event name="netty.IterationEnd">
+    <setting name="enabled">true</setting>
+    <setting name="stackTrace">false</setting>
+  </event>
+</configuration>

@@ -1,0 +1,55 @@
+================================================================================================
+WORKLOAD W1 HTTP/1.1 snoop, 4 KiB POST, 64 conn, h2load --h1   (w1.tsv)
+================================================================================================
+events: AllocateBuffer=549638 FreeBuffer=549639 ReallocateBuffer=0 IterationEnd=13954
+pairs=549633  unpaired releases (alloc before window)=6  still live at window end=5  truncated stacks=2896  address reused with no release event=0
+BALANCE CHECK: allocs(549638) - pairs(549633) - live-at-end(5) - reuse(0) = 0  (must be 0)
+event-loop threads with markers: 4  iterations total=13954  with reads>0=13090 (93.8%)
+
+(a) lifetime in event-loop ITERATIONS of the allocating thread
+     iters : 0=100.00%  1=0.00%  2-3=0.00%  4-7=0.00%  8+=0.00%
+  read-its : 0=100.00%  1=0.00%  2-3=0.00%  4-7=0.00%  8+=0.00%   (only iterations that saw >=1 channelRead)
+  iters p50=0 p90=0 p99=0 p99.9=0 max=0
+  wall-clock lifetime us: p50=10.0 p90=16.8 p99=28.6 p99.9=50.0 max=10773.8
+
+(b) released on the allocating thread: 100.000%  (cross-thread: 0)
+
+(c) nesting class at release: only=33.33%  youngest=0.00%  oldest=66.67%  middle=0.00%
+     within same-iteration releases (549633, 100.00% of all): only=33.33%  youngest=0.00%  oldest=66.67%  middle=0.00%
+
+(d) size bucket (power-of-two ceiling of the requested capacity)
+     8192=66.67%  256=33.33%
+     exact sizes: 4370=33.33%  208=33.33%  8192=33.33%
+
+(e) release cause (first non-allocator frame of the FreeBuffer stack)
+     write-completion        66.667%  top site: io.netty.channel.ChannelOutboundBuffer.remove
+     handler                 33.333%  top site: io.netty.channel.SimpleChannelInboundHandler.channelRead
+
+    cause x lifetime-in-iterations (row %% of all pairs)
+    cause                         0        1      2-3      4-7       8+     share
+    write-completion        66.667%   0.000%   0.000%   0.000%   0.000%   66.667%
+    handler                 33.333%   0.000%   0.000%   0.000%   0.000%   33.333%
+
+    cause x size bucket (row %% of all pairs)
+    cause                       8192       256
+    write-completion         33.334%   33.333%
+    handler                  33.333%    0.000%
+
+    max lifetime: 0 iterations (293.4 us), size=208, cause=write-completion, site=io.netty.channel.ChannelOutboundBuffer.remove
+    max wall-clock: 10773.8 us (0 iterations), size=8192, cause=handler
+
+(f) live buffers at end of iteration, per event-loop thread
+    thread                          iters  avgLive  maxLive   avgAlloc maxAlloc
+    multiThreadIoEventLoopGroup-3-1     3459     0.00        0      39.19       48
+    multiThreadIoEventLoopGroup-3-2     3429     0.00        0      40.58       48
+    multiThreadIoEventLoopGroup-3-3     3548     0.00        0      38.59       48
+    multiThreadIoEventLoopGroup-3-4     3518     0.00        0      39.22       48
+    live-at-marker over all markers: mean=0.000 p50=0 p90=0 p99=0 p99.9=0 max=0 ; markers with >0 live=0 (0.00%)
+    allocations per iteration (all EL threads): mean=39.39 p50=45 p90=45 p99=48 max=48  zero-alloc iterations=6.2%
+    channelReads per iteration: mean=13.13 p50=15 p90=15 p99=16 max=16
+
+    diagnostics: pairs whose stack had no non-plumbing frame=0 (0.000%); pairs crossing >=1 marker=0 (0.000%)
+
+HEADLINE CLASSIFICATION
+    ii-same-iter-out-of-order                 66.666%  (366421)
+    i-same-iter-LIFO                          33.334%  (183212)

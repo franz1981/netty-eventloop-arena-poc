@@ -1,0 +1,67 @@
+LIFETIME IN EVENT-LOOP ITERATIONS (share of paired buffers)
+wl        pairs        0        1      2-3      4-7       8+ x-thread
+w1       549633  100.00%    0.00%    0.00%    0.00%    0.00%    0.00%
+w2       568072  100.00%    0.00%    0.00%    0.00%    0.00%    0.00%
+w3      1385797   97.83%    0.00%    0.00%    0.00%    2.17%    0.00%
+w4         2496   91.35%    1.20%    0.00%    0.00%    7.45%    0.00%
+w5       332006   37.26%    5.32%    8.78%   10.03%   38.61%    0.00%
+w6a      310270  100.00%    0.00%    0.00%    0.00%    0.00%    0.00%
+w6b      254132   15.72%   17.66%   27.80%   31.86%    6.96%  100.00%
+
+NESTING CLASS AT RELEASE (share of paired buffers)
+wl         only  youngest    oldest    middle
+w1       33.33%     0.00%    66.67%     0.00%
+w2        2.94%     0.00%    29.41%    67.65%
+w3        0.05%     0.00%     1.24%    98.71%
+w4        0.40%     0.00%     2.48%    97.12%
+w5        5.21%     0.00%    54.57%    40.22%
+w6a     100.00%     0.00%     0.00%     0.00%
+w6b      58.63%     0.00%    30.91%    10.46%
+
+RELEASE CAUSE (share of paired buffers)
+wl      write-completion            handler decoder/cumulation       realloc-grow      codec-encoder         aggregator          read-path
+w1                66.67%             33.33%              0.00%              0.00%              0.00%              0.00%              0.00%
+w2                97.06%              0.00%              2.94%              0.00%              0.00%              0.00%              0.00%
+w3                74.53%              0.00%             23.82%              1.65%              0.00%              0.00%              0.00%
+w4               100.00%              0.00%              0.00%              0.00%              0.00%              0.00%              0.00%
+w5                 7.54%              0.00%              0.00%              0.00%              7.54%             75.63%              9.29%
+w6a              100.00%              0.00%              0.00%              0.00%              0.00%              0.00%              0.00%
+w6b              100.00%              0.00%              0.00%              0.00%              0.00%              0.00%              0.00%
+
+HEADLINE CLASSES (share of paired buffers)
+wl             i         ii        iii         iv          v  vi-other
+w1        33.33%     66.67%      0.00%      0.00%      0.00%     0.00%
+w2         2.94%     97.06%      0.00%      0.00%      0.00%     0.00%
+w3         0.05%     97.77%      2.17%      0.00%      0.00%     0.00%
+w4         0.20%     91.15%      8.65%      0.00%      0.00%     0.00%
+w5         5.21%     32.05%      0.00%     62.74%      0.00%     0.00%
+w6a      100.00%      0.00%      0.00%      0.00%      0.00%     0.00%
+w6b        8.17%      7.56%     84.28%      0.00%      0.00%     0.00%
+
+BYTES AND OCCUPANCY
+wl       MiB alloc MiB crossing     %bytes   avgLive   maxLive  alloc/it  it/s/thr
+w1          2231.2          0.0      0.00%      0.00         0     39.39      3253
+w2          1081.6          0.0      0.00%      0.00         0    135.85       972
+w3          4653.0       1908.3     41.01%     64.76        85      4.71     25302
+w4            20.0          4.0     19.98%      1.04        72      0.00    525237
+w5         13386.2       9170.8     68.51%      3.23        34      0.32    239218
+w6a         2424.0          0.0      0.00%      0.00         0      0.80     90164
+w6b         1985.4       1673.2     84.28%      0.51        16      0.13    232206
+
+WALL-CLOCK LIFETIME (us)
+wl           p50        p90        p99      p99.9          max
+w1          10.0       16.8       28.6       50.0      10773.8
+w2          96.9      181.4      336.1      685.4       2790.5
+w3          11.2       21.2    21903.6    34623.8     424240.8
+w4         527.3     3448.2    81956.4    85819.9      85964.1
+w5          76.6      172.6      227.5      333.4       1221.3
+w6a          8.6       12.5       18.6       29.6        667.6
+w6b         13.3       28.4       76.3     2833.7       5893.9
+
+w1    W1 HTTP/1.1 snoop, 4 KiB POST, 64 conn, h2load --h1
+w2    W2 HTTP/2 hello, 16 conn x 32 streams, 4 KiB POST
+w3    W3 HTTP/2 echo of a 64 KiB body, 4 KiB client flow-control windows, 8 conn x 16 streams
+w4    W4 HTTP/1.1 chunked echo of a 256 KiB POST, 64 slow readers (4 KiB/20 ms), server SO_SNDBUF=16 KiB
+w5    W5 HttpServerCodec + HttpObjectAggregator(1 MiB) + small OK, 256 KiB POST, 64 conn
+w6a   W6a TCP proxy (HexDumpProxy topology) -> snoop backend, outbound on the SAME event loop, 4 KiB POST, 64 conn
+w6b   W6b same proxy but the outbound channel on a SEPARATE event loop group, 4 KiB POST, 64 conn

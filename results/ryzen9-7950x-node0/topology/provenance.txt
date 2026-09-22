@@ -1,0 +1,12 @@
+Measurements used a FROZEN classpath (libs/, cp-frozen.txt) snapshotted at 15:29 on 2026-09-22,
+because another agent was rebuilding netty-sc-arena/buffer concurrently.
+  netty-buffer-4.2.17.Final-SNAPSHOT.jar  md5 868ef024c6479be1e1b3a45c10c46266  (class files stamped 15:18)
+  tree: /home/forked_franz/IdeaProjects/netty-sc-arena, branch expt/event-loop-arena
+  the jar corresponds to the tree at commit cfb23bcf63 "An end-of-cycle hook for the arena, at channelReadComplete"
+  (26bd14b195 was committed by another agent AFTER the snapshot and is NOT in the measured jar)
+  allocator: -Dio.netty.allocator.type=adaptive -> io.netty.buffer.AdaptiveByteBufAllocator
+  NOTE: this branch's adaptive allocator is the size-classed variant of the PR-17151 line, not upstream 4.2 adaptive.
+  JVM: OpenJDK 21+35-LTS. Server pinned numactl --cpunodebind=0 --membind=0, load --cpunodebind=1.
+  Host: AMD Ryzen 9 7950X, 32 threads, 2 NUMA nodes.
+Regenerate an analysis from a recording:
+  java -cp classes Dump wN.jfr wN.tsv && python3 topology.py wN.tsv "label"
