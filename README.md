@@ -41,6 +41,7 @@ knows the lifecycle, not something the allocator guesses.
 | the same with `-Dexpt.randomRelease=true` | geometric lifetimes with the same mean | still a synthetic distribution, and still no application-level retention |
 | the JFR lifetime study (`run-lifetimes.sh`) | same-thread ratio and "allocations in between" for real buffers in two netty example servers | applications that retain buffers - aggregation, queues, backpressure. It is a **lower bound** on real lifetimes |
 | `-Dexpt.reuse=true` | reuse distance and 4 KiB page locality of the memory handed out | it is a probe for explaining a result, not a result |
+| `run-e2e.sh` | a real example server under h2load: req/s, request latency, RSS over time, young GC count, arena counters | **it cannot distinguish allocators at all** on these servers - see below |
 
 ## Measured results
 
@@ -71,6 +72,16 @@ Headline, on the reference machine described below, 3 forks:
   allocations-in-between p50 14 / p90 37 / p99 45 / max 90 - bounded by the multiplexing window.
   *Caveat: both example servers retain nothing. Application-level retention - aggregation, queues,
   backpressure - is absent, so this is a lower bound, not the general case.*
+
+- **End to end (`run-e2e.sh`, 20 s, 8 event loops, `-Xms2g`):** HTTP/1.1 4 KiB POST, 64 connections:
+  ADAPTIVE 174,490 req/s / 373 us mean, MIMALLOC 174,791 / 372 us, ARENA 174,489 / 373 us - the
+  three are indistinguishable. At 174.5k req/s over 8 loops the server spends ~46 us of event-loop
+  time per request against 0.03-0.05 us of counted arena work (3,489,820 allocations in 20 s, one
+  per request, at the 25-50 ns of the first bullet). **On these example servers the allocator is not
+  visible end to end**; the microbenchmarks isolate what this test cannot. HTTP/2 16 conn x 32
+  streams: ADAPTIVE 23,508 req/s / 21.8 ms, MIMALLOC 23,968 / 21.3 ms, and **ARENA failed - 0 of
+  512 requests completed, cause not established, under investigation**. RSS rises to ~1.5 GB in all
+  three: that is the 2 GB Java heap filling between young GCs, not native retention.
 
 The conclusion these numbers support, and nothing more: **a bump path pays when lifetimes are
 scope-aligned and the bound is above the live set, and loses otherwise.** Whether Netty can supply
@@ -118,14 +129,39 @@ lifetime study (`--no-example` skips that).
 
 ### Run
 
-All knobs are in [`lib/env.sh`](lib/env.sh), each with a machine-neutral default: `PIN_CMD`
-(empty; e.g. `numactl --cpunodebind=0 --preferred=0` or `taskset -c 0-15`), `CPU_FREQ_HOOK` (empty;
-a script taking `pin` / `restore`), `JVM_OPTS` (empty; the reference runs used `-XX:MaxRAM=60g`),
-`FORKS` / `WI` / `I` / `W` / `R` / `THREADS`, `MVN_FLAGS`, `RESULTS_DIR`.
+All knobs are in [`lib/env.sh`](lib/env.sh), each with a machine-neutral default:
+`SUT_PIN_CMD` and `LOADGEN_PIN_CMD` (both empty), `CPU_FREQ_HOOK` (empty; a script taking `pin` /
+`restore`), `JVM_OPTS` (empty; the reference runs used `-XX:MaxRAM=60g`), `FORKS` / `WI` / `I` /
+`W` / `R` / `THREADS`, `MVN_FLAGS`, `RESULTS_DIR`.
+
+#### CPU sets
+
+The server under test and the load generator must not share cores. `./topology.sh` reads this
+machine's own `lscpu -e=CPU,NODE,CORE` and prints, per NUMA node, the physical cores, their SMT
+siblings, and a suggestion for two disjoint sets:
+
+```
+$ ./topology.sh
+NUMA node 0: 8 physical cores
+  first CPU of each core: 0 1 2 3 4 5 6 7
+  SMT siblings (leave idle): 16 17 18 19 20 21 22 23
+  suggestion:
+    export SUT_PIN_CMD="taskset -c 0,1,2,3"
+    export LOADGEN_PIN_CMD="taskset -c 4,5,6,7"
+    # or, binding memory to the node as well:
+    export SUT_PIN_CMD="numactl --physcpubind=0,1,2,3 --membind=0"
+    export LOADGEN_PIN_CMD="numactl --physcpubind=4,5,6,7 --membind=0"
+```
+
+It only suggests; you export the variables. The rules behind the suggestion, which matter more than
+the numbers: **do not share cores, or the SMT siblings of cores, between the load generator and the
+server; keep both sets inside one NUMA node; keep the CPU frequency fixed if you can.** JMH runs use
+`SUT_PIN_CMD`; `run-lifetimes.sh` and `run-e2e.sh` use `SUT_PIN_CMD` for the server and
+`LOADGEN_PIN_CMD` for h2load.
 
 ```
 # the scope-aligned benchmark, all three allocators
-PIN_CMD="numactl --cpunodebind=0 --preferred=0" JVM_OPTS=-XX:MaxRAM=60g ./run-cycle.sh
+SUT_PIN_CMD="numactl --cpunodebind=0 --preferred=0" JVM_OPTS=-XX:MaxRAM=60g ./run-cycle.sh
 
 # one cell only - any extra argument is passed straight to JMH
 FORKS=1 WI=1 I=1 ./run-cycle.sh -p k=8 -p sizes=SMALL -p releaseOrder=FIFO -p allocatorType=ARENA
@@ -141,6 +177,29 @@ THREADS=1 ./run-harness.sh E_COMMERCE 1024 1 "ADAPTIVE MIMALLOC ARENA" -- -jvmAr
 prints `cRSS-pRSS:[cur, peak]`). **The `E_COMMERCE` size pattern needs the file `e-commerce.jfr` in
 the working directory**; it is ~190 MB and is not in this repository - it comes from lao's
 head-to-head material.
+
+### End to end
+
+```
+./run-e2e.sh                                          # HTTP/1.1, all three allocators, 20 s
+PROTO=h2 ALLOCATORS="adaptive arena" ./run-e2e.sh     # HTTP/2, h2c, 16 conn x 32 streams
+```
+
+It runs `e2e/E2EServer.java` - the same pipelines as the `HttpSnoopServer` / `Http2Server` examples,
+with `ChannelOption.ALLOCATOR` set to the chosen allocator - waits for its `READY` line, samples
+`ps -o rss=` every 0.5 s, drives it with h2load, stops it by matching `E2EServer` inside
+`/proc/<pid>/cmdline` of every `pgrep -x java`, and prints a table of req/s, h2load's
+`time for request` line, RSS min/max/mean, the `Pause Young` count from `-Xlog:gc`, and the arena
+counters from the launcher's shutdown hook. `PROTO`, `ALLOCATORS`, `DURATION`, `PORT`, `LOOPS`,
+`CONNS`, `STREAMS`, `LOAD_THREADS`, `BODY_SIZE`, `ARENA_MAX_BLOCKS` and `JVM_OPTS` are all
+configurable; raw logs stay in `RESULTS_DIR`.
+
+> **The PoC is heap-only**, so e2e runs pass `-Dio.netty.noPreferDirect=true`. That is not enough to
+> put every buffer on the heap: `AbstractByteBufAllocator.ioBuffer()`, which the receive-buffer
+> allocator calls, returns a direct buffer whenever direct buffers can be reliably freed and never
+> consults that property. `CycleArenaAllocator` forwards every direct allocation to its fallback
+> **without counting it**, so the inbound read buffers do not go through the arena and do not appear
+> in the counters.
 
 ### The lifetime study
 

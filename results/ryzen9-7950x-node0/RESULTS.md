@@ -120,3 +120,57 @@ under a slow peer - is absent. This is a lower bound on real lifetimes, not the 
 run driven by the jbang `wrk` on this box showed no inbound read buffers at all, because that `wrk`
 ignores the Lua body and no POST bodies were sent (`lifetimes/snoop-wrk.log`, `lifetimes/wrk.log`).
 h2load was used for every number above.
+
+## 5. End to end - the allocator is not visible
+
+`run-e2e.sh`: the same netty example pipelines behind `E2EServer`, one allocator per run, 8 event
+loops, `-Xms2g`, `-Dio.netty.noPreferDirect=true`, driven by h2load for 20 s. Raw logs: `e2e/`.
+
+### HTTP/1.1, 4 KiB POST, 64 connections, 4 h2load threads
+
+| allocator | req/s | mean request time | RSS | young GCs | arena counters |
+|---|---|---|---|---|---|
+| ADAPTIVE | 174,490 | 373 us | 241 -> 1500 MB | 57 | - |
+| MIMALLOC | 174,791 | 372 us | 271 -> 1528 MB | 56 | - |
+| ARENA | 174,489 | 373 us | 231 -> 1502 MB | 56 | `arena=3489820 fallback=0 blockReuse=0 grow=0` |
+
+### HTTP/2 (h2c), 16 connections x 32 streams
+
+| allocator | req/s | mean request time | RSS | young GCs |
+|---|---|---|---|---|
+| ADAPTIVE | 23,508 | 21.8 ms | 251 -> 1495 MB | 12 |
+| MIMALLOC | 23,968 | 21.3 ms | 290 -> 1572 MB | 12 |
+| ARENA | **failed** | - | 236 -> 303 MB | 0 |
+
+**The ARENA HTTP/2 run failed and the cause is not established - under investigation.** What the
+logs show, and nothing beyond it: 0 of 512 started requests completed in 20 s; h2load sent GO_AWAY
+with `errorCode=1` and the debug bytes `DATA: stream not opened` on every connection
+(`e2e/h2-arena.server.log.gz`); the server threw no exception and logged no error; the arena
+counters at shutdown read `arena=1472 fallback=0 blockReuse=0 grow=0 lifoPop=40`. The same h2load
+command against the same server with ADAPTIVE and MIMALLOC succeeded. I do not know why.
+
+### What these runs actually say
+
+The three allocators are indistinguishable on HTTP/1.1: 174,489 / 174,490 / 174,791 req/s and
+372-373 us mean. That is the expected outcome, not a null result to explain away.
+
+The arithmetic: 174,490 req/s spread over 8 event loops is **~46 us of event-loop time per
+request**. The arena counted 3,489,820 allocations in 20 s - 174,491 per second, i.e. almost exactly
+one counted heap buffer per request - which at the 25-50 ns per buffer measured in section 1 is
+**0.03-0.05 us**. The direct buffers are not in that count (see below), so the real allocator share
+is higher than 0.05 us, but it is nowhere near the resolution of a 20-second throughput number.
+**The end-to-end runs cannot distinguish these allocators; the microbenchmarks isolate exactly what
+this test cannot.**
+
+The RSS climb to ~1.5 GB is the 2 GB Java heap filling between young GCs under `-Xms2g` (the GC log
+lines read `...(2048M)`), identical for all three. It is not native allocator retention.
+
+`blockReuse=0 grow=0 fallback=0` in the HTTP/1.1 arena run: both counters live in `nextBlock()`,
+which is only reached when the current block runs out of room, so it was never reached in 3.49M
+allocations - the block's live count kept returning to zero and resetting the bump pointer first
+(that reset has no counter of its own).
+And the counters cover the heap path only. `AbstractByteBufAllocator.ioBuffer()` - which is what
+the receive-buffer allocator calls - returns `directBuffer(...)` whenever direct buffers can be
+reliably freed; it never consults `io.netty.noPreferDirect`. `CycleArenaAllocator.newDirectBuffer`
+forwards straight to its fallback and increments no counter. So the inbound read buffers of these
+runs did not go through the arena at all.
