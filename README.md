@@ -80,6 +80,67 @@ end-of-iteration tail task.
    AdaptiveByteBufAllocator (unchanged) - also the source of the arena's blocks
 ```
 
+### How the next block is chosen (there is no "best fit")
+
+The question "which block fits this request?" never arises, for two reasons that hold by construction:
+
+1. every block has the same size (256 KiB), and every request that reaches the arena is at most the cap (8 KiB), so
+   any block with room for a bump fits any request;
+2. a block is marked reusable only when it is *completely* empty (`allocs[id] == frees[id]` at the hook), and only
+   the current block is ever bumped. So a reusable block always has `bump == 0`: there are no partially used blocks
+   to compare, no holes to search, nothing to rank.
+
+What remains is "is there an empty block, and which one": one `int` answers it.
+
+```
+ reusableMask   bit i set  <=>  block i was found empty by the LAST hook
+
+ allocate(size):
+     end = curBump + align8(size)
+     if end <= 256 KiB:                 -> bump the current block (the hot path: no block decision at all)
+     else:                               -> switchBlock()
+
+ switchBlock():
+     if reusableMask == 0:
+         if blockCount < 8:  grow one block, make it current        (blockGrowths++)
+         else:               exhausted = true; return null          (-> delegate until the next hook)
+     id = numberOfTrailingZeros(reusableMask)     # lowest set bit: one instruction, no walk
+     reusableMask &= reusableMask - 1             # clear it
+     curId = id; curBump = 0; curMemory/curAddress = mem[id]/base[id]
+     (blockReuses++)
+
+ hook():                                          # end of the event-loop iteration
+     mask = 0
+     for id in 0..blockCount-1:
+         if allocs[id] == frees[id]:              # 8 ints, one cache line
+             allocs[id] = frees[id] = 0
+             if id == curId: curBump = 0          # the current block resets IN PLACE
+             else:            mask |= 1 << id
+     reusableMask = mask; exhausted = false
+```
+
+Worked example. Four blocks exist; block 0 holds a parked write, block 2 is current and just filled up:
+
+```
+                block:      0        1        2        3
+                allocs:    17        0       40        0
+                frees:     16        0       35        0      <- block 2 still has 5 live buffers
+                reusableMask = 0b1010  (blocks 1 and 3 were empty at the last hook)
+
+ switchBlock():  numberOfTrailingZeros(0b1010) = 1  -> block 1 becomes current, mask = 0b1000
+ ... block 1 fills up ...
+ switchBlock():  numberOfTrailingZeros(0b1000) = 3  -> block 3 becomes current, mask = 0b0000
+ ... block 3 fills up, mask is 0, 4 < 8 blocks exist -> grow block 4 ...
+ hook():         block 0: 17 != 16 -> pinned, stays out of the mask
+                 block 1: emptied by releases -> mask bit 1
+                 block 2: 40 == 40 now  -> mask bit 2
+                 block 3: current? no -> bit 3 if empty
+                 block 4: current -> reset in place if empty
+```
+
+The steady state on a request/response loop is the degenerate case: everything allocated in an iteration is released
+in it, the hook finds the current block empty and resets it in place, and `switchBlock()` never runs at all.
+
 Block memory holds user payload only: no per-allocation header, no per-block header, no free-list links, no fill.
 Everything the allocator knows lives on the owner's own cache lines.
 
