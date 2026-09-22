@@ -8,10 +8,19 @@
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
 # --- pinning and frequency -----------------------------------------------------------------------
-# PIN_CMD is prefixed to every JVM launch.  Empty = no pinning.
-#   example: PIN_CMD="numactl --cpunodebind=0 --preferred=0"
-#   example: PIN_CMD="taskset -c 0-15"
+# Two DISJOINT core sets: one for the system under test, one for the load generator.  Empty = no
+# pinning.  Run ./topology.sh for a suggestion derived from this machine's own lscpu output.
+# Rules that matter more than the exact numbers:
+#   - never share a core, or an SMT sibling of a core, between the load generator and the server;
+#   - keep both sets inside one NUMA node;
+#   - fix the CPU frequency if you can (CPU_FREQ_HOOK).
+#   example: SUT_PIN_CMD="taskset -c 0-3"          LOADGEN_PIN_CMD="taskset -c 4-7"
+#   example: SUT_PIN_CMD="numactl --physcpubind=0-3 --membind=0"
+: "${SUT_PIN_CMD:=}"
+: "${LOADGEN_PIN_CMD:=}"
+# PIN_CMD was the single knob before the split; honour it as the SUT set if someone still sets it.
 : "${PIN_CMD:=}"
+[ -z "$SUT_PIN_CMD" ] && [ -n "$PIN_CMD" ] && SUT_PIN_CMD="$PIN_CMD"
 # CPU_FREQ_HOOK is an executable taking one argument, "pin" before a run and "restore" after it.
 # Empty = the frequency is left alone (fine for a smoke run, not for a measurement).
 : "${CPU_FREQ_HOOK:=}"

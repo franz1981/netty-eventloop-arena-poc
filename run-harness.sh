@@ -40,7 +40,7 @@ for A in $ALLOCATORS; do
     JVM_ARGS=(-jvmArgsAppend "-Xlog:gc")
     [ -n "$JVM_OPTS" ] && JVM_ARGS+=(-jvmArgsAppend "$JVM_OPTS")
     echo "==> $NAME  f=$FORKS wi=$WI i=$I t=$THREADS"
-    $PIN_CMD java -jar "$JAR" "ByteBufAllocatorAllocPatternBenchmark.$METHOD" \
+    $SUT_PIN_CMD java -jar "$JAR" "ByteBufAllocatorAllocPatternBenchmark.$METHOD" \
         -t "$THREADS" -f "$FORKS" -wi "$WI" -i "$I" -w "$W" -r "$R" \
         -p allocatorType="$A" -p sizePattern="$PATTERN" \
         -p MAX_LIVE_BUFFERS="$LIVE" -p enableReadWrite="$RW" \

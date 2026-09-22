@@ -5,7 +5,7 @@
 #
 #   FORKS=1 WI=1 I=1 ./run-cycle.sh -p k=8 -p sizes=SMALL -p releaseOrder=FIFO -p allocatorType=ARENA
 #
-# Env: see lib/env.sh (PIN_CMD, CPU_FREQ_HOOK, JVM_OPTS, FORKS/WI/I/W/R/THREADS, RESULTS_DIR).
+# Env: see lib/env.sh (SUT_PIN_CMD, CPU_FREQ_HOOK, JVM_OPTS, FORKS/WI/I/W/R/THREADS, RESULTS_DIR).
 set -euo pipefail
 source "$(dirname "$0")/lib/env.sh"
 require_tools java
@@ -27,7 +27,7 @@ trap 'freq_hook restore' EXIT
 
 echo "==> $BENCH  f=$FORKS wi=$WI i=$I t=$THREADS  -> $JSON"
 set -x
-$PIN_CMD java -jar "$JAR" "$BENCH" \
+$SUT_PIN_CMD java -jar "$JAR" "$BENCH" \
     -t "$THREADS" -f "$FORKS" -wi "$WI" -i "$I" -w "$W" -r "$R" \
     "${JVM_ARGS[@]}" \
     -rf json -rff "$JSON" "$@" > "$DATA" 2>&1

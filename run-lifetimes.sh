@@ -56,7 +56,7 @@ stop_server() {
 
 echo "==> starting $MAIN with JFR (lifetimes/buf.jfc)"
 # shellcheck disable=SC2086
-$PIN_CMD java -cp "$CP" $JVM_OPTS \
+$SUT_PIN_CMD java -cp "$CP" $JVM_OPTS \
     "-XX:StartFlightRecording=settings=$ROOT/lifetimes/buf.jfc,filename=$JFR,dumponexit=true" \
     "$MAIN" > "$SRV" 2>&1 &
 trap 'stop_server' EXIT
@@ -65,7 +65,7 @@ sleep 1
 [ -n "$(server_pids)" ] || { echo "the server did not start - see $SRV" >&2; exit 1; }
 
 echo "==> h2load ${H2LOAD_ARGS[*]}"
-h2load "${H2LOAD_ARGS[@]}" > "$LOAD" 2>&1 || echo "   (h2load rc=$? - see $LOAD)"
+$LOADGEN_PIN_CMD h2load "${H2LOAD_ARGS[@]}" > "$LOAD" 2>&1 || echo "   (h2load rc=$? - see $LOAD)"
 tail -12 "$LOAD"
 
 echo "==> stopping the server (JFR dumps on exit)"
