@@ -1,0 +1,8 @@
+[submodule "netty"]
+	path = netty
+	url = https://github.com/franz1981/netty.git
+	branch = expt/event-loop-arena
+[submodule "netty-allocator"]
+	path = netty-allocator
+	url = https://github.com/franz1981/netty-allocator.git
+	branch = cycle-arena-bench

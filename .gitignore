@@ -1,0 +1,11 @@
+# build output
+target/
+out/
+
+# JFR recordings and the text event dumps they are printed into: hundreds of MB to several GB
+*.jfr
+*-events.txt
+events.txt
+
+# the E_COMMERCE size pattern input (~190 MB, comes from lao's head-to-head material)
+e-commerce.jfr
