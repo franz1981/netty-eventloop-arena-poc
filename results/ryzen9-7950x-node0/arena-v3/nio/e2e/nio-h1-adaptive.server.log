@@ -1,0 +1,4 @@
+TRANSPORT transport=nio
+READY adaptive h1 8080 loops=8 transport=nio
+CHILDOPTS transport=nio (no io_uring child options)
+RINGTELE transport=nio ringAllocs=0 ringReads=0 ringReadBytes=0 (no buffer ring)

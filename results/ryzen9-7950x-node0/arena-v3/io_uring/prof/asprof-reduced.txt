@@ -1,0 +1,68 @@
+==> io_uring-h1-adaptive-prof: server, 8 event loops, port 8080, transport io_uring
+   READY pid=961694
+   h2load --h1 -c 64 -t 4 -D 20 -d /home/forked_franz/IdeaProjects/netty-eventloop-arena-poc/results/ryzen9-7950x-node0/arena-v3/io_uring/prof/body-4096.bin http://127.0.0.1:8080/
+==> io_uring-h1-arena-prof: server, 8 event loops, port 8080, transport io_uring
+   READY pid=962289
+   h2load --h1 -c 64 -t 4 -D 20 -d /home/forked_franz/IdeaProjects/netty-eventloop-arena-poc/results/ryzen9-7950x-node0/arena-v3/io_uring/prof/body-4096.bin http://127.0.0.1:8080/
+
+== end to end, h1, io_uring, 20s, 64 connections, 8 event loops ==
+adaptive       217933.15 req/s | 37us     85.35ms       298us       519us    99.44% | RSS 105->835 MB (mean 809, 39 samples) | 141 young GCs | RINGTELE transport=io_uring ringAllocs=2231742 ringReads=6589120 ringReadBytes=18280366830 bgId=1 entries=64 chunk=8192 incremental=true batchSize=32 batchAllocation=false
+arena          216134.70 req/s | 40us     87.66ms       301us       570us    99.45% | RSS 107->873 MB (mean 848, 39 samples) | 138 young GCs | RINGTELE transport=io_uring ringAllocs=2213325 ringReads=6534743 ringReadBytes=18129504456 bgId=1 entries=64 chunk=8192 incremental=true batchSize=32 batchAllocation=false | ARENATELE blockSize=262144 maxBlocks=8 cap=8192 maxObjects=16384 debug=false ring=true ringStats=false arenaHeap=0 arenaDirect=17265073 delegateHeap=0 delegateDirect=59598 arenaShare=99.66% blocksHeap=8 blocksDirect=64 pinned=33 reusable=31 maxPinnedHeap=0 maxPinnedDirect=43 blockReuses=254425 blockGrowths=56 blockSwitches=257237 ringWraps=115093 ringResets=0 ringScans=373871 ringStalls=0 stallBytes=0 strandedBytes=0 strandedShare=n/a holes<=256=0 holes<=1k=0 holes<=4k=0 holes<=8k=0 holes>8k=0 hooks=1240460 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=44875 reallocMoved=3236 reallocDelegated=9 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=398 bytesHeap=0 bytesDirect=67838179240 liveHeap=0 liveDirect=256
+raw logs in /home/forked_franz/IdeaProjects/netty-eventloop-arena-poc/results/ryzen9-7950x-node0/arena-v3/io_uring/prof
+==> io_uring-h2-adaptive-prof: server, 8 event loops, port 8080, transport io_uring
+   READY pid=962819
+   h2load -c 16 -m 32 -t 4 -D 20 -d /home/forked_franz/IdeaProjects/netty-eventloop-arena-poc/results/ryzen9-7950x-node0/arena-v3/io_uring/prof/body-4096.bin http://127.0.0.1:8080/
+==> io_uring-h2-arena-prof: server, 8 event loops, port 8080, transport io_uring
+   READY pid=963356
+   h2load -c 16 -m 32 -t 4 -D 20 -d /home/forked_franz/IdeaProjects/netty-eventloop-arena-poc/results/ryzen9-7950x-node0/arena-v3/io_uring/prof/body-4096.bin http://127.0.0.1:8080/
+
+== end to end, h2, io_uring, 20s, 16 connections x 32 streams, 8 event loops ==
+adaptive       671036.80 req/s | 289us    122.98ms       733us      1.44ms    99.49% | RSS 104->871 MB (mean 836, 39 samples) | 63 young GCs | RINGTELE transport=io_uring ringAllocs=6760023 ringReads=9759111 ringReadBytes=55376040308 bgId=1 entries=64 chunk=8192 incremental=true batchSize=32 batchAllocation=false
+arena          663936.00 req/s | 231us    118.99ms       737us      1.33ms    99.39% | RSS 108->882 MB (mean 846, 39 samples) | 60 young GCs | RINGTELE transport=io_uring ringAllocs=6688504 ringReads=9710274 ringReadBytes=54790163567 bgId=1 entries=64 chunk=8192 incremental=true batchSize=32 batchAllocation=false | ARENATELE blockSize=262144 maxBlocks=8 cap=8192 maxObjects=16384 debug=false ring=true ringStats=false arenaHeap=0 arenaDirect=77694479 delegateHeap=0 delegateDirect=5220576 arenaShare=93.70% blocksHeap=8 blocksDirect=64 pinned=22 reusable=42 maxPinnedHeap=0 maxPinnedDirect=24 blockReuses=289968 blockGrowths=56 blockSwitches=294029 ringWraps=40117 ringResets=0 ringScans=350584 ringStalls=0 stallBytes=0 strandedBytes=0 strandedShare=n/a holes<=256=0 holes<=1k=0 holes<=4k=0 holes<=8k=0 holes>8k=0 hooks=1249050 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=0 reallocMoved=79 reallocDelegated=709347 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=1664 bytesHeap=0 bytesDirect=76193868696 liveHeap=0 liveDirect=256
+raw logs in /home/forked_franz/IdeaProjects/netty-eventloop-arena-poc/results/ryzen9-7950x-node0/arena-v3/io_uring/prof
+filter A wide    loop=/NioEventLoop\.run|SingleThreadEventExecutor/
+                  allocator=/CycleArena|AdaptivePoolingAllocator|SizeClass|Recycler|AbstractReferenceCountedByteBuf|AbstractByteBufAllocator/
+filter B narrow  loop=/SingleThreadIoEventLoop\.run/
+                  allocator=/AdaptivePoolingAllocator|AdaptiveByteBufAllocator|CycleArenaAllocator|ArenaBuf/
+
+file                                  total       loop  allocator    share
+io_uring-h1-adaptive-prof.collapsed    87769      87461       2382    2.72%  [A wide]
+io_uring-h1-adaptive-prof.collapsed    87769      87461       1673    1.91%  [B narrow]
+io_uring-h1-arena-prof.collapsed      88786      88509       4195    4.74%  [A wide]
+io_uring-h1-arena-prof.collapsed      88786      88509       3819    4.31%  [B narrow]
+io_uring-h2-adaptive-prof.collapsed    68180      67772      10798   15.93%  [A wide]
+io_uring-h2-adaptive-prof.collapsed    68180      67771       8521   12.57%  [B narrow]
+io_uring-h2-arena-prof.collapsed      67237      67044       9304   13.88%  [A wide]
+io_uring-h2-arena-prof.collapsed      67237      67044       5759    8.59%  [B narrow]
+/home/forked_franz/IdeaProjects/netty-eventloop-arena-poc/results/ryzen9-7950x-node0/arena-v3/io_uring/prof/io_uring-h1-adaptive-prof.collapsed: total=87769 loop=87461
+   socket write (syscall incl.)            49158  56.2%   top leaves: nft_do_chain?[nf_tables]_[k] 3249, kernel_init_pages_[k] 1899
+   loop other (pipeline, channel, tasks)   18121  20.7%   top leaves: ByteBufUtil.unsafeWriteUtf8 6694, ByteBufUtil.utf8ByteCount 2305
+   io_uring enter (submit/wait)             8717  10.0%   top leaves: syscall 975, do_syscall_64_[k] 699
+   http1 codec                              5989   6.8%   top leaves: jbyte_disjoint_arraycopy_avx3 501, HttpUtil.validateAsciiStringToken 305
+   socket read (syscall incl.)              3803   4.3%   top leaves: _copy_to_iter_[k] 798, tcp_recvmsg_locked_[k] 317
+   allocator                                1673   1.9%   top leaves: Random.nextInt 263, java_lang_Throwable::fill_in_stack_trace 171
+   allocator inclusive (any loop stack)     1673  1.91%
+/home/forked_franz/IdeaProjects/netty-eventloop-arena-poc/results/ryzen9-7950x-node0/arena-v3/io_uring/prof/io_uring-h1-arena-prof.collapsed: total=88786 loop=88509
+   socket write (syscall incl.)            46360  52.4%   top leaves: nft_do_chain?[nf_tables]_[k] 3168, kernel_init_pages_[k] 1874
+   loop other (pipeline, channel, tasks)   18270  20.6%   top leaves: ByteBufUtil.unsafeWriteUtf8 6058, ByteBufUtil.utf8ByteCount 2791
+   io_uring enter (submit/wait)             8544   9.7%   top leaves: syscall 953, do_syscall_64_[k] 732
+   http1 codec                              7452   8.4%   top leaves: vtable stub 514, AbstractChannelHandlerContext.findContextOutboun 401
+   socket read (syscall incl.)              4064   4.6%   top leaves: _copy_to_iter_[k] 882, tcp_recvmsg_locked_[k] 308
+   allocator                                3819   4.3%   top leaves: jbyte_disjoint_arraycopy_avx3 781, jshort_disjoint_arraycopy_avx3 610
+   allocator inclusive (any loop stack)     3819  4.31%
+/home/forked_franz/IdeaProjects/netty-eventloop-arena-poc/results/ryzen9-7950x-node0/arena-v3/io_uring/prof/io_uring-h2-adaptive-prof.collapsed: total=68180 loop=67771
+   http2 codec                             22992  33.9%   top leaves: ReferenceCountUtil.touch 2271, RefCnt$UnsafeRefCnt.isLiveNonVolatile 1275
+   socket write (syscall incl.)            19369  28.6%   top leaves: kernel_init_pages_[k] 3291, _copy_from_iter_[k] 2561
+   allocator                                8521  12.6%   top leaves: AdaptivePoolingAllocator$SizeClassedChunk.remain 1162, jbyte_disjoint_arraycopy_avx3 1136
+   loop other (pipeline, channel, tasks)    7365  10.9%   top leaves: ChannelOutboundBuffer.removeBytes 973, ChannelOutboundBuffer.safeSuccess 790
+   socket read (syscall incl.)              5934   8.8%   top leaves: _copy_to_iter_[k] 1508, check_heap_object_[k] 412
+   io_uring enter (submit/wait)             3590   5.3%   top leaves: syscall 482, _raw_spin_unlock_irq_[k] 288
+   allocator inclusive (any loop stack)     8521 12.57%
+/home/forked_franz/IdeaProjects/netty-eventloop-arena-poc/results/ryzen9-7950x-node0/arena-v3/io_uring/prof/io_uring-h2-arena-prof.collapsed: total=67237 loop=67044
+   http2 codec                             27423  40.9%   top leaves: Recycler$UnguardedLocalPool.getWith 1914, Http2FrameListenerDecorator.onDataRead 1697
+   socket write (syscall incl.)            19002  28.3%   top leaves: kernel_init_pages_[k] 3118, _copy_from_iter_[k] 2499
+   loop other (pipeline, channel, tasks)    5883   8.8%   top leaves: ChannelOutboundBuffer.safeSuccess 807, ChannelOutboundBuffer.removeBytes 657
+   allocator                                5759   8.6%   top leaves: CycleArenaAllocator$Space.allocate 2014, jbyte_disjoint_arraycopy_avx3 709
+   socket read (syscall incl.)              5471   8.2%   top leaves: _copy_to_iter_[k] 1425, check_heap_object_[k] 382
+   io_uring enter (submit/wait)             3506   5.2%   top leaves: syscall 494, _raw_spin_unlock_irq_[k] 269
+   allocator inclusive (any loop stack)     5759  8.59%

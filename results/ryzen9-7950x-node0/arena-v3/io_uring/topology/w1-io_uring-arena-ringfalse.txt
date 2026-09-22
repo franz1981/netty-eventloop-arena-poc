@@ -1,0 +1,78 @@
+================================================================================================
+WORKLOAD w1-io_uring-arena-ringfalse   (w1-io_uring-arena-ringfalse.tsv)
+================================================================================================
+events: AllocateBuffer=398576 FreeBuffer=398130 ReallocateBuffer=384 IterationEnd=49053
+pairs=398465  unpaired releases (alloc before window)=49  still live at window end=111  truncated stacks=398081  address reused with no release event=0
+BALANCE CHECK: allocs(398576) - pairs(398465) - live-at-end(111) - reuse(0) = 0  (must be 0)
+event-loop threads with markers: 4  iterations total=49053  with reads>0=773 (1.6%)
+
+(a) lifetime in event-loop ITERATIONS of the allocating thread
+     iters : 0=92.73%  1=7.00%  2-3=0.00%  4-7=0.01%  8+=0.26%
+  read-its : 0=92.73%  1=7.10%  2-3=0.09%  4-7=0.06%  8+=0.02%   (only iterations that saw >=1 channelRead)
+  iters p50=0 p90=0 p99=1 p99.9=515 max=6452
+  wall-clock lifetime us: p50=291.5 p90=1564.3 p99=3047.7 p99.9=5833.4 max=9115.7
+
+(b) released on the allocating thread: 100.000%  (cross-thread: 0)
+
+(c) nesting class at release: only=0.16%  youngest=0.00%  oldest=17.67%  middle=82.17%
+     within same-iteration releases (369499, 92.73% of all): only=0.02%  youngest=0.00%  oldest=14.31%  middle=85.67%
+
+(d) size bucket (power-of-two ceiling of the requested capacity)
+     8192=56.79%  4096=4.41%  2048=2.16%  1024=1.07%  512=0.56%  256=34.75%  128=0.14%  64=0.13%
+     exact sizes: 208=34.40%  8192=22.35%  4370=17.22%  4381=17.20%  4096=4.41%  2048=2.16%
+
+(e) release cause (first non-allocator frame of the FreeBuffer stack)
+     other:io.netty.channel.uring.IoUringSocketChannel$IoUringSocketUnsafe.handleWriteCompleteZeroCopy  34.444%  top site: io.netty.channel.uring.IoUringSocketChannel$IoUringSocketUnsafe.handleWriteCompleteZeroCopy
+     write-completion        34.403%  top site: io.netty.channel.ChannelOutboundBuffer.remove
+     handler                 30.648%  top site: io.netty.channel.SimpleChannelInboundHandler.channelRead
+     decoder/cumulation       0.408%  top site: io.netty.handler.codec.ByteToMessageDecoder.expandCumulation
+     realloc-grow             0.096%  top site: io.netty.buffer.AdaptiveByteBuf.capacity
+
+    cause x lifetime-in-iterations (row %% of all pairs)
+    cause                         0        1      2-3      4-7       8+     share
+    other:io.netty.channel.uring.IoUringSocketChannel$IoUringSocketUnsafe.handleWriteCompleteZeroCopy  32.556%   1.822%   0.001%   0.002%   0.064%   34.444%
+    write-completion        33.568%   0.835%   0.000%   0.000%   0.000%   34.403%
+    handler                 26.207%   4.244%   0.000%   0.008%   0.190%   30.648%
+    decoder/cumulation       0.304%   0.097%   0.000%   0.001%   0.006%    0.408%
+    realloc-grow             0.096%   0.000%   0.000%   0.000%   0.000%    0.096%
+
+    cause x size bucket (row %% of all pairs)
+    cause                       8192       256      4096      2048      1024       512
+    other:io.netty.channel.uring.IoUringSocketChannel$IoUringSocketUnsafe.handleWriteCompleteZeroCopy   34.444%    0.000%    0.000%    0.000%    0.000%    0.000%
+    write-completion          0.000%   34.403%    0.000%    0.000%    0.000%    0.000%
+    handler                  21.942%    0.344%    4.408%    2.161%    1.072%    0.558%
+    decoder/cumulation        0.403%    0.000%    0.000%    0.000%    0.000%    0.000%
+    realloc-grow              0.000%    0.000%    0.000%    0.000%    0.000%    0.000%
+
+    max lifetime: 6452 iterations (2545.1 us), size=8192, cause=handler, site=io.netty.channel.SimpleChannelInboundHandler.channelRead
+    max wall-clock: 9115.7 us (0 iterations), size=8192, cause=handler
+
+(f) live buffers at end of iteration, per event-loop thread
+    thread                          iters  avgLive  maxLive   avgAlloc maxAlloc
+    multiThreadIoEventLoopGroup-3-1    14182     9.91       57       7.03      984
+    multiThreadIoEventLoopGroup-3-2    12954    25.62       59       7.69      983
+    multiThreadIoEventLoopGroup-3-3     7793    19.08       59      12.87      973
+    multiThreadIoEventLoopGroup-3-4    14124    15.27       58       6.95      983
+    live-at-marker over all markers: mean=17.057 p50=11 p90=45 p99=48 p99.9=56 max=59 ; markers with >0 live=30921 (63.04%)
+    allocations per iteration (all EL threads): mean=8.11 p50=0 p90=0 p99=641 max=984  zero-alloc iterations=98.8%
+    channelReads per iteration: mean=7.01 p50=0 p90=0 p99=564 max=774
+
+(g) the buffers that DO cross an iteration boundary (28966, 7.269% of pairs)
+     io.netty.channel.SimpleChannelInboundHandler.channelRead    4.441% of all  iters p50=1 p99=1004 max=6452  bytes=138.3 MiB
+     io.netty.channel.uring.IoUringSocketChannel$IoUringSocketU  1.889% of all  iters p50=1 p99=569 max=3448  bytes=31.4 MiB
+     io.netty.channel.ChannelOutboundBuffer.remove               0.835% of all  iters p50=1 p99=1 max=1  bytes=0.7 MiB
+     io.netty.handler.codec.ByteToMessageDecoder.expandCumulati  0.097% of all  iters p50=1 p99=1995 max=3539  bytes=3.0 MiB
+     io.netty.handler.codec.ByteToMessageDecoder.channelRead     0.005% of all  iters p50=1 p99=440 max=440  bytes=0.2 MiB
+     io.netty.handler.codec.ByteToMessageDecoder$1.cumulate      0.002% of all  iters p50=1 p99=1 max=1  bytes=0.0 MiB
+     sizes of the crossing buffers: 8192=88.51%  256=11.49%
+     bytes held across a boundary: 173.6 MiB of 1386.6 MiB allocated in the window (12.52%)
+
+    diagnostics: pairs whose stack had no non-plumbing frame=0 (0.000%); pairs crossing >=1 marker=28966 (7.269%)
+
+HEADLINE CLASSIFICATION
+    ii-same-iter-out-of-order                 92.715%  (369437)
+    vi-cross-iter-other:handler                4.441%  (17697)
+    vi-cross-iter-other:other:io.netty.channel.uring.IoUringSocketChannel$IoUringSocketUnsafe.handleWriteCompleteZeroCopy   1.889%  (7526)
+    iii-cross-iter-write-completion            0.835%  (3329)
+    iv-cross-iter-cumulation/aggregation       0.104%  (414)
+    i-same-iter-LIFO                           0.016%  (62)

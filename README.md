@@ -11,7 +11,10 @@ than by a general-purpose allocator. The general allocator stays as the fallback
 else: buffers that escape the cycle, cross threads, or arrive when the arena is full.
 
 The PoC is `io.netty.buffer.CycleArenaAllocator`, in the `netty` submodule (branch
-`expt/event-loop-arena`, pinned at `3dad84f578`). That commit is **v3**, a rewrite against
+`expt/event-loop-arena`). Sections 1-6 of the results were measured at `3dad84f578`; the submodule
+now points at `2b961262d6` ("Use a block as a ring with variable-sized slots"), which is what
+[RESULTS.md section 7](results/ryzen9-7950x-node0/RESULTS.md) (transports) was measured on.
+`3dad84f578` is **v3**, a rewrite against
 [`docs/design.md`](docs/design.md); the two earlier builds are described, and measured, under
 [the earlier builds (v2)](#the-earlier-builds-v2) - nothing in this section describes them.
 
@@ -239,7 +242,7 @@ git clone --recurse-submodules https://github.com/franz1981/netty-eventloop-aren
 
 | submodule | repository | branch | pinned commit |
 |---|---|---|---|
-| `netty` | `https://github.com/franz1981/netty.git` | `expt/event-loop-arena` | `3dad84f578` |
+| `netty` | `https://github.com/franz1981/netty.git` | `expt/event-loop-arena` | `2b961262d6` |
 | `netty-allocator` | `https://github.com/franz1981/netty-allocator.git` | `cycle-arena-bench` | `e9fa807` |
 
 Both branches are on GitHub at the pinned commits, so a fresh clone resolves them.
@@ -347,6 +350,51 @@ flags) and `JVM_OPTS` are all configurable; raw logs stay in `RESULTS_DIR`. It n
 > `JVM_OPTS=-Dio.netty.noPreferDirect=true` for the heap variant, and note that
 > `AbstractByteBufAllocator.ioBuffer()` - which the receive-buffer allocator calls - returns a direct
 > buffer whenever direct buffers can be reliably freed and never consults that property.
+
+### Transports
+
+Both servers - `e2e/E2EServer.java` and `topology/TopoServer.java` - take
+`TRANSPORT=nio|epoll|io_uring` (the scripts pass it as `-Dtransport`), and both build their event
+loops through the single helper [`lib/java/Transports.java`](lib/java/Transports.java), so the two
+launchers cannot drift apart. Everything else - pipelines, allocators, h2load flags, pinning - is
+identical across the three.
+
+* **nio** `NioIoHandler` + `NioServerSocketChannel`. The receive buffer is allocated per read from
+  the channel's allocator and released by the pipeline: the lifetime the arena was designed for.
+* **epoll** `EpollIoHandler` + `EpollServerSocketChannel`, nothing else changed. Same buffer
+  lifetimes as nio; only the readiness mechanism differs.
+* **io_uring** `IoUringIoHandler` with every feature this branch exposes that the running kernel
+  probes as supported (the probe, not the API list, decides - see the table below):
+  * one **provided buffer ring** per worker loop (`IoUringBufferRingConfig`), **filled by the
+    allocator under test**, incremental when `IoUring.isRegisterBufferRingIncSupported()`;
+  * `IO_URING_BUFFER_GROUP_ID` on every child channel, so reads consume that ring;
+  * `IO_URING_WRITE_ZERO_COPY_THRESHOLD`, so writes at or above it go out as `SEND_ZC` /
+    `SENDMSG_ZC`;
+  * `setSingleIssuer(true)` (which is also what lets netty ask for `DEFER_TASKRUN`), an explicit
+    ring size and CQ size.
+
+**What this does to buffer lifetimes.** A provided-buffer-ring buffer is handed to the *kernel*: it
+stays alive for an unbounded number of event-loop iterations - until the kernel fills it - and each
+read hands the pipeline a `retainedSlice` of it. A zero-copy write keeps the written buffer alive
+until the completion notification arrives, which is a later iteration. For an iteration-scoped
+allocator both are **lifetime class D (kernel-owned)**: blocks holding them cannot be recycled at
+the end-of-iteration hook, and the `maxPinned` counter is where that shows up.
+
+The servers print what they got: a `TRANSPORT` line with `IoUring.featureString()` (the kernel's own
+probe), a `CHILDOPTS` line reading the two io_uring channel options back off the first accepted
+channel, and a `RINGTELE` line at shutdown counting buffers put into the ring
+(`ringAllocs`) and taken back out of it (`ringReads`, `ringReadBytes`) - `ringReads=0` would mean the
+ring was never consumed.
+
+On the reference machine (kernel 7.1.13) every feature the branch probes came back supported;
+`lib/java/IoUringProbe.java` prints that list, and
+`results/ryzen9-7950x-node0/arena-v3/io_uring/probe.txt` is its output. Two features that the kernel
+supports are left at netty's own defaults, which are OFF: `IORING_RECVSEND_BUNDLE` (netty disables it
+over a known kernel bug) and `IORING_ENTER_NO_IOWAIT`. The measured transport matrix is
+[RESULTS.md section 7](results/ryzen9-7950x-node0/RESULTS.md#7-transports-io_uring-and-epoll-measured-2026-09-23-2300-mhz-node-0);
+its one hard failure is W6b, the deliberately cross-loop proxy, where the arena's confinement check
+now fires inside the io_uring zero-copy write completion (406 violations, 10.25 req/s against
+adaptive's 71,919).
 
 ### The lifetime study
 

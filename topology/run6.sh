@@ -14,6 +14,7 @@ topo_bodies "$RESULTS_DIR" || exit 1
 topo_compile || exit 1
 CP="$(topo_cp)" || exit 1
 JVM="$JVM_OPTS -Xms2g -Xmx4g -XX:+UseParallelGC -Dio.netty.allocator.type=adaptive"
+JVM="$JVM -Dtopo.alloc=${ALLOC:-adaptive} -Dtransport=${TRANSPORT:-nio}"
 JVM="$JVM -XX:FlightRecorderOptions:stackdepth=${STACKDEPTH:-32}"
 
 [ -n "$(topo_pids)" ] && topo_stop_all

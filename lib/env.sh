@@ -70,3 +70,37 @@ peak_rss() {
         | awk '{v[n++]=$1; if ($1>mx) mx=$1} END{ if (!n) { print "no cRSS-pRSS samples"; exit }
                  s="per fork:"; for (i=0;i<n;i++) s=s" "v[i]; printf "max=%d MB  %s", mx, s }'
 }
+
+# --- native transports ----------------------------------------------------------------------------
+# TRANSPORT selects the event loop the PoC servers use: nio (default), epoll or io_uring.
+: "${TRANSPORT:=nio}"
+
+# The epoll and io_uring modules are NOT dependencies of netty-example, so their classes are added to
+# the classpath explicitly - for EVERY transport, so that the classpath is identical across the three
+# and only the -Dtransport property differs.  The java classes come from each module's target/classes;
+# the native libraries come from the OS-classifier jar of the transport-native-* modules, because
+# that is where the build puts META-INF/native/libnetty_transport_native_*.so - target/classes does
+# NOT contain it.  Every native jar picked here is checked to really carry such a library, so a
+# silently missing .so cannot turn into an UnsatisfiedLinkError at run time.
+native_transport_cp() {
+    local version; version="$(netty_version)" || return 1
+    local n="$ROOT/netty" out="" m dir jar found
+    for m in transport-native-unix-common transport-classes-epoll transport-classes-io_uring; do
+        dir="$n/$m/target/classes"
+        [ -d "$dir" ] || { echo "missing $m build output in $n/$m/target - run ./build.sh" >&2; return 1; }
+        out="$out:$dir"
+    done
+    for m in transport-native-epoll transport-native-io_uring; do
+        found=""
+        for jar in "$n/$m/target/netty-$m-$version"-*.jar; do
+            case "$jar" in *-sources.jar|*-javadoc.jar|*\*.jar) continue ;; esac
+            if unzip -l "$jar" 2>/dev/null | grep -q 'META-INF/native/libnetty_transport_native_.*\.so'; then
+                found="$jar"; break
+            fi
+        done
+        [ -n "$found" ] || {
+            echo "no $m jar carrying META-INF/native/*.so in $n/$m/target - run ./build.sh" >&2; return 1; }
+        out="$out:$found"
+    done
+    echo "${out#:}"
+}

@@ -5,6 +5,8 @@
 #
 #   MVN_FLAGS="-q -o" ./build.sh      # offline
 #   ./build.sh --no-example           # skip the example module
+#   WITH_NATIVE=0 ./build.sh          # skip the epoll / io_uring native transports (then only
+#                                     # TRANSPORT=nio can run, and nothing that compiles Transports)
 set -euo pipefail
 source "$(dirname "$0")/lib/env.sh"
 require_tools java mvn
@@ -31,6 +33,15 @@ echo "==> installing netty buffer,common (this overwrites $NETTY_VERSION in ~/.m
 if [ "$WITH_EXAMPLE" = 1 ]; then
     echo "==> installing netty example (+ dependencies) for the lifetime study"
     (cd "$ROOT/netty" && mvn $MVN_FLAGS -pl example -am install \
+        -DskipTests -Dcheckstyle.skip -Drevapi.skip -Danimal.sniffer.skip)
+fi
+
+# 2b. the native transports.  netty-example does not depend on them, but the PoC servers take
+# TRANSPORT=nio|epoll|io_uring and lib/java/Transports.java is compiled against both, so both are
+# always built.  Their JNI needs a toolchain (gcc; io_uring also needs the kernel headers).
+if [ "${WITH_NATIVE:-1}" = 1 ]; then
+    echo "==> installing the native transports (epoll, io_uring)"
+    (cd "$ROOT/netty" && mvn $MVN_FLAGS -pl transport-native-epoll,transport-native-io_uring -am install \
         -DskipTests -Dcheckstyle.skip -Drevapi.skip -Danimal.sniffer.skip)
 fi
 

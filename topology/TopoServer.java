@@ -1,12 +1,10 @@
 import io.netty.bootstrap.Bootstrap;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.buffer.ByteBuf;
+import io.netty.buffer.ByteBufAllocator;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.*;
-import io.netty.channel.nio.NioIoHandler;
 import io.netty.channel.socket.SocketChannel;
-import io.netty.channel.socket.nio.NioServerSocketChannel;
-import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.handler.codec.http.*;
 import io.netty.handler.codec.http2.*;
 import io.netty.util.CharsetUtil;
@@ -19,6 +17,10 @@ import jdk.jfr.*;
  * self-renewing tail task that commits a netty.IterationEnd JFR event at the end of each iteration.
  *
  * usage: TopoServer <pipeline> <port> <loops> [backPort]
+ *
+ * <p>{@code -Dtopo.alloc=adaptive|arena|mimalloc} picks the ByteBufAllocator (default adaptive) and
+ * {@code -Dtransport=nio|epoll|io_uring} the transport (see {@link Transports}).  With the arena the
+ * ARENATELE/ARENALOOP counters are printed by a shutdown hook, and the buffer-ring counters always.
  */
 public final class TopoServer {
 
@@ -67,19 +69,33 @@ public final class TopoServer {
         int loops = Integer.parseInt(args[2]);
         int backPort = args.length > 3 ? Integer.parseInt(args[3]) : 0;
 
-        EventLoopGroup boss = new MultiThreadIoEventLoopGroup(1, NioIoHandler.newFactory());
-        EventLoopGroup workers = new MultiThreadIoEventLoopGroup(loops, NioIoHandler.newFactory());
+        final String alloc = System.getProperty("topo.alloc", "adaptive");
+        final ByteBufAllocator allocator = newAllocator(alloc);
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            System.out.println(Transports.ringCounters());
+            if ("arena".equals(alloc)) {
+                System.out.println(io.netty.buffer.CycleArenaAllocator.counters());
+            }
+            System.out.flush();
+        }));
+        EventLoopGroup boss = new MultiThreadIoEventLoopGroup(1, Transports.bossFactory());
+        EventLoopGroup workers = new MultiThreadIoEventLoopGroup(loops, Transports.workerFactory(allocator));
         // separate outbound group for the proxy2 variant
         EventLoopGroup outbound = "proxy2".equals(pipeline)
-                ? new MultiThreadIoEventLoopGroup(loops, NioIoHandler.newFactory()) : null;
+                ? new MultiThreadIoEventLoopGroup(loops, Transports.workerFactory(allocator)) : null;
+        // after the groups: the buffer-ring description is only known once workerFactory() ran.
+        System.out.println("TRANSPORT " + Transports.describe());
 
         ServerBootstrap b = new ServerBootstrap();
-        b.group(boss, workers).channel(NioServerSocketChannel.class)
+        b.group(boss, workers).channel(Transports.serverChannel())
+         .option(ChannelOption.ALLOCATOR, allocator)
+         .childOption(ChannelOption.ALLOCATOR, allocator)
          .childOption(ChannelOption.TCP_NODELAY, true);
+        Transports.childOptions(b);
         int snd = Integer.getInteger("topo.sndbuf", 0);
         if (snd > 0) { b.childOption(ChannelOption.SO_SNDBUF, snd); }
         b
-         .childHandler(initializer(pipeline, backPort, outbound));
+         .childHandler(initializer(pipeline, backPort, outbound, allocator));
         if (pipeline.startsWith("proxy")) {
             b.childOption(ChannelOption.AUTO_READ, false);
         }
@@ -93,7 +109,8 @@ public final class TopoServer {
             }
         }
         System.out.println("READY " + pipeline + " port=" + port + " loops=" + loops
-                + " markers=" + armed + " pid=" + ProcessHandle.current().pid());
+                + " markers=" + armed + " allocator=" + alloc + " transport=" + Transports.NAME
+                + " pid=" + ProcessHandle.current().pid());
         System.out.flush();
         ch.closeFuture().sync();
     }
@@ -108,7 +125,17 @@ public final class TopoServer {
         return n;
     }
 
-    private static ChannelHandler initializer(String p, int backPort, EventLoopGroup outbound) {
+    private static ByteBufAllocator newAllocator(String alloc) {
+        switch (alloc) {
+            case "adaptive": return new io.netty.buffer.AdaptiveByteBufAllocator();
+            case "arena": return new io.netty.buffer.CycleArenaAllocator();
+            case "mimalloc": return new io.github.neoionet.netty.mimalloc.MiByteBufAllocator();
+            default: throw new IllegalArgumentException("topo.alloc=" + alloc);
+        }
+    }
+
+    private static ChannelHandler initializer(String p, int backPort, EventLoopGroup outbound,
+                                              ByteBufAllocator allocator) {
         switch (p) {
             case "h1snoop":  // W1
                 return new ChannelInitializer<SocketChannel>() {
@@ -165,7 +192,7 @@ public final class TopoServer {
                 return new ChannelInitializer<SocketChannel>() {
                     @Override protected void initChannel(SocketChannel ch) {
                         ch.pipeline().addLast(READ_COUNTER)
-                          .addLast(new ProxyFront(backPort, outbound));
+                          .addLast(new ProxyFront(backPort, outbound, allocator));
                     }
                 };
             default: throw new IllegalArgumentException(p);
@@ -251,15 +278,17 @@ public final class TopoServer {
     static final class ProxyFront extends ChannelInboundHandlerAdapter {
         private final int backPort;
         private final EventLoopGroup outboundGroup;
+        private final ByteBufAllocator allocator;
         private volatile Channel out;
-        ProxyFront(int backPort, EventLoopGroup outboundGroup) {
-            this.backPort = backPort; this.outboundGroup = outboundGroup;
+        ProxyFront(int backPort, EventLoopGroup outboundGroup, ByteBufAllocator allocator) {
+            this.backPort = backPort; this.outboundGroup = outboundGroup; this.allocator = allocator;
         }
         @Override public void channelActive(ChannelHandlerContext ctx) {
             final Channel in = ctx.channel();
             Bootstrap b = new Bootstrap();
             b.group(outboundGroup != null ? outboundGroup : in.eventLoop())
-             .channel(NioSocketChannel.class)
+             .channel(Transports.clientChannel())
+             .option(ChannelOption.ALLOCATOR, allocator)
              .option(ChannelOption.AUTO_READ, false)
              .option(ChannelOption.TCP_NODELAY, true)
              .handler(new ChannelInitializer<Channel>() {
@@ -267,6 +296,7 @@ public final class TopoServer {
                      c.pipeline().addLast(READ_COUNTER).addLast(new ProxyBack(in));
                  }
              });
+            Transports.clientOptions(b);
             ChannelFuture f = b.connect("127.0.0.1", backPort);
             out = f.channel();
             f.addListener(fu -> { if (fu.isSuccess()) { in.read(); } else { in.close(); } });

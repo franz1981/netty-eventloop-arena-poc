@@ -1,0 +1,35 @@
+23:57:24.291 [main] DEBUG io.netty.util.internal.logging.InternalLoggerFactory -- Using SLF4J as the default logging framework
+23:57:24.301 [main] DEBUG io.netty.util.internal.PlatformDependent0 -- Java version: 21
+23:57:24.301 [main] DEBUG io.netty.util.internal.PlatformDependent0 -- -Dio.netty.noUnsafe: false
+23:57:24.304 [main] DEBUG io.netty.util.internal.PlatformDependent0 -- sun.misc.Unsafe.theUnsafe: available
+23:57:24.305 [main] DEBUG io.netty.util.internal.PlatformDependent0 -- sun.misc.Unsafe base methods: all available
+23:57:24.305 [main] DEBUG io.netty.util.internal.PlatformDependent0 -- java.nio.Buffer.address: available
+23:57:24.306 [main] DEBUG io.netty.util.internal.PlatformDependent0 -- direct buffer constructor: unavailable: Reflective setAccessible(true) disabled
+23:57:24.306 [main] DEBUG io.netty.util.internal.PlatformDependent0 -- java.nio.Bits.unaligned: available, true
+23:57:24.307 [main] DEBUG io.netty.util.internal.PlatformDependent0 -- jdk.internal.misc.Unsafe.allocateUninitializedArray(int): unavailable: symbolic reference class is not accessible: class jdk.internal.misc.Unsafe, from class io.netty.util.internal.PlatformDependent0 (unnamed module @5767b04b)
+23:57:24.310 [main] DEBUG io.netty.util.internal.PlatformDependent0 -- java.nio.DirectByteBuffer.<init>(long, {int,long}): unavailable
+23:57:24.310 [main] DEBUG io.netty.util.internal.PlatformDependent -- sun.misc.Unsafe: available
+23:57:24.310 [main] DEBUG io.netty.util.internal.PlatformDependent -- -Dio.netty.tmpdir: /tmp (java.io.tmpdir)
+23:57:24.310 [main] DEBUG io.netty.util.internal.PlatformDependent -- -Dio.netty.bitMode: 64 (sun.arch.data.model)
+23:57:24.310 [main] DEBUG io.netty.util.internal.PlatformDependent -- -Dio.netty.maxDirectMemory: 16810770432 bytes
+23:57:24.312 [main] DEBUG io.netty.util.internal.CleanerJava9 -- java.nio.ByteBuffer.cleaner(): available
+23:57:24.312 [main] DEBUG io.netty.util.internal.PlatformDependent -- -Dio.netty.noPreferDirect: false
+23:57:24.312 [main] DEBUG io.netty.util.internal.PlatformDependent -- -Dio.netty.ignoreExpensiveClean: false
+23:57:24.317 [main] DEBUG io.netty.util.internal.PlatformDependent -- -Dio.netty.jfr.enabled: true
+23:57:24.326 [main] DEBUG io.netty.util.internal.NativeLibraryLoader -- -Dio.netty.native.workdir: /tmp (io.netty.tmpdir)
+23:57:24.326 [main] DEBUG io.netty.util.internal.NativeLibraryLoader -- -Dio.netty.native.deleteLibAfterLoading: true
+23:57:24.326 [main] DEBUG io.netty.util.internal.NativeLibraryLoader -- -Dio.netty.native.tryPatchShadedId: true
+23:57:24.326 [main] DEBUG io.netty.util.internal.NativeLibraryLoader -- -Dio.netty.native.detectNativeLibraryDuplicates: true
+23:57:24.362 [main] DEBUG io.netty.util.internal.NativeLibraryLoader -- Successfully loaded the library /tmp/libnetty_transport_native_io_uring42_x86_647483902262581137944.so
+23:57:24.366 [main] DEBUG io.netty.util.NetUtil -- -Djava.net.preferIPv4Stack: false
+23:57:24.366 [main] DEBUG io.netty.util.NetUtil -- -Djava.net.preferIPv6Addresses: false
+23:57:24.368 [main] DEBUG io.netty.util.NetUtilInitializations -- Loopback interface: lo (lo, 0:0:0:0:0:0:0:1%lo)
+23:57:24.368 [main] DEBUG io.netty.util.NetUtil -- /proc/sys/net/core/somaxconn: 4096
+kernel=7.1.13-100.fc43.x86_64
+23:57:24.373 [main] DEBUG io.netty.channel.uring.IoUring -- IoUring support is available using kernel 7.1.13-100.fc43.x86_64: CQE_F_SOCK_NONEMPTY_SUPPORTED=true, UNIX_DOMAIN_SOCKET_INQ_SUPPORTED=true, SPLICE_SUPPORTED=true, ACCEPT_NO_WAIT_SUPPORTED=true, ACCEPT_MULTISHOT_SUPPORTED=true, POLL_ADD_MULTISHOT_SUPPORTED=true, RECV_MULTISHOT_SUPPORTED=true, IORING_RECVSEND_BUNDLE_SUPPORTED=true, REGISTER_IOWQ_MAX_WORKERS_SUPPORTED=true, SETUP_SUBMIT_ALL_SUPPORTED=true, SETUP_CQE_MIXED_SUPPORTED=true, SETUP_CQ_SIZE_SUPPORTED=true, SETUP_SINGLE_ISSUER_SUPPORTED=true, SETUP_DEFER_TASKRUN_SUPPORTED=true, SETUP_NO_SQARRAY_SUPPORTED=true, REGISTER_BUFFER_RING_SUPPORTED=true, REGISTER_BUFFER_RING_INC_SUPPORTED=true, SEND_ZC_SUPPORTED=true, SENDMSG_ZC_SUPPORTED=true, ENTER_NO_IOWAIT_SUPPORTED=true
+available=true
+IoUring features: CQE_F_SOCK_NONEMPTY_SUPPORTED=true, UNIX_DOMAIN_SOCKET_INQ_SUPPORTED=true, SPLICE_SUPPORTED=true, ACCEPT_NO_WAIT_SUPPORTED=true, ACCEPT_MULTISHOT_SUPPORTED=true, POLL_ADD_MULTISHOT_SUPPORTED=true, RECV_MULTISHOT_SUPPORTED=true, IORING_RECVSEND_BUNDLE_SUPPORTED=true, REGISTER_IOWQ_MAX_WORKERS_SUPPORTED=true, SETUP_SUBMIT_ALL_SUPPORTED=true, SETUP_CQE_MIXED_SUPPORTED=true, SETUP_CQ_SIZE_SUPPORTED=true, SETUP_SINGLE_ISSUER_SUPPORTED=true, SETUP_DEFER_TASKRUN_SUPPORTED=true, SETUP_NO_SQARRAY_SUPPORTED=true, REGISTER_BUFFER_RING_SUPPORTED=true, REGISTER_BUFFER_RING_INC_SUPPORTED=true, SEND_ZC_SUPPORTED=true, SENDMSG_ZC_SUPPORTED=true, ENTER_NO_IOWAIT_SUPPORTED=true
+setup flags probed: SUBMIT_ALL=true CQE_MIXED=true CQSIZE=true SINGLE_ISSUER=true DEFER_TASKRUN=true NO_SQARRAY=true
+ops probed: SPLICE=true SEND_ZC=true SENDMSG_ZC=true ACCEPT_MULTISHOT=true RECV_MULTISHOT=true POLL_ADD_MULTISHOT=true RECVSEND_BUNDLE=true REGISTER_BUFFER_RING=true REGISTER_BUFFER_RING_INC=true REGISTER_IOWQ_MAX_WORKERS=true CQE_F_SOCK_NONEMPTY=true ENTER_NO_IOWAIT=true
+enabled by default in this build: ACCEPT_MULTISHOT=true RECV_MULTISHOT=true RECVSEND_BUNDLE=false POLL_ADD_MULTISHOT=true ENTER_NO_IOWAIT=false
+tcpFastOpenServer=false tcpFastOpenClient=true

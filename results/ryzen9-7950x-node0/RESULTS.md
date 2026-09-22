@@ -483,3 +483,203 @@ for; that excess is not explained. A partial same-session re-run of adaptive and
 20 completed cells; it was stopped before JMH wrote a json, so there is no json for it) agrees with the matrix to within ~5% except adaptive heap 4096 (430 vs 374), adaptive direct 1024
 (277 vs 345) and mimalloc heap 128 (270 vs 316), so the ratios at those cells carry a 15-20% run-to-run uncertainty. This is the geometric-lifetime regime the
 design declares out of scope: the driven hook is a fixed cadence, not a lifetime boundary.
+
+## 7. Transports: io_uring and epoll (measured 2026-09-23, 2300 MHz, node 0)
+
+Code: netty `2b961262d6` (`expt/event-loop-arena`, the ring-reuse commit), PoC `run-e2e.sh` /
+`topology/run-matrix.sh` with `TRANSPORT=nio|epoll|io_uring`. Server pinned with
+`numactl --cpunodebind=0 --membind=0`, h2load with `--cpunodebind=1 --membind=1`, logging off, one
+run per cell. Raw output: `arena-v3/{io_uring,epoll,nio}/`.
+
+### 7.1 What this kernel supports - probed, not assumed
+
+`lib/java/IoUringProbe.java` run on this box (kernel `7.1.13-100.fc43.x86_64`, full output in
+`arena-v3/io_uring/probe.txt`) reports **every** feature the branch probes as supported:
+
+```
+setup flags: SUBMIT_ALL=true CQE_MIXED=true CQSIZE=true SINGLE_ISSUER=true DEFER_TASKRUN=true NO_SQARRAY=true
+ops:         SPLICE=true SEND_ZC=true SENDMSG_ZC=true ACCEPT_MULTISHOT=true RECV_MULTISHOT=true
+             POLL_ADD_MULTISHOT=true RECVSEND_BUNDLE=true REGISTER_BUFFER_RING=true
+             REGISTER_BUFFER_RING_INC=true REGISTER_IOWQ_MAX_WORKERS=true CQE_F_SOCK_NONEMPTY=true
+             ENTER_NO_IOWAIT=true
+enabled by netty's own defaults: ACCEPT_MULTISHOT=true RECV_MULTISHOT=true POLL_ADD_MULTISHOT=true
+                                 RECVSEND_BUNDLE=false ENTER_NO_IOWAIT=false
+```
+
+Two features are supported by the kernel but **off in netty's defaults and left off here**:
+`IORING_RECVSEND_BUNDLE` (netty disables it over a known kernel bug, see the comment in
+`IoUring.java`) and `IORING_ENTER_NO_IOWAIT`. Everything else is on. The cells configure:
+ring size 128, CQ size 4096, `setSingleIssuer(true)`, one provided buffer ring per worker loop
+(bgId 1, 64 entries x 8 KiB, incremental, batch 32, buffers allocated **by the allocator under
+test**), `IO_URING_BUFFER_GROUP_ID=1` and `IO_URING_WRITE_ZERO_COPY_THRESHOLD=4096` on every child.
+
+Both io_uring options were read back off the first accepted channel
+(`CHILDOPTS IO_URING_BUFFER_GROUP_ID=1 IO_URING_WRITE_ZERO_COPY_THRESHOLD=4096` in every
+`*-server.log`); that says the channel config stored them. That the ring is **used** is the
+`RINGTELE ringReads` counter (buffers taken back out of the ring: 6.6 M on the h1 arena cell, 0 by
+construction on nio/epoll). That zero-copy writes are used is netty's own
+`IoUringSocketChannel$IoUringSocketUnsafe.handleWriteCompleteZeroCopy` frame appearing as a release
+site: it accounts for **32.3% of all buffer frees** in the W1 io_uring arena window
+(`arena-v3/io_uring/topology/w1-io_uring-arena.txt`).
+
+The kernel side agrees. A separate 6 s h1 arena run (NOT one of the measured cells) traced with
+`bpftrace -e 'tracepoint:io_uring:io_uring_submit_req /pid == <server>/ { @op[args->opcode] = count(); }'`
+counted, by opcode (`arena-v3/io_uring/verify/opcodes.txt`):
+
+| opcode | name | submissions |
+|---|---|---|
+| 47 | `SEND_ZC` | 1,268,381 |
+| 2 | `WRITEV` | 1,268,381 |
+| 11 | `TIMEOUT` | 544,776 |
+| 14 | `ASYNC_CANCEL` | 66 |
+| 19 | `CLOSE` | 64 |
+| 27 | `RECV` | 64 |
+| 6 | `POLL_ADD` | 64 |
+| 22 | `READ` | 16 |
+
+`SEND_ZC` is submitted 1.27 M times, so the zero-copy threshold is honoured by the kernel path, not
+only by the channel config. `RECV` is submitted **64 times** - once per connection - while the same
+run's `RINGTELE` counted 1,917,439 buffers taken out of the provided buffer ring: multishot RECV
+plus the buffer ring. `SENDMSG_ZC` (48) never appears in this workload. I do not know why `WRITEV`
+and `SEND_ZC` have exactly equal counts; I did not investigate it.
+
+### 7.2 End to end, 20 s per cell, one run per cell
+
+req/s from h2load; RSS is the sampled max and is dominated by the JVM heap (no `-Xmx` is set on
+these servers), so it separates nothing here.
+
+| transport | protocol | ADAPTIVE | MIMALLOC | ARENA |
+|---|---|---|---|---|
+| nio | h1 | 300,868 | 300,844 | 300,937 |
+| epoll | h1 | 298,726 | 298,556 | 298,616 |
+| io_uring | h1 | 218,509 | 220,521 | 218,546 |
+| nio | h2 | 672,701 | 673,136 | 675,066 |
+| epoll | h2 | 674,454 | 679,203 | 677,757 |
+| io_uring | h2 | 669,974 | 658,934 | 660,386 |
+
+**Within a transport the three allocators are indistinguishable** (spread <= 1.7%, one run per cell).
+**Across transports, io_uring is 27% below nio/epoll on HTTP/1.1** (218.5 k vs 300.9 k) and within
+2% of them on HTTP/2. One run per cell: this is a single measurement, not a distribution, and no
+cause is claimed.
+
+Arena counters on the ARENA cell of each transport (`ARENATELE`, process-wide, 8 loops):
+
+| transport | protocol | arena share | blocksDirect | maxPinnedDirect | violations | leaked |
+|---|---|---|---|---|---|---|
+| nio | h1 | 100.00% | 8 | 0 | 0 | 0 |
+| epoll | h1 | 100.00% | 8 | 0 | 0 | 0 |
+| io_uring | h1 | 99.70% | 64 | 41 | 0 | 0 |
+| nio | h2 | 95.54% | 8 | 0 | 0 | 0 |
+| epoll | h2 | 95.52% | 8 | 0 | 0 | 0 |
+| io_uring | h2 | 93.72% | 64 | 24 | 0 | 0 |
+
+`blocksDirect` is the number of blocks the process ever created and `maxPinnedDirect` the **sum over
+the 8 arenas of each arena's own maximum**. On nio and epoll one block per loop is enough and
+nothing is ever pinned at a hook; with the buffer ring every loop grows to its 8-block bound and 41
+(h1) / 24 (h2) block-maxima are pinned across the 8 loops - about 5 and 3 blocks per loop. That is
+the kernel-owned ring buffers plus the zero-copy writes in flight. No confinement violation and no
+leaked block in any of these cells.
+
+### 7.3 Lifecycle topology on io_uring, seven cells x three builds
+
+One 1.5 s JFR window inside an 8 s load, 4 event loops, `topology/run-matrix.sh`. ARENA is run at
+the branch default `-Darena.ring=true` and again with `-Darena.ring=false`. `maxPinned` is
+`maxPinnedDirect`, the sum over the four arenas; `blocksDirect` is 32 = 4 loops x 8 blocks whenever
+every block was created.
+
+| workload | build | arena share | maxPinned | violations | ringReads | req/s |
+|---|---|---|---|---|---|---|
+| W1 h1 snoop | adaptive | - | - | - | 1,095,271 | 90,543 |
+| W1 | arena ring=true | 64.43% | 28 | 0 | 1,864,138 | 154,108 |
+| W1 | arena ring=false | 45.45% | 25 | 0 | 1,936,946 | 160,128 |
+| W2 h2 hello | adaptive | - | - | - | 1,583,899 | 306,757 |
+| W2 | arena ring=true | 61.64% | 17 | 0 | 2,438,158 | 469,277 |
+| W2 | arena ring=false | 41.10% | 18 | 0 | 2,563,976 | 493,475 |
+| W3 h2 echo 64 KiB | adaptive | - | - | - | 2,477,308 | 28,695 |
+| W3 | arena ring=true | 55.29% | 32 | 0 | 2,581,502 | 30,014 |
+| W3 | arena ring=false | 47.10% | 32 | 0 | 2,623,190 | 30,436 |
+| W4 h1 chunked, slow readers | adaptive | - | - | - | 12,904 | 384 reqs |
+| W4 | arena ring=true | 50.40% | 32 | 0 | 12,884 | 384 reqs |
+| W4 | arena ring=false | 48.05% | 32 | 0 | 12,874 | 384 reqs |
+| W5 aggregator 256 KiB | adaptive | - | - | - | 7,177,190 | 21,220 |
+| W5 | arena ring=true | 83.66% | 24 | 0 | 7,155,108 | 21,308 |
+| W5 | arena ring=false | 91.55% | 24 | 0 | 7,319,769 | 20,372 |
+| W6a proxy, same loop | adaptive | - | - | - | 3,308,213 | 87,304 |
+| W6a | arena ring=true | 100.00% | 12 | 0 | 3,202,391 | 84,360 |
+| W6a | arena ring=false | 99.98% | 12 | 0 | 3,219,951 | 84,751 |
+| W6b proxy, separate loop | adaptive | - | - | - | 2,756,305 | 71,919 |
+| W6b | arena ring=true | 100.00% | 16 | **406** | **375** | **10.25** |
+| W6b | arena ring=false | 100.00% | 16 | **414** | **387** | **10.62** |
+
+Against the nio figures of section 6.4 (same workloads, same window shape, W1 99.99% share and
+maxPinned 0), the io_uring cells show a **much lower arena share and a much higher pinned count** on
+W1-W4: every block of every loop is created and 3-8 of them per loop are pinned at a hook. W5 is the
+exception: its share goes up (11.85% on nio to 83.66% here), because on io_uring the 256 KiB body
+arrives as 8 KiB ring slices instead of one large receive buffer.
+
+The `req/s` column is reported because it is in the logs; these are **not** throughput measurements
+(a JFR recording runs inside the window, 4 loops, 8 s). The adaptive cells of W1 and W2 came out far
+below the arena cells (90.5 k vs 154.1 k, 306.8 k vs 469.3 k) while the e2e cells of the same
+allocators on the same transport tie to within 1.7%. **I do not know what makes those two cells
+differ** and did not investigate it.
+
+### 7.4 What broke: W6b, the cross-loop proxy
+
+W6b is the deliberate negative test: the buffer is allocated on the inbound loop and released on the
+outbound loop. On nio it counted 2,140 violations and still served the load. On io_uring the same
+cell **collapses to 10.25 req/s against adaptive's 71,919**, with 406 violations, and the server log
+holds 406 copies of
+
+```
+java.lang.IllegalStateException: arena buffer of Thread[#26,multiThreadIoEventLoopGroup-3-1,...]
+        touched from Thread[#31,multiThreadIoEventLoopGroup-4-2,...]
+    at io.netty.buffer.CycleArenaAllocator$ArenaBuf.violation(CycleArenaAllocator.java:1279)
+    at io.netty.buffer.CycleArenaAllocator$ArenaBuf.retain(CycleArenaAllocator.java:1182)
+    at io.netty.buffer.AbstractDerivedByteBuf.retain(AbstractDerivedByteBuf.java:54)
+    at io.netty.channel.uring.IoUringSocketChannel$IoUringSocketUnsafe.handleWriteCompleteZeroCopy(...)
+    ...
+    WARN i.n.channel.uring.IoUringIoHandler - Unexpected exception in the IO event loop.
+```
+
+with `RINGTELE ringReads=375` for the whole 8 s window (adaptive: 2,756,305). Counters: 406
+violations, ringReads 375, 10.25 req/s. The throw lands on the zero-copy write-completion path and
+is logged by the io_uring handler as an unexpected event-loop exception. No claim is made here about
+the mechanism beyond what these three counters and that stack say.
+
+### 7.5 async-profiler, io_uring, one 14 s CPU profile per cell
+
+`tools/asprof-alloc-share.py` (filter B = stacks containing `SingleThreadIoEventLoop.run`, which is
+transport independent, of which those containing an allocator frame):
+
+| profile | loop samples | allocator samples | share B | share A (wide) |
+|---|---|---|---|---|
+| io_uring h1 ADAPTIVE | 87,461 | 1,673 | 1.91% | 2.72% |
+| io_uring h1 ARENA | 88,509 | 3,819 | **4.31%** | 4.74% |
+| io_uring h2 ADAPTIVE | 67,771 | 8,521 | 12.57% | 15.93% |
+| io_uring h2 ARENA | 67,044 | 5,759 | **8.59%** | 13.88% |
+
+On HTTP/2 the arena's share is below adaptive's, as it was on nio (11.03% -> 9.25% there). On
+HTTP/1.1 it is **above** it, which is the opposite of the nio profile pair (7.72% -> 7.15%). One
+profile per cell.
+
+`tools/asprof-loop-breakdown.py`, same files (the rules now also name epoll and io_uring frames, and
+the read/write rules are matched before the ring rule because `io_uring_enter(2)` runs the send and
+recv inline, so what is left in "io_uring enter" is ring machinery):
+
+| component | h1 ADAPTIVE | h1 ARENA | h2 ADAPTIVE | h2 ARENA |
+|---|---|---|---|---|
+| socket write (syscall incl.) | 56.2% | 52.4% | 28.6% | 28.3% |
+| loop other | 20.7% | 20.6% | 10.9% | 8.8% |
+| io_uring enter (submit/wait) | 10.0% | 9.7% | 5.3% | 5.2% |
+| http codec | 6.8% | 8.4% | 33.9% | 40.9% |
+| socket read (syscall incl.) | 4.3% | 4.6% | 8.8% | 8.2% |
+| allocator | 1.9% | 4.3% | 12.6% | 8.6% |
+
+### 7.6 What section 7 does not establish
+
+- Every cell is **one run**. The e2e cells are 20 s, the topology cells a single 1.5 s window.
+- Why io_uring is 27% below nio/epoll on HTTP/1.1 here: not investigated.
+- Why the W1/W2 topology adaptive cells are far below the arena cells while the e2e cells tie: not
+  investigated, and the topology cells are not throughput measurements.
+- `RECVSEND_BUNDLE` and `ENTER_NO_IOWAIT` are supported by the kernel but were left at netty's
+  defaults (off), so nothing here measures them.

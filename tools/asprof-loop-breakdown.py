@@ -6,14 +6,20 @@ Denominator: samples whose stack contains SingleThreadIoEventLoop.run.
 Classification is by PRIORITY of regexes over the whole stack (first match wins), so a sample with both a
 socket write frame and an allocator frame counts as 'socket write'. 'allocator inclusive' is reported separately:
 any loop stack containing an allocator frame, regardless of the other categories.
-Written 2026-09-22 for the profiles in results/<machine>/arena-v3/e2e; NIO transport frame names.
+Written 2026-09-22 for the profiles in results/<machine>/arena-v3/e2e.  The denominator frame
+(SingleThreadIoEventLoop.run) is transport independent; the syscall rules name NIO, epoll AND
+io_uring frames, java and kernel side, so the same script reduces all three transports.  For
+io_uring the read/write rules come BEFORE the ring rule on purpose: io_uring_enter(2) runs the
+send/recv inline, so a sample in tcp_sendmsg under io_uring_enter is socket-write work; what is left
+in "io_uring enter (submit/wait)" is the ring machinery itself.
 """
 import re, sys, collections
 ALLOC = r'AdaptivePoolingAllocator|AdaptiveByteBufAllocator|CycleArenaAllocator|ArenaBuf'
 RULES = [
-    ('select/epoll_wait', r'epoll_wait|epoll_pwait|EPollSelectorImpl.doSelect|SelectorImpl.select'),
-    ('socket read (syscall incl.)', r'SocketDispatcher.read|SocketChannelImpl.read|IOUtil.read|recvmsg|tcp_recvmsg|readAddress'),
-    ('socket write (syscall incl.)', r'SocketDispatcher.write|SocketChannelImpl.write|IOUtil.write|sendmsg|tcp_sendmsg|writev|writeAddress'),
+    ('select/epoll_wait', r'epoll_wait|epoll_pwait|EPollSelectorImpl.doSelect|SelectorImpl.select|Native.epollWait|do_epoll_wait|ep_poll'),
+    ('socket read (syscall incl.)', r'SocketDispatcher.read|SocketChannelImpl.read|IOUtil.read|recvmsg|tcp_recvmsg|readAddress|io_recv|sock_recvmsg|inet_recvmsg'),
+    ('socket write (syscall incl.)', r'SocketDispatcher.write|SocketChannelImpl.write|IOUtil.write|sendmsg|tcp_sendmsg|writev|writeAddress|io_send|sock_sendmsg|inet_sendmsg'),
+    ('io_uring enter (submit/wait)', r'io_uring_enter|ioUringEnter|io_uring_submit|io_cqring|io_ring_submit'),
     ('allocator', ALLOC),
     ('http2 codec', r'codec/http2|codec\.http2'),
     ('http1 codec', r'codec/http|codec\.http'),

@@ -1,0 +1,4 @@
+TRANSPORT transport=epoll available=true
+READY mimalloc h1 8080 loops=8 transport=epoll
+CHILDOPTS transport=epoll (no io_uring child options)
+RINGTELE transport=epoll ringAllocs=0 ringReads=0 ringReadBytes=0 (no buffer ring)

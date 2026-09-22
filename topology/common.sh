@@ -19,17 +19,25 @@ topo_cp() {
         mkdir -p "$ROOT/target"
         (cd "$ROOT/netty/example" && mvn $MVN_FLAGS dependency:build-classpath -Dmdep.outputFile="$dep_file") || return 1
     fi
-    echo "$CLASSES:$example_jar:$(cat "$dep_file")"
+    # the mimalloc module (TopoServer can run it too) and the native transports, which are not
+    # dependencies of netty-example: the classpath is the same for every TRANSPORT.
+    local mi native
+    mi="$(ls "$ROOT"/netty-allocator/mimalloc/target/mimalloc-*.jar 2>/dev/null \
+          | grep -v -- '-sources\|-javadoc' | head -1 || true)"
+    native="$(native_transport_cp)" || return 1
+    echo "$CLASSES:$example_jar:${mi:+$mi:}$native:$(cat "$dep_file")"
 }
 
 topo_compile() {
     mkdir -p "$CLASSES"
     if [ "$TOPO/TopoServer.java" -nt "$CLASSES/TopoServer.class" ] \
+       || [ "$ROOT/lib/java/Transports.java" -nt "$CLASSES/Transports.class" ] \
        || [ "$TOPO/Dump.java" -nt "$CLASSES/Dump.class" ]; then
         # topo_cp resolves the dependency classpath the first time it is called; calling it here is
         # what makes a fresh clone work, where target/e2e-classpath.txt does not exist yet.
         local cp; cp="$(topo_cp)" || return 1
-        javac -nowarn -d "$CLASSES" -cp "$cp" "$TOPO/TopoServer.java" "$TOPO/Dump.java" || return 1
+        javac -nowarn -d "$CLASSES" -cp "$cp" "$TOPO/TopoServer.java" "$ROOT/lib/java/Transports.java" \
+            "$TOPO/Dump.java" || return 1
     fi
 }
 

@@ -6,12 +6,18 @@
 #
 #   ./run-e2e.sh                       # h1, all three allocators, defaults below
 #   PROTO=h2 ALLOCATORS="adaptive arena" DURATION=20 ./run-e2e.sh
+#   TRANSPORT=io_uring ./run-e2e.sh    # nio (default) | epoll | io_uring
 #
 # Knobs (all with defaults, nothing machine-specific):
 #   PROTO=h1|h2  ALLOCATORS="adaptive mimalloc arena"  DURATION=20  PORT=8080  LOOPS=8
+#   TRANSPORT=nio|epoll|io_uring  (passed to the server as -Dtransport; io_uring registers a provided
+#     buffer ring per worker loop, filled by the allocator under test, and sets the buffer-group-id
+#     and write-zero-copy-threshold child options - see lib/java/Transports.java and the README)
 #   CONNS (h1 64, h2 16)  STREAMS (h2 32)  LOAD_THREADS=4  BODY_SIZE=4096
 #   ARENA_MAX_BLOCKS (passed as -Darena.maxBlocks when set)  JVM_OPTS  SUT_PIN_CMD  LOADGEN_PIN_CMD
 #   LOGBACK_CONFIG (default e2e/logback-off.xml; set empty to keep the examples' own logging)
+#   ASPROF=<path to asprof> PROFILE_SECS=14 PROFILE_INTERVAL=1ms TAG_SUFFIX=-prof  (one CPU profile
+#     per allocator, collapsed stacks next to the other outputs; reduce with tools/asprof-*.py)
 #   ARENA_PROPS: extra -D flags for the arena, e.g. ARENA_PROPS="-Darena.cap=16384 -Darena.debug=true".
 #     The pinned build's knobs are arena.blockSize / maxBlocks / cap / maxObjects / debug / jfr.period.
 #     Its two memory variants are:  heap  JVM_OPTS=-Dio.netty.noPreferDirect=true      direct  (nothing)
@@ -29,7 +35,7 @@
 # buffer whenever direct buffers can be reliably freed and never consults that property.
 set -euo pipefail
 source "$(dirname "$0")/lib/env.sh"
-require_tools java mvn h2load
+require_tools java javac mvn h2load
 
 : "${PROTO:=h1}"
 : "${ALLOCATORS:=adaptive mimalloc arena}"
@@ -41,6 +47,11 @@ require_tools java mvn h2load
 : "${STREAMS:=32}"
 : "${LOGBACK_CONFIG:=$ROOT/e2e/logback-off.xml}"
 : "${ARENA_PROPS:=}"
+: "${TRANSPORT:=nio}"
+: "${TAG_SUFFIX:=}"
+: "${ASPROF:=}"          # path to async-profiler's asprof: when set, one CPU profile per allocator
+: "${PROFILE_SECS:=14}"
+: "${PROFILE_INTERVAL:=1ms}"
 case "$PROTO" in
     h1) : "${CONNS:=64}" ;;
     h2) : "${CONNS:=16}" ;;
@@ -61,7 +72,18 @@ if [ ! -s "$DEP_CP_FILE" ]; then
     mkdir -p "$ROOT/target"
     (cd "$ROOT/netty/example" && mvn $MVN_FLAGS dependency:build-classpath -Dmdep.outputFile="$DEP_CP_FILE")
 fi
-CP="$EXAMPLE_JAR:$MIMALLOC_JAR:$(cat "$DEP_CP_FILE")"
+NATIVE_CP="$(native_transport_cp)" || exit 1
+CP="$EXAMPLE_JAR:$MIMALLOC_JAR:$NATIVE_CP:$(cat "$DEP_CP_FILE")"
+
+# The launcher and the shared transport helper are compiled once (they used to be run in java source
+# mode, which cannot see a second source file).
+E2E_CLASSES="$ROOT/target/e2e-classes"
+mkdir -p "$E2E_CLASSES"
+if [ "$ROOT/e2e/E2EServer.java" -nt "$E2E_CLASSES/E2EServer.class" ] \
+   || [ "$ROOT/lib/java/Transports.java" -nt "$E2E_CLASSES/Transports.class" ]; then
+    javac -nowarn -d "$E2E_CLASSES" -cp "$CP" "$ROOT/e2e/E2EServer.java" "$ROOT/lib/java/Transports.java"
+fi
+CP="$E2E_CLASSES:$CP"
 
 BODY="$RESULTS_DIR/body-$BODY_SIZE.bin"
 [ -s "$BODY" ] || head -c "$BODY_SIZE" /dev/zero | tr '\0' 'x' > "$BODY"
@@ -83,24 +105,25 @@ stop_server() {
 freq_hook pin
 trap 'stop_server; freq_hook restore' EXIT
 
-SUMMARY="$RESULTS_DIR/e2e-$PROTO-summary.txt"
+SUMMARY="$RESULTS_DIR/e2e-$TRANSPORT-$PROTO-summary.txt"
 : > "$SUMMARY"
 
 for A in $ALLOCATORS; do
-    TAG="$PROTO-$A"
+    TAG="$TRANSPORT-$PROTO-$A$TAG_SUFFIX"
     SRV="$RESULTS_DIR/$TAG.server.log"; GC="$RESULTS_DIR/$TAG.gc"
     RSS="$RESULTS_DIR/$TAG.rss";        LOAD="$RESULTS_DIR/$TAG.h2load"
 
     [ -n "$(server_pids)" ] && stop_server
-    echo "==> $TAG: server, $LOOPS event loops, port $PORT"
+    echo "==> $TAG: server, $LOOPS event loops, port $PORT, transport $TRANSPORT"
     ARENA_OPT=()
     [ -n "${ARENA_MAX_BLOCKS:-}" ] && ARENA_OPT=("-Darena.maxBlocks=$ARENA_MAX_BLOCKS")
     [ -n "$LOGBACK_CONFIG" ] && ARENA_OPT+=("-Dlogback.configurationFile=$LOGBACK_CONFIG")
     # shellcheck disable=SC2206
     [ -n "$ARENA_PROPS" ] && ARENA_OPT+=($ARENA_PROPS)
+    ARENA_OPT+=("-Dtransport=$TRANSPORT")
     # shellcheck disable=SC2086
     $SUT_PIN_CMD java -cp "$CP" $JVM_OPTS "${ARENA_OPT[@]}" \
-        "-Xlog:gc:file=$GC" "$ROOT/e2e/E2EServer.java" "$A" "$PROTO" "$PORT" "$LOOPS" \
+        "-Xlog:gc:file=$GC" E2EServer "$A" "$PROTO" "$PORT" "$LOOPS" \
         > "$SRV" 2>&1 &
 
     for _ in $(seq 1 300); do grep -q '^READY ' "$SRV" 2>/dev/null && break; sleep 0.2; done
@@ -121,11 +144,19 @@ for A in $ALLOCATORS; do
     else
         H2LOAD_ARGS=(-c "$CONNS" -m "$STREAMS" -t "$LOAD_THREADS" -D "$DURATION" -d "$BODY")
     fi
+    if [ -n "$ASPROF" ]; then
+        # async-profiler attaches to the live server and writes collapsed CPU stacks.  It is started
+        # 3 s into the load so that the profile covers steady state, and it exits on its own.
+        ( sleep 3; "$ASPROF" -d "$PROFILE_SECS" -e cpu -i "$PROFILE_INTERVAL" -o collapsed \
+            -f "$RESULTS_DIR/$TAG.collapsed" "$PID" > "$RESULTS_DIR/$TAG-asprof.log" 2>&1 ) &
+        PROF=$!
+    fi
     echo "   h2load ${H2LOAD_ARGS[*]} http://127.0.0.1:$PORT/"
     # shellcheck disable=SC2086
     $LOADGEN_PIN_CMD h2load "${H2LOAD_ARGS[@]}" "http://127.0.0.1:$PORT/" > "$LOAD" 2>&1 \
         || echo "   (h2load rc=$? - see $LOAD)"
 
+    [ -n "$ASPROF" ] && { wait "$PROF" 2>/dev/null || true; }
     kill "$SAMPLER" 2>/dev/null || true; wait "$SAMPLER" 2>/dev/null || true
     stop_server
     sleep 0.5
@@ -137,15 +168,16 @@ for A in $ALLOCATORS; do
                  END{ if (n) printf "%.0f->%.0f MB (mean %.0f, %d samples)", mn/1024, mx/1024, s/n/1024, n;
                       else printf "no samples" }' "$RSS")"
     CNT="$(grep -m1 '^ARENATELE' "$SRV" || true)"
-    printf '%-9s %14s req/s | %s | RSS %s | %s young GCs%s\n' \
+    RING="$(grep -m1 '^RINGTELE' "$SRV" || true)"
+    printf '%-9s %14s req/s | %s | RSS %s | %s young GCs%s%s\n' \
         "$A" "${RPS:-0}" "${LAT:-(no latency line)}" "$RSSS" "${GCN:-0}" \
-        "${CNT:+ | $CNT}" >> "$SUMMARY"
+        "${RING:+ | $RING}" "${CNT:+ | $CNT}" >> "$SUMMARY"
 done
 
 trap 'freq_hook restore' EXIT
 echo
 STREAM_TXT=""
 [ "$PROTO" = h2 ] && STREAM_TXT=" x $STREAMS streams"
-echo "== end to end, $PROTO, ${DURATION}s, $CONNS connections$STREAM_TXT, $LOOPS event loops =="
+echo "== end to end, $PROTO, $TRANSPORT, ${DURATION}s, $CONNS connections$STREAM_TXT, $LOOPS event loops =="
 cat "$SUMMARY"
 echo "raw logs in $RESULTS_DIR"
