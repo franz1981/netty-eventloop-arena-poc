@@ -142,12 +142,27 @@ loops, `-Xms2g`, `-Dio.netty.noPreferDirect=true`, driven by h2load for 20 s. Ra
 | MIMALLOC | 23,968 | 21.3 ms | 290 -> 1572 MB | 12 |
 | ARENA | **failed** | - | 236 -> 303 MB | 0 |
 
-**The ARENA HTTP/2 run failed and the cause is not established - under investigation.** What the
-logs show, and nothing beyond it: 0 of 512 started requests completed in 20 s; h2load sent GO_AWAY
-with `errorCode=1` and the debug bytes `DATA: stream not opened` on every connection
-(`e2e/h2-arena.server.log.gz`); the server threw no exception and logged no error; the arena
-counters at shutdown read `arena=1472 fallback=0 blockReuse=0 grow=0 lifoPop=40`. The same h2load
-command against the same server with ADAPTIVE and MIMALLOC succeeded. I do not know why.
+The ARENA row above is the run recorded in `e2e/`: 0 of 512 started requests completed in 20 s,
+h2load sent GO_AWAY with `errorCode=1` and the debug bytes `DATA: stream not opened` on every
+connection (`e2e/h2-arena.server.log.gz`), and the server threw no exception and logged no error.
+
+**Cause, established:** `ArenaBuf.internalNioBuffer(index, len)` delegated to the block's root
+buffer (an `UnpooledUnsafeHeapByteBuf`), whose `internalNioBuffer` returns **one cached ByteBuffer
+per root**. A gathering write collects the NIO views of several outbound buffers of the same block
+before using any of them, so all of those views pointed at the last position set - corrupted DATA
+frames, hence the client's GOAWAY with no server-side exception.
+
+**Fixed** on the PoC branch in commit `05604aa1c2` ("per-buffer NIO views"): each `ArenaBuf` keeps
+its own cached duplicate for `internalNioBuffer` and slices a fresh view in `nioBuffer` /
+`nioBuffers`.
+
+**After the fix** the same HTTP/2 run completes without errors - 14,256 requests, all 2xx, 0 GOAWAY
+- but at **713 req/s against 23,508 for ADAPTIVE** (mean 39 ms vs 21.8 ms; counters
+`arena=76958 fallback=0 grow=0 lifoPop=21`). That is a separate performance problem, still under
+investigation (JFR profiling). No cause is claimed for it here.
+
+The `netty` submodule is still pinned at `dec589d0eb`, i.e. **before** the fix; the ARENA HTTP/2
+numbers in the table are the pre-fix run.
 
 ### What these runs actually say
 

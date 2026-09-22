@@ -79,9 +79,11 @@ Headline, on the reference machine described below, 3 forks:
   time per request against 0.03-0.05 us of counted arena work (3,489,820 allocations in 20 s, one
   per request, at the 25-50 ns of the first bullet). **On these example servers the allocator is not
   visible end to end**; the microbenchmarks isolate what this test cannot. HTTP/2 16 conn x 32
-  streams: ADAPTIVE 23,508 req/s / 21.8 ms, MIMALLOC 23,968 / 21.3 ms, and **ARENA failed - 0 of
-  512 requests completed, cause not established, under investigation**. RSS rises to ~1.5 GB in all
-  three: that is the 2 GB Java heap filling between young GCs, not native retention.
+  streams: ADAPTIVE 23,508 req/s / 21.8 ms, MIMALLOC 23,968 / 21.3 ms, and ARENA produced 0 of 512
+  requests - corrupted DATA frames from a shared cached NIO view, fixed on the PoC branch in
+  `05604aa1c2`; after the fix the run is clean (14,256 requests, all 2xx) but reaches only 713
+  req/s at 39 ms mean, a separate performance problem still under investigation. RSS rises to
+  ~1.5 GB in all three: that is the 2 GB Java heap filling between young GCs, not native retention.
 
 The conclusion these numbers support, and nothing more: **a bump path pays when lifetimes are
 scope-aligned and the bound is above the live set, and loses otherwise.** Whether Netty can supply
