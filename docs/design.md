@@ -1,5 +1,3 @@
-> **Draft 3, final** (three Opus reviews: draft 1 revise; draft 2b revise-small; draft 3 two text fixes, applied). Imported unchanged from `netty-bench/docs/event-loop-arena-design.md` on 2026-09-22. Draft 1 is kept as [`design-draft1.md`](design-draft1.md) so the review trail is visible.
-
 # Event-loop arena for Netty: design plan (draft 3, 2026-09-22)
 
 Status: DRAFT 3, final (three Opus reviews: draft 1 revise; draft 2b revise-small; draft 3 two text fixes, applied) (`event-loop-arena-design-draft1.md`). Every claim is measured
@@ -87,6 +85,34 @@ visible immediately instead of corrupting memory.
   explicit DELEGATED state (`block = null`, it wraps the delegate buffer): its release then releases the delegate
   buffer and touches no block; it returns to the object pool like any other. `maxObjects` exhausted -> delegate too.
 
+**Layout (D, decided during the PoC).** There is no block object on any path that runs per allocation, per
+release, per block switch or per hook. A block is an `int` id in `[0, maxBlocks)` and a column of flat
+per-space arrays: `int[] live`, `long[] base` (direct), `byte[][] mem` (heap), `ByteBuffer[] nio` (the source
+the per-buffer views are duplicated from), `AbstractByteBuf[] roots` (the chunk, for the bulk paths and to
+give the memory back). Two `int` bit masks hold the rest: `allocatedMask` (slot holds a chunk) and
+`reusableMask` (bit i = block i was empty at the LAST hook and its bump is 0). The current block is flat
+fields of the space - `curId`, `curBump`, `curMemory`, `curAddress` - so allocation touches the space's own
+fields and the `int[]` object stack, nothing else. There is no `bump[]` column: only the current block is
+ever bumped, and a block switched away from is never bumped again. Block switch is
+`id = numberOfTrailingZeros(reusableMask)`; a zero mask means grow if under `maxBlocks`, else delegate, and
+is also the latch that stops rescanning. The hook scans the `maxBlocks` live ints, resets the CURRENT
+block's bump in place when it is empty (steady state on request/response: no switch ever happens) and
+rebuilds the mask; it touches no buffer object. A buffer holds an `int blockId`, not a block reference, so
+allocation writes ints and one `long` address; a HEAP buffer also keeps a `byte[] memory` field with a
+guarded store (`if (memory != cur) memory = cur`), because every get/set needs the array and an indirection
+through `roots[blockId]` on the data path is worse - that is the only reference store on a hot path and it
+is paid once per block switch, not once per allocation. A DIRECT buffer keeps a plain `long address` and no
+NIO root: views fetch `nio[blockId]` on demand. Release is `refCnt--`, `live[blockId]--`, push the object
+index. The DELEGATED state is the column slot `maxBlocks`, so release needs no test on block identity
+before the decrement.
+
+**No in-band metadata (D).** Block memory holds user payload only: no per-allocation header, no per-block
+header, no free-list link written into the block, no fill on retire, nothing written to a block at reset.
+All bookkeeping is out of band, on the owner's own cache lines (the buffer objects, `int[] live`, the masks,
+the `int[]` object free stack, the flat cursor). Consequence: metadata is never derived from an address -
+the buffer carries its `int blockId`. Shape test: paint a block and check that allocate / grow / release /
+hook / trim leave every byte of it untouched.
+
 Defaults derived from the data (D): cap 8 KiB (section 1 sizes); block 256 KiB; `maxBlocks` 8 per space = 2 MiB per
 loop per space. The governing quantity is the PEAK BYTES BUMP-ALLOCATED PER ITERATION (bump space is not reclaimed
 before the hook): W1 max 48 allocations per iteration (`w1.txt:48`) at 8,192 / 4,370 / 208 B is ~200 KiB (inferred:
@@ -140,6 +166,20 @@ violations (counted before throwing), hooks,
 reallocations (in place / moved / delegated), trims. Exposed through the allocator's metric provider, never on the
 hot path across threads.
 
+Counting follows the JDK's TLAB rule - a TLAB's statistics are accumulated when it is RETIRED, never per object
+(D, added during the PoC): allocations live in two per-block `int` columns (`allocs`, `frees`; a block is empty iff
+they are equal) and are added to the space's plain `long` totals when the block is reset; bytes are added from the
+cursor when a block is retired at a switch or reset by the hook. The bump and the release path therefore carry no
+statistics instruction. Delegate allocations and confinement violations are counted per event, both being slow
+paths already.
+
+JFR (D, added during the PoC), modelled on the JDK's TLAB events, disabled by default and emitted only on cold
+boundaries, so the bump and release paths carry no event instruction either: `io.netty.ArenaBlockSwitch`
+(`jdk.ObjectAllocationInNewTLAB`), `io.netty.ArenaAllocationOutside` (`jdk.ObjectAllocationOutsideTLAB`),
+`io.netty.ArenaAllocationSample` (`jdk.ObjectAllocationSample`, manual period), `io.netty.ArenaIteration` (one per
+N hooks) and `io.netty.ArenaConfinementViolation` (with a stack trace). The per-buffer
+`AllocateBuffer`/`FreeBuffer`/`ReallocateBuffer` events stay as the expensive mode.
+
 ## 7. Known unsoundness and lifecycle edges (D)
 
 - Raw views and addresses (`nioBuffer()`, `memoryAddress()`, `array()`) of a LIVE buffer stay valid: its region is not
@@ -150,6 +190,10 @@ hot path across threads.
 - Thread termination: `FastThreadLocal.onRemoval` releases the block roots of blocks with `live == 0`. Blocks with
   live buffers LEAK until GC, unconditionally: under Invariant A no thread may release them once the owner is gone.
   Counted in metrics; acceptable for an opt-in allocator whose loops live as long as the process.
+- Drivers that are not event loops: a public `endOfIteration()` runs the same hook body on the calling thread, for
+  tests and for benchmarks that model a cycle. On an event loop nothing calls it - the hook is armed from the
+  allocation path. A thread with no event loop and no such call never closes an iteration, so its arena fills its
+  `maxBlocks` blocks once and then delegates for ever (measured on the JMH harness: arena share 0.00%).
 - Shutdown: `executeAfterEventLoopIteration` rejects after `isShutdown()`; the arming path swallows the rejection; the
   allocator's `close()`/`trim()` is called by whoever owns the allocator (the bootstrap / the application), as with
   adaptive.
