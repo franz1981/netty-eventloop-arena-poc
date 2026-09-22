@@ -6,7 +6,7 @@ Denominator: samples whose stack contains SingleThreadIoEventLoop.run.
 Classification is by PRIORITY of regexes over the whole stack (first match wins), so a sample with both a
 socket write frame and an allocator frame counts as 'socket write'. 'allocator inclusive' is reported separately:
 any loop stack containing an allocator frame, regardless of the other categories.
-Written 2026-09-22 for results/h2h-merged-x86-2026-09-22/arena-v3/e2e; NIO transport frame names.
+Written 2026-09-22 for the profiles in results/<machine>/arena-v3/e2e; NIO transport frame names.
 """
 import re, sys, collections
 ALLOC = r'AdaptivePoolingAllocator|AdaptiveByteBufAllocator|CycleArenaAllocator|ArenaBuf'

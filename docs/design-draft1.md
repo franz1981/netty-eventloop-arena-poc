@@ -7,7 +7,7 @@ with the source), or a decision/inference (D). Nothing here is implemented beyon
 
 ## 1. Problem classes, measured
 
-Source: `results/h2h-merged-x86-2026-09-22/topology/summary.txt` (JFR AllocateBuffer/FreeBuffer/ReallocateBuffer +
+Source: `../results/ryzen9-7950x-node0/topology/summary.txt` (JFR AllocateBuffer/FreeBuffer/ReallocateBuffer +
 an IterationEnd marker per event loop; NIO transport; this branch's adaptive allocator; one 1-1.5 s window per workload).
 
 | class | what | measured share | lifetime | release order |

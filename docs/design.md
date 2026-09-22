@@ -1,12 +1,12 @@
 # Event-loop arena for Netty: design plan (draft 3, 2026-09-22)
 
-Status: DRAFT 3, final (three Opus reviews: draft 1 revise; draft 2b revise-small; draft 3 two text fixes, applied) (`event-loop-arena-design-draft1.md`). Every claim is measured
+Status: DRAFT 3, final (three Opus reviews: draft 1 revise; draft 2b revise-small; draft 3 two text fixes, applied; draft 1 is kept as [`design-draft1.md`](design-draft1.md)). Every claim is measured
 (M, with source), taken from an existing system (R, with source), or a decision/inference (D). Not implemented beyond
 the PoC of section 8.
 
 ## 1. Problem classes, measured
 
-Source: `results/h2h-merged-x86-2026-09-22/topology/` (`summary.txt`, `w1.txt`..`w6b.txt`): JFR AllocateBuffer /
+Source: `../results/ryzen9-7950x-node0/topology/` (`summary.txt`, `w1.txt`..`w6b.txt`): JFR AllocateBuffer /
 FreeBuffer (stack) / ReallocateBuffer + an `IterationEnd` marker per event loop; NIO transport; this branch's adaptive
 allocator at `cfb23bcf63`; ONE 1-1.5 s window per workload, no repeats; iteration counts are inflated on near-idle loops
 by the marker task (W4: 31x CPU, `control.txt`), so W4/W5 use wall-clock or the read-iteration row.
@@ -129,7 +129,7 @@ decaying purge, any change to adaptive.
 - Zero allocations per allocate/release pair (preallocated objects, int free stack). NIO views allocate as adaptive's do (`nioBuffer()` a slice per call; one cached
   duplicate per buffer for `internalNioBuffer`, re-created after a move).
 - No reference stores on the owner hot path except `block`/`root` when the buffer lands in another block (the PoC's
-  first direct build regressed 15% until two such stores were removed; evidence `micro-v2/perfasm-new-v1-cardmarks.txt`).
+  first direct build regressed 15% until two such stores were removed; evidence `../results/ryzen9-7950x-node0/micro-v2/perfasm-new-v1-cardmarks.txt`).
 - `root` is bimorphic at best (heap or direct chunk buffer), as adaptive's `rootParent` is; not a regression.
 - Hot methods must inline into their callers: C2 refuses to inline an ALREADY-COMPILED callee whose code exceeds
   `InlineSmallCode` (2500 B on this JVM, `-XX:+PrintFlagsFinal`, measured to cost 12% on adaptive's event-loop path when
@@ -198,7 +198,12 @@ N hooks) and `io.netty.ArenaConfinementViolation` (with a stack trace). The per-
   allocator's `close()`/`trim()` is called by whoever owns the allocator (the bootstrap / the application), as with
   adaptive.
 
-## 8. State of the PoC (branch `expt/event-loop-arena` @ 26bd14b195)
+## 8. State of the PoC when this draft was written (branch `expt/event-loop-arena` @ 26bd14b195)
+
+> This section is the state of the PoC **before** the plan was implemented. The repository now pins
+> `3dad84f578` (v3), which implements sections 3-6: fixed blocks, the cap, the flat columns, the
+> `endOfIteration()` hook, Invariant A before any field access, the DELEGATED state, the counters and
+> the JFR events. The deviations are listed in the repository README.
 
 Has: heap + direct via adaptive's chunk allocators, bump, int refcount, reset-on-zero / LIFO / hook policies, tail-task
 hook armed from allocation, `trim()`, global counters, growth in place or by move. Micro: 43-44 ns/op vs adaptive 80-84
