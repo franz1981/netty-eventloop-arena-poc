@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration version="2.0">
+  <event name="io.netty.AllocateBuffer"><setting name="enabled">true</setting><setting name="stackTrace">false</setting></event>
+  <event name="io.netty.FreeBuffer"><setting name="enabled">true</setting><setting name="stackTrace">false</setting></event>
+</configuration>
