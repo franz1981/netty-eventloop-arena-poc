@@ -11,6 +11,12 @@
 #   PROTO=h1|h2  ALLOCATORS="adaptive mimalloc arena"  DURATION=20  PORT=8080  LOOPS=8
 #   CONNS (h1 64, h2 16)  STREAMS (h2 32)  LOAD_THREADS=4  BODY_SIZE=4096
 #   ARENA_MAX_BLOCKS (passed as -Darena.maxBlocks when set)  JVM_OPTS  SUT_PIN_CMD  LOADGEN_PIN_CMD
+#   LOGBACK_CONFIG (default e2e/logback-off.xml; set empty to keep the examples' own logging)
+#
+# The example pipelines log every HTTP/2 frame at INFO.  That logging, not the allocator, is the
+# bottleneck of these servers - adaptive on h2 measured 23,507 req/s with it and 671,887 without -
+# so run-e2e.sh turns logging OFF by default.  Set LOGBACK_CONFIG= to measure the servers as the
+# examples ship them.
 #
 # The PoC arena serves HEAP buffers only, so the server runs with -Dio.netty.noPreferDirect=true.
 # Even then ioBuffer() still hands out direct buffers, and CycleArenaAllocator forwards every direct
@@ -27,6 +33,7 @@ require_tools java mvn h2load
 : "${LOAD_THREADS:=4}"
 : "${BODY_SIZE:=4096}"
 : "${STREAMS:=32}"
+: "${LOGBACK_CONFIG:=$ROOT/e2e/logback-off.xml}"
 case "$PROTO" in
     h1) : "${CONNS:=64}" ;;
     h2) : "${CONNS:=16}" ;;
@@ -81,6 +88,7 @@ for A in $ALLOCATORS; do
     echo "==> $TAG: server, $LOOPS event loops, port $PORT"
     ARENA_OPT=()
     [ -n "${ARENA_MAX_BLOCKS:-}" ] && ARENA_OPT=("-Darena.maxBlocks=$ARENA_MAX_BLOCKS")
+    [ -n "$LOGBACK_CONFIG" ] && ARENA_OPT+=("-Dlogback.configurationFile=$LOGBACK_CONFIG")
     # shellcheck disable=SC2086
     $SUT_PIN_CMD java -cp "$CP" $JVM_OPTS -Dio.netty.noPreferDirect=true "${ARENA_OPT[@]}" \
         "-Xlog:gc:file=$GC" "$ROOT/e2e/E2EServer.java" "$A" "$PROTO" "$PORT" "$LOOPS" \
