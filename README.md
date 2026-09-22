@@ -374,11 +374,13 @@ git submodule update --init
 | `netty` | `https://github.com/franz1981/netty.git` | `expt/event-loop-arena` | `3dad84f578` |
 | `netty-allocator` | `https://github.com/franz1981/netty-allocator.git` | `cycle-arena-bench` | `e9fa807` |
 
-> **Neither branch is pushed yet.** `git submodule update --init` cannot work from a fresh clone
-> until `expt/event-loop-arena` is pushed to `franz1981/netty` and `cycle-arena-bench` to
-> `franz1981/netty-allocator`. In the working copy this repository was assembled in, the submodules
-> were added from local paths and `.git/config` still points at them; `.gitmodules` carries the
-> GitHub URLs, so `git submodule sync` will switch a clone over once the branches exist.
+Both branches are on GitHub at the pinned commits, so a fresh clone resolves them:
+
+```
+git clone --recurse-submodules https://github.com/franz1981/netty-eventloop-arena-poc.git
+```
+
+(`git submodule update --init` after a plain clone does the same.)
 
 `netty-allocator` is lao's harness (`neoionet/netty-allocator`) with four commits on top of its
 `1.2` head: the cycle benchmark, the harness additions, the `-Dexpt.hookEvery` hook driver, and

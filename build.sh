@@ -13,7 +13,7 @@ WITH_EXAMPLE=1
 for a in "$@"; do [ "$a" = "--no-example" ] && WITH_EXAMPLE=0; done
 
 [ -e "$ROOT/netty/pom.xml" ] && [ -e "$ROOT/netty-allocator/pom.xml" ] || {
-    echo "submodules are empty: run 'git submodule update --init' (the branches must be pushed first)" >&2
+    echo "submodules are empty: run 'git submodule update --init' (a fresh clone needs it once)" >&2
     exit 1
 }
 
