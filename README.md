@@ -11,25 +11,34 @@ than by a general-purpose allocator. The general allocator stays as the fallback
 else: buffers that escape the cycle, cross threads, or arrive when the arena is full.
 
 The PoC is `io.netty.buffer.CycleArenaAllocator` (in the `netty` submodule, branch
-`expt/event-loop-arena`, ~310 lines, **heap buffers only**):
+`expt/event-loop-arena`, ~700 lines):
 
-- a `FastThreadLocal` arena per thread; `newDirectBuffer` goes straight to the fallback;
-- blocks of 256 KiB, doubling to 8 MiB, at most N of them (`arena.initialBlock`, `arena.maxBlock`,
-  `arena.maxBlocks`); allocation is a bump of the current block, minimum 32 B;
-- when the current block is full: reuse an idle block (`live == 0`) if one is big enough, else grow,
-  else give up and call `AdaptiveByteBufAllocator`;
-- release must happen on the allocating thread - it throws `IllegalStateException` otherwise;
-- plain `int` refcount, no `AtomicIntegerFieldUpdater`; per-block live counter;
-- a block whose live count returns to zero resets its bump pointer; releasing the *topmost* buffer
-  of a block pops the bump pointer back (LIFO);
+- one arena per thread, with two spaces - **heap and direct**. A block's memory is a chunk buffer
+  taken from the same `AdaptivePoolingAllocator.ChunkAllocator` the `AdaptiveByteBufAllocator` uses,
+  so the backing memory is allocated and accounted exactly as adaptive's chunks are;
+- blocks of 256 KiB, doubling to 8 MiB, at most N per space (`arena.initialBlock`, `arena.maxBlock`,
+  `arena.maxBlocks`); allocation is a bump of the current block;
+- when the current block is full: reuse a wholly-free block, else grow, else give up and call
+  `AdaptiveByteBufAllocator`;
+- release must happen on the allocating thread - it throws `IllegalStateException` otherwise; plain
+  `int` refcount, no `AtomicIntegerFieldUpdater`; per-block live counter;
+- `-Darena.release` chooses what happens when a block goes idle: `zero` (a block whose live count
+  returns to zero resets its bump pointer), `lifo` (the default: `zero` plus a LIFO pop of the
+  topmost buffer of a block), or `hook` (nothing is reset automatically; `endOfCycle()` resets every
+  wholly-free block and keeps at most `arena.retainBytes` worth of blocks);
+- with `hook`, `-Darena.hook` says what closes the cycle: `iteration` (the default, netty's own
+  end-of-iteration hook) or `readComplete` (a `channelReadComplete` handler -
+  `io.netty.example.arena.CycleArenaEndOfCycleHandler` in the example module). `trim()` is explicit
+  only;
 - buffer objects come from a lazily filled per-arena array with an `int` free stack; past that array
   they are ordinary garbage (`arena.objects`).
 
-Counters (`CycleArenaAllocator.counters()`): allocations served by the arena, sent to the fallback,
-block reuses, block growths, LIFO pops, unpooled buffer objects. All knobs are system properties.
+Counters (`CycleArenaAllocator.counters()`): allocations served by the heap and direct arenas and by
+the fallback, block reuses, growths, resets, LIFO pops, and the hook counters. All knobs are system
+properties.
 
 **What the PoC deliberately is not:** it has no way to know whether a buffer is cycle-scoped. Every
-heap allocation goes to the arena. In a real design that decision is a hint from the Netty code that
+allocation goes to the arena. In a real design that decision is a hint from the Netty code that
 knows the lifecycle, not something the allocator guesses.
 
 ## What each benchmark measures, and what it cannot show
@@ -73,17 +82,19 @@ Headline, on the reference machine described below, 3 forks:
   *Caveat: both example servers retain nothing. Application-level retention - aggregation, queues,
   backpressure - is absent, so this is a lower bound, not the general case.*
 
-- **End to end (`run-e2e.sh`, 20 s, 8 event loops, `-Xms2g`):** HTTP/1.1 4 KiB POST, 64 connections:
-  ADAPTIVE 174,490 req/s / 373 us mean, MIMALLOC 174,791 / 372 us, ARENA 174,489 / 373 us - the
-  three are indistinguishable. At 174.5k req/s over 8 loops the server spends ~46 us of event-loop
-  time per request against 0.03-0.05 us of counted arena work (3,489,820 allocations in 20 s, one
-  per request, at the 25-50 ns of the first bullet). **On these example servers the allocator is not
-  visible end to end**; the microbenchmarks isolate what this test cannot. HTTP/2 16 conn x 32
-  streams: ADAPTIVE 23,508 req/s / 21.8 ms, MIMALLOC 23,968 / 21.3 ms, and ARENA produced 0 of 512
-  requests - corrupted DATA frames from a shared cached NIO view, fixed on the PoC branch in
-  `05604aa1c2`; after the fix the run is clean (14,256 requests, all 2xx) but reaches only 713
-  req/s at 39 ms mean, a separate performance problem still under investigation. RSS rises to
-  ~1.5 GB in all three: that is the 2 GB Java heap filling between young GCs, not native retention.
+- **End to end (`run-e2e.sh`, 20 s, 8 event loops, `-Xms2g`, logging off, server on node 0 and
+  h2load on node 1, **4300 MHz - not a fixed-frequency run**):** HTTP/2 `-c 16 -m 32`: ADAPTIVE
+  671,887 req/s / 720 us mean; ARENA heap+direct 676,928 / 709 us; ARENA direct 672,233 / 711 us;
+  ARENA `release=hook hook=iteration` 671,800 / 711 us; `hook=readComplete` 666,754 / 716 us.
+  HTTP/1.1 `--h1 -c 64`: ADAPTIVE 298,586 / 218 us; ARENA direct 300,662 / 216 us; ARENA heap
+  302,460 / 214 us. **End to end the allocators stay within run-to-run spread on these servers.**
+  RSS rises to ~1.5 GiB everywhere: the 2 GB Java heap filling between GCs, not native retention.
+- **Current PoC build, single harness cell** (E_COMMERCE heap, 1 thread, 1024 live, 3 forks,
+  2300 MHz): ARENA heap `release=lifo` 44.28 +- 0.73 ns/op, ARENA direct 43.30 +- 0.46, ADAPTIVE
+  heap 83.99 +- 0.29, ADAPTIVE direct 79.74 +- 0.38, heap-only PoC control 40.87 +- 0.17. The
+  +3.4 ns of the current build over the heap-only control is **not attributed** (G1 card marks on
+  two hot reference stores were found with perfasm and removed; a klass-guard hypothesis was tested
+  and refuted).
 
 The conclusion these numbers support, and nothing more: **a bump path pays when lifetimes are
 scope-aligned and the bound is above the live set, and loses otherwise.** Whether Netty can supply
@@ -102,7 +113,7 @@ git submodule update --init
 
 | submodule | repository | branch | pinned commit |
 |---|---|---|---|
-| `netty` | `https://github.com/franz1981/netty.git` | `expt/event-loop-arena` | `dec589d0eb` |
+| `netty` | `https://github.com/franz1981/netty.git` | `expt/event-loop-arena` | `26bd14b195` |
 | `netty-allocator` | `https://github.com/franz1981/netty-allocator.git` | `cycle-arena-bench` | `1041207` |
 
 > **Neither branch is pushed yet.** `git submodule update --init` cannot work from a fresh clone
@@ -196,12 +207,18 @@ counters from the launcher's shutdown hook. `PROTO`, `ALLOCATORS`, `DURATION`, `
 `CONNS`, `STREAMS`, `LOAD_THREADS`, `BODY_SIZE`, `ARENA_MAX_BLOCKS` and `JVM_OPTS` are all
 configurable; raw logs stay in `RESULTS_DIR`.
 
-> **The PoC is heap-only**, so e2e runs pass `-Dio.netty.noPreferDirect=true`. That is not enough to
-> put every buffer on the heap: `AbstractByteBufAllocator.ioBuffer()`, which the receive-buffer
-> allocator calls, returns a direct buffer whenever direct buffers can be reliably freed and never
-> consults that property. `CycleArenaAllocator` forwards every direct allocation to its fallback
-> **without counting it**, so the inbound read buffers do not go through the arena and do not appear
-> in the counters.
+> **Logging is off by default.** The example pipelines log every HTTP/2 frame at INFO, and that
+> logging - not the allocator - is what these servers are bound by: adaptive on HTTP/2 measured
+> 23,507 req/s with it and 671,887 req/s without. `run-e2e.sh` therefore passes
+> `-Dlogback.configurationFile=e2e/logback-off.xml`; set `LOGBACK_CONFIG=` to measure the servers as
+> the examples ship them. **The earlier e2e table measured the logging and has been replaced**; its
+> raw logs are kept in `results/ryzen9-7950x-node0/e2e/` because that round found a real bug (see
+> RESULTS.md section 5).
+>
+> The arena now serves heap *and* direct buffers. `-Dio.netty.noPreferDirect=true` is still useful
+> to force the heap path, but note that `AbstractByteBufAllocator.ioBuffer()` - which the
+> receive-buffer allocator calls - returns a direct buffer whenever direct buffers can be reliably
+> freed and never consults that property.
 
 ### The lifetime study
 

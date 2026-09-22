@@ -14,7 +14,7 @@ Machine and settings:
 | JDK | 21 (`21+35-LTS-2513`), `-XX:MaxRAM=60g` |
 | glibc / kernel | 2.42 / 7.1 (`7.1.13-100.fc43.x86_64`) |
 | date | 2026-09-22 |
-| code | netty `dec589d0eb` (`expt/event-loop-arena`), harness = lao 1.2 + this PoC's benchmark commits |
+| code | sections 1-4: netty `dec589d0eb`; sections 2b and 5: the later PoC build, now pinned at `26bd14b195` (`expt/event-loop-arena`). Harness = lao 1.2 + this PoC's benchmark commits |
 | JMH | 3 forks, 10x1 s warmup, 10x1 s measurement |
 
 Fork-to-fork sd on the harness heap cells is about 8% on this box: **3 forks resolve ~10%, not 3%.**
@@ -73,6 +73,26 @@ Two separate readings:
 a ring of slots), so blocks drain deterministically. Variable lifetimes with long-lived pinning -
 the real case - are not covered here. That is what sections 3 and 4 are for.
 
+### 2b. The current PoC build (heap + direct arenas)
+
+The table above is the first PoC, which was heap-only. The arena now has a heap arena and a direct
+arena, both backed by adaptive's own chunk allocators. Same cell as the first row of the table
+above - E_COMMERCE, 1 thread, 1024 live, 3 forks, 2300 MHz:
+
+| build | ns/op |
+|---|---|
+| ARENA heap, `release=lifo` | 44.28 +- 0.73 |
+| ARENA direct | 43.30 +- 0.46 |
+| ADAPTIVE heap | 83.99 +- 0.29 |
+| ADAPTIVE direct | 79.74 +- 0.38 |
+| heap-only PoC (control) | 40.87 +- 0.17 |
+
+The +3.4 ns of the current build over the heap-only control is **not attributed**. What is known:
+G1 card marks on two hot reference stores were found with perfasm and removed, and a klass-guard
+hypothesis was tested and refuted. Neither accounts for the remaining 3.4 ns.
+
+The raw json for this table is not in this repository.
+
 ## 3. Geometric lifetimes (`-Dexpt.randomRelease=true`)
 
 Release a uniformly random live slot instead of the next one in the ring: same mean lifetime,
@@ -124,68 +144,77 @@ h2load was used for every number above.
 ## 5. End to end - the allocator is not visible
 
 `run-e2e.sh`: the same netty example pipelines behind `E2EServer`, one allocator per run, 8 event
-loops, `-Xms2g`, `-Dio.netty.noPreferDirect=true`, driven by h2load for 20 s. Raw logs: `e2e/`.
+loops, `-Xms2g`, driven by h2load for 20 s.
 
-### HTTP/1.1, 4 KiB POST, 64 connections, 4 h2load threads
+**Two things make this section different from sections 1-4, and both limit it:**
 
-| allocator | req/s | mean request time | RSS | young GCs | arena counters |
-|---|---|---|---|---|---|
-| ADAPTIVE | 174,490 | 373 us | 241 -> 1500 MB | 57 | - |
-| MIMALLOC | 174,791 | 372 us | 271 -> 1528 MB | 56 | - |
-| ARENA | 174,489 | 373 us | 231 -> 1502 MB | 56 | `arena=3489820 fallback=0 blockReuse=0 grow=0` |
+1. **The frequency was NOT fixed** - these runs were at 4300 MHz, not the 2300 MHz of the other
+   sections. Do not compare their absolute levels with anything above.
+2. The server ran on node 0 and h2load on node 1 (`SUT_PIN_CMD` / `LOADGEN_PIN_CMD`).
+3. The raw h2load/RSS/GC files for *these* runs are not in this repository - only the superseded
+   ones described at the end of this section are. The numbers below are reported as measured
+   elsewhere; `e2e/` holds the older, logging-bound run.
 
-### HTTP/2 (h2c), 16 connections x 32 streams
+### HTTP/2 (h2c), `-c 16 -m 32`
 
-| allocator | req/s | mean request time | RSS | young GCs |
+| build | req/s | mean request time | RSS | GC pauses |
 |---|---|---|---|---|
-| ADAPTIVE | 23,508 | 21.8 ms | 251 -> 1495 MB | 12 |
-| MIMALLOC | 23,968 | 21.3 ms | 290 -> 1572 MB | 12 |
-| ARENA | **failed** | - | 236 -> 303 MB | 0 |
+| ADAPTIVE | 671,887 | 720 us | 92 -> 1471 MiB | 34 |
+| ARENA heap+direct (`noPreferDirect`) | 676,928 | 709 us | 93 -> 1457 MiB | 30 |
+| ARENA direct | 672,233 | 711 us | 93 -> 1448 MiB | 32 |
+| ARENA `release=hook`, `hook=iteration` | 671,800 | 711 us | 93 -> 1458 MiB | 32 |
+| ARENA `release=hook`, `hook=readComplete` | 666,754 | 716 us | 93 -> 1413 MiB | 32 |
 
-The ARENA row above is the run recorded in `e2e/`: 0 of 512 started requests completed in 20 s,
-h2load sent GO_AWAY with `errorCode=1` and the debug bytes `DATA: stream not opened` on every
-connection (`e2e/h2-arena.server.log.gz`), and the server threw no exception and logged no error.
+### HTTP/1.1, `--h1 -c 64`
 
-**Cause, established:** `ArenaBuf.internalNioBuffer(index, len)` delegated to the block's root
-buffer (an `UnpooledUnsafeHeapByteBuf`), whose `internalNioBuffer` returns **one cached ByteBuffer
-per root**. A gathering write collects the NIO views of several outbound buffers of the same block
-before using any of them, so all of those views pointed at the last position set - corrupted DATA
-frames, hence the client's GOAWAY with no server-side exception.
+| build | req/s | mean request time | RSS | GC pauses |
+|---|---|---|---|---|
+| ADAPTIVE | 298,586 | 218 us | 93 -> 1437 MiB | 92 |
+| ARENA direct | 300,662 | 216 us | 92 -> 1447 MiB | 92 |
+| ARENA heap | 302,460 | 214 us | 92 -> 1436 MiB | 73 |
 
-**Fixed** on the PoC branch in commit `05604aa1c2` ("per-buffer NIO views"): each `ArenaBuf` keeps
-its own cached duplicate for `internalNioBuffer` and slices a fresh view in `nioBuffer` /
-`nioBuffers`.
+### Counters
 
-**After the fix** the same HTTP/2 run completes without errors - 14,256 requests, all 2xx, 0 GOAWAY
-- but at **713 req/s against 23,508 for ADAPTIVE** (mean 39 ms vs 21.8 ms; counters
-`arena=76958 fallback=0 grow=0 lifoPop=21`). That is a separate performance problem, still under
-investigation (JFR profiling). No cause is claimed for it here.
+HTTP/2, ARENA heap run:
 
-The `netty` submodule is still pinned at `dec589d0eb`, i.e. **before** the fix; the ARENA HTTP/2
-numbers in the table are the pre-fix run.
+```
+arenaHeap=71.7M  arenaDirect=111.4M  fallbackHeap=0  fallbackDirect=0
+grow=0  resetOnZero=9.4M  lifoPop=68.7M
+```
+
+`release=hook`, `hook=iteration`: `hookRegistered=8 hookIteration=3.03M hookReset=3.03M`.
+`hook=readComplete`: `hookReadComplete=3.16M hookReset=604k`. On HTTP/1.1 the snoop handler's
+`channelReadComplete` does not propagate, so the `readComplete` variant never fires there.
 
 ### What these runs actually say
 
-The three allocators are indistinguishable on HTTP/1.1: 174,489 / 174,490 / 174,791 req/s and
-372-373 us mean. That is the expected outcome, not a null result to explain away.
+**End to end the allocators stay within run-to-run spread on these servers.** Every HTTP/2 build
+lands between 666.8k and 676.9k req/s and every HTTP/1.1 build between 298.6k and 302.5k; the
+request-time means differ by 11 us out of 709-720 (h2) and 4 us out of 214-218 (h1). Nothing here
+separates the arena from adaptive, in either direction.
 
-The arithmetic: 174,490 req/s spread over 8 event loops is **~46 us of event-loop time per
-request**. The arena counted 3,489,820 allocations in 20 s - 174,491 per second, i.e. almost exactly
-one counted heap buffer per request - which at the 25-50 ns per buffer measured in section 1 is
-**0.03-0.05 us**. The direct buffers are not in that count (see below), so the real allocator share
-is higher than 0.05 us, but it is nowhere near the resolution of a 20-second throughput number.
-**The end-to-end runs cannot distinguish these allocators; the microbenchmarks isolate exactly what
-this test cannot.**
+The earlier **"713 req/s" HTTP/2 arena result does not reproduce** at the pinned commit (52k vs 53k
+in the logging-bound harness). It is attributed to a stale build. That attribution is not
+established.
 
-The RSS climb to ~1.5 GB is the 2 GB Java heap filling between young GCs under `-Xms2g` (the GC log
-lines read `...(2048M)`), identical for all three. It is not native allocator retention.
+The RSS climb to ~1.5 GiB is the 2 GB Java heap filling between GCs under `-Xms2g`, the same for
+every build. It is not native allocator retention.
 
-`blockReuse=0 grow=0 fallback=0` in the HTTP/1.1 arena run: both counters live in `nextBlock()`,
-which is only reached when the current block runs out of room, so it was never reached in 3.49M
-allocations - the block's live count kept returning to zero and resetting the bump pointer first
-(that reset has no counter of its own).
-And the counters cover the heap path only. `AbstractByteBufAllocator.ioBuffer()` - which is what
-the receive-buffer allocator calls - returns `directBuffer(...)` whenever direct buffers can be
-reliably freed; it never consults `io.netty.noPreferDirect`. `CycleArenaAllocator.newDirectBuffer`
-forwards straight to its fallback and increments no counter. So the inbound read buffers of these
-runs did not go through the arena at all.
+### The superseded run in `e2e/`
+
+The files under `e2e/` are an earlier round that **measured the example servers' logging, not their
+allocators**: the example pipelines log every HTTP/2 frame at INFO. Adaptive on HTTP/2 measured
+23,507 req/s with that logging and 671,887 req/s without it - a factor of 28. `run-e2e.sh` now
+passes `-Dlogback.configurationFile=e2e/logback-off.xml` by default; set `LOGBACK_CONFIG=` to
+measure the servers as the examples ship them.
+
+That round also hit a real bug, which is why its logs are kept. With the arena, HTTP/2 completed 0
+of 512 started requests: h2load sent GO_AWAY with `errorCode=1` and the debug bytes
+`DATA: stream not opened` on every connection (`e2e/h2-arena.server.log.gz`), and the server threw
+no exception. **Cause, established:** `ArenaBuf.internalNioBuffer(index, len)` delegated to the
+block's root buffer (an `UnpooledUnsafeHeapByteBuf`), whose `internalNioBuffer` returns **one cached
+ByteBuffer per root**. A gathering write collects the NIO views of several outbound buffers of the
+same block before using any of them, so all of those views pointed at the last position set -
+corrupted DATA frames. **Fixed** on the PoC branch in commit `05604aa1c2` ("per-buffer NIO views"):
+each `ArenaBuf` keeps its own cached duplicate for `internalNioBuffer` and slices a fresh view in
+`nioBuffer` / `nioBuffers`.
