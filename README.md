@@ -46,6 +46,92 @@ properties.
 allocation goes to the arena. In a real design that decision is a hint from the Netty code that
 knows the lifecycle, not something the allocator guesses.
 
+
+## Mechanics
+
+One arena per event-loop thread (`FastThreadLocal`), two spaces (heap, direct), fixed 256 KiB blocks taken from
+adaptive's own chunk allocators and never given back except by an explicit `trim()`. Allocation is a bump in the
+current block; release is a plain `int` decrement; reuse happens in exactly one place, the event loop's own
+end-of-iteration tail task.
+
+```
+ event loop thread N
+ +---------------------------------------------------------------------------------------------+
+ |  Arena (plain fields, owner thread only, no atomics, no cross-thread path)                    |
+ |                                                                                              |
+ |  Space: heap                              Space: direct                                      |
+ |  +-----------+ +-----------+ +---------+  +-----------+ +-----------+ +---------+            |
+ |  | current   | | reusable  | | pinned  |  | current   | | reusable  | |  ...    |            |
+ |  | bump ->   | | live == 0 | | live > 0|  | bump ->   | | live == 0 | |         |            |
+ |  +-----------+ +-----------+ +---------+  +-----------+ +-----------+ +---------+            |
+ |   256 KiB blocks, at most 8 per space (2 MiB), requests > 8 KiB never enter                  |
+ |                                                                                              |
+ |  block metadata = columns, no Block object on any hot path:                                  |
+ |     int[] allocs, int[] frees        (block empty <=> allocs[id] == frees[id])               |
+ |     int   reusableMask               (next block = numberOfTrailingZeros(mask))              |
+ |     long[] base / byte[][] mem       (touched only on a block switch)                        |
+ |     flat: curId, curBump, curMemory / curAddress                                             |
+ |                                                                                              |
+ |  ArenaBuf objects: preallocated array + int[] free stack; each holds                         |
+ |     int blockId, int start, int length, int refCnt   (no reference to a block, no header)    |
+ +---------------------------------------------------------------------------------------------+
+        |  size > cap, bound reached, pool exhausted, off-loop thread
+        v
+   AdaptiveByteBufAllocator (unchanged) - also the source of the arena's blocks
+```
+
+Block memory holds user payload only: no per-allocation header, no per-block header, no free-list links, no fill.
+Everything the allocator knows lives on the owner's own cache lines.
+
+```
+ iteration k                                                             iteration k+1
+ |-- runIo(): reads ---- pipeline: decode/handle/encode/flush ---- runAllTasks() --|HOOK|-----------
+     [read buf 8 KiB   bump ........................ release: frees[id]++ ]
+                  [headers 208 B ....... release]
+                    [body 4 KiB .............. write completes, release]
+                      [parked write (socket full) .......................... still live at HOOK ]
+                                                                            |
+   at the HOOK (tail task, armed by the first allocation of the iteration): |
+     every block with allocs == frees  -> bump = 0, reusable               |
+     the block holding the parked write -> skipped ("pinned") until a later hook finds it empty
+   nothing freed during iteration k is handed out before the HOOK: NIO views and addresses taken
+   during an iteration stay valid until it ends.
+```
+
+Confinement (Invariant A): `retain()`/`release()` from another thread throw before touching any field; a counter records
+it, because `ReferenceCountUtil.safeRelease` swallows the exception. Pipelines that cross event loops must not use
+the arena (the cross-loop proxy is the negative test below).
+
+## Real-world results (2026-09-22, Ryzen 9 7950X, one NUMA node, 2300 MHz, JDK 21, single windows unless stated)
+
+Topology re-run, six example-server workloads, 4 loops, counters at shutdown:
+
+| workload | arena share | max pinned blocks | hooks | confinement violations |
+|---|---|---|---|---|
+| HTTP/1.1 request/response (snoop) | 99.99% | 0 | 92,764 | 0 |
+| HTTP/2 hello | 95.85% | 0 | 139,356 | 0 |
+| HTTP/2 echo with backpressure | 95.86% | 7 | 173,892 | 0 |
+| HTTP/1.1 echo, slow readers | 86.92% | 4 | 325 | 0 |
+| HTTP/1.1 aggregator, 256 KiB bodies | 11.85% | 4 | 91,675 | 0 |
+| proxy on one loop | 99.97% | 0 | 812,486 | 0 |
+| proxy across two loop groups (negative test) | 0.25% | 64 | 754,155 | 2,140 |
+
+End to end (`E2EServer`, logging off, SUT node 0 / h2load node 1):
+
+| | adaptive | arena | note |
+|---|---|---|---|
+| h1 req/s, 2M requests x 3 runs | 177.2k / 176.1k / 177.8k | 178.1k / 178.5k / 176.4k | unchanged |
+| h2 req/s, 2M requests x 3 runs | 388.5k / 389.7k / 390.4k | 385.9k / 387.3k / 391.6k | unchanged |
+| h1 allocator share of event-loop CPU samples (async-profiler, cpu, 1 ms) | 7.72% | 7.15% | narrow filter; wide filter 8.24% -> 7.40% |
+| h2 allocator share of event-loop CPU samples | 11.03% | 9.25% | narrow filter; wide filter 14.75% -> 12.18% |
+| h1 / h2 RSS with a fixed 1 GiB pre-touched heap, smaps at 12 s | 1298 / 1307 MB | 1281 / 1301 MB | mimalloc port 1297 / 1300 |
+
+Where the event-loop CPU goes on these servers (same profiles, `tools/asprof-loop-breakdown.py` in netty-bench):
+socket write path 40-45%, HTTP codec and response building 35-47%, socket read 5-7%, select 3-5%, allocator 8-11%.
+The arena removes roughly a fifth of the allocator's slice; it cannot touch the other 90%. That is the whole
+end-to-end story: the allocator claim holds (see the cycle cell: 23.5 ns per allocate+release pair against 49.3 for
+adaptive and 44.8 for the mimalloc port, sizes under the cap), and on request/response servers it is second order.
+
 ## v3 - the current build
 
 The pinned commit `3dad84f578` is a rewrite against [`docs/design.md`](docs/design.md) (draft 3),
