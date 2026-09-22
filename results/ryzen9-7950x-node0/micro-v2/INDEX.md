@@ -17,9 +17,9 @@ the real files; I was asked not to run anything new.
 ## perfasm (the evidence that named the regression)
 | file | report claim |
 |---|---|
-| `perfasm-new-v1-cardmarks.txt` | first direct-capable build, 47.2 ns/op: G1 card-table barriers (`shr $0x9` / `movabs` / `cmpb $0x2,(%rdi)`) on `putfield reserved` in `Space::reserve` and `putfield root` in `ArenaBuf::moveTo` — hottest region 1, 24.69% |
-| `perfasm-new-v2-after-barrier-fix.txt` | after removing both stores, 45.6 ns/op: the barriers are gone; the surviving 4.06% line is the `cmp {metadata('UnpooledUnsafeHeapByteBuf')}` klass guard on `root` in `_getByte` |
-| `perfasm-old-control.txt` | pre-change heap-only PoC, 40.5 ns/op, same harness: no klass guard (field typed as the final `Root` class), no extra barriers |
+| `perfasm-new-v1-cardmarks.txt` | first direct-capable build (this run's own Result line: 48.510 ns/op; the report quotes 47.2 from the regression walk below): G1 card-table barriers (`shr $0x9` / `movabs` / `cmpb $0x2,(%rdi)`) on `putfield reserved` in `Space::reserve` and `putfield root` in `ArenaBuf::moveTo` — hottest region 1, 24.69% |
+| `perfasm-new-v2-after-barrier-fix.txt` | after removing both stores (Result line 47.591 ns/op; report quotes 45.6): the barriers are gone; the surviving 4.06% line is the `cmp {metadata('UnpooledUnsafeHeapByteBuf')}` klass guard on `root` in `_getByte` |
+| `perfasm-old-control.txt` | pre-change heap-only PoC (Result line 40.991 ns/op; report quotes 40.5), same harness: no klass guard (field typed as the final `Root` class), no extra barriers |
 All three: `-prof "perfasm:event=cycles"` (never `cycles:P` on this Ryzen).
 
 ## perfnorm

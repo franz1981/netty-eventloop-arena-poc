@@ -36,7 +36,8 @@ Data: `cycle/cycle-heap.json`.
 | ADAPTIVE | 44.3 - 50.9 |
 | MIMALLOC | 46.6 - 52.6 |
 
-ARENA is 40-50% below ADAPTIVE on every one of the 12 cells. Adaptive is ahead of the mimalloc port
+ARENA is 40-50% below ADAPTIVE on every one of the 8 cells (k 8/64 x FIFO/LIFO x MIXED/SMALL;
+`cycle/cycle-heap.json` holds 24 rows = 8 cells x 3 allocators). Adaptive is ahead of the mimalloc port
 here. Full per-cell table: `../../summarize.py cycle/cycle-heap.json`.
 
 ## 2. ByteBufAllocatorAllocPatternBenchmark - the steady-state case
@@ -62,7 +63,7 @@ Two separate readings:
 
 - **With the bound below the live set** (the default 4 blocks) the arena LOSES: blocks are pinned by
   their longest-lived buffer, the bound is reached, the fallback pays both paths, and RSS is
-  +8..30%. Arena share at 4 blocks on these cells: 58% (1024) / 19% (4096) - from
+  +8..34% (first-fork peaks: +30.8% / +8.3% / +19.5% / +34.4% down the table). Arena share at 4 blocks on these cells: 58% (1024) / 19% (4096) - from
   `diag/tele-arena2-1024.data` (`arena=83860117 fallback=61512762`) and `diag/tele-arena2-4096.data`
   (`arena=20499714 fallback=89222495`); the `harness-t1-*-ARENA` runs predate the counter teardown
   and carry no `ARENATELE` line.
@@ -99,10 +100,12 @@ Evidence: **`micro-v2/`**. Read `micro-v2/INDEX.md` first - it states the gap it
 JMH json or .data for these five cells:** the runs were made without `-rf json`, so
 `micro-v2/quoted-scores.txt` is a *transcription of the console summary lines*, not a
 machine-written artifact. Treat it as such. The perfasm captures behind the card-mark finding are
-real files: `perfasm-new-v1-cardmarks.txt` (47.2 ns/op, G1 barriers on `putfield reserved` in
+real files: `perfasm-new-v1-cardmarks.txt` (G1 barriers on `putfield reserved` in
 `Space::reserve` and `putfield root` in `ArenaBuf::moveTo`, hottest region 24.69%),
-`perfasm-new-v2-after-barrier-fix.txt` (45.6 ns/op, barriers gone), `perfasm-old-control.txt`
-(40.5 ns/op, the heap-only PoC). All three with `-prof perfasm:event=cycles`, never `cycles:P` on
+`perfasm-new-v2-after-barrier-fix.txt` (barriers gone), `perfasm-old-control.txt`
+(the heap-only PoC). Their own `Result` lines are **48.510 / 47.591 / 40.991 ns/op** - a perfasm run
+is not a clean score, and the 47.2 / 45.6 / 40.5 quoted in the report come from the regression-walk
+lines of `quoted-scores.txt`, not from these three files. All three with `-prof perfasm:event=cycles`, never `cycles:P` on
 this AMD box. The refuted klass-guard hypothesis is the `monomorphic root` line of
 `quoted-scores.txt`: 48.341 +- 2.861, no recovery.
 
@@ -222,15 +225,19 @@ every build. It is not native allocator retention.
 
 The files under `e2e/` are an earlier round that **measured the example servers' logging, not their
 allocators**: the example pipelines log every HTTP/2 frame at INFO. Adaptive on HTTP/2 measured
-23,507 req/s with that logging and 671,887 req/s without it - a factor of 28 (the quiet side of
-that comparison is `e2e-v2/runs/q-h2-adaptive-heap`). `run-e2e.sh` now
+23,507 req/s with that logging and 670,768 req/s without it - a factor of 28 (the quiet side of
+that comparison is `e2e-v2/runs/q-h2-adaptive-heap`, the intermediate build; the final
+`runs/f-h2-adaptive` of the table above is 671,887). `run-e2e.sh` now
 passes `-Dlogback.configurationFile=e2e/logback-off.xml` by default; set `LOGBACK_CONFIG=` to
 measure the servers as the examples ship them.
 
 That round also hit a real bug, which is why its logs are kept. With the arena, HTTP/2 completed 0
 of 512 started requests: h2load sent GO_AWAY with `errorCode=1` and the debug bytes
-`DATA: stream not opened` on every connection (`e2e/h2-arena.server.log.gz`), and the server threw
-no exception. **Cause, established:** `ArenaBuf.internalNioBuffer(index, len)` delegated to the
+`DATA: stream not opened` on every connection, and the server threw no exception. **The kept logs do
+not show that evidence**: `e2e/h2-arena.server.log.gz` is 93,494 lines of INBOUND/OUTBOUND frame
+logging with no `GOAWAY` line in it, and `e2e/h2-arena.h2load` was truncated before h2load's summary
+block. The GO_AWAY observation is from the console of that round and is not reproducible from this
+directory; what the directory does show is the frame log of the failing run. **Cause, established:** `ArenaBuf.internalNioBuffer(index, len)` delegated to the
 block's root buffer (an `UnpooledUnsafeHeapByteBuf`), whose `internalNioBuffer` returns **one cached
 ByteBuffer per root**. A gathering write collects the NIO views of several outbound buffers of the
 same block before using any of them, so all of those views pointed at the last position set -
@@ -276,7 +283,8 @@ E_COMMERCE, heap, 1 thread, 1024 live, `enableReadWrite=true`, `-Dexpt.hookEvery
 | ARENA, hook every 64 ops | **65.184 +- 2.090** |
 | ADAPTIVE | 83.584 +- 0.503 |
 
-Counters on the ARENA run: `arenaShare=88.27%`, `blocksHeap=7`, `pinned=4`, `maxPinnedHeap=7`.
+Counters on the ARENA run: `arenaShare=88.27%`, `blocksHeap=7`, `maxPinnedHeap=7`, and `pinned`
+(the count at the last hook) 4 on four of the six `ARENATELE` lines and 5 on the other two.
 
 **The hook is driven by the harness, not by an event loop.** The benchmark thread is not an event
 loop, so nothing would ever close an iteration; `-Dexpt.hookEvery=N` calls `endOfIteration()` every
@@ -304,21 +312,27 @@ comparison, the same cell **with** the hook driven every 64 ops is 413.631 instr
 ### 6.4 Lifecycle-topology counters
 
 One window per workload, arena build, 4 event loops, servers and labels as in
-`../topology/labels.txt`. The figures are the process-wide `ARENATELE` line of each
+`topology/labels.txt`. The figures are the process-wide `ARENATELE` line of each
 `arena-v3/topology/w*-arena-server.log`; per-loop `ARENALOOP` lines are in the same files.
+`maxPinned` is the counter `maxPinnedDirect`, which is the **sum over the process's arenas of each
+arena's own maximum** - not a per-loop figure. `maxPinnedHeap` is 0 in all seven workloads: these
+pipelines allocate direct buffers. The per-loop maxima behind the column are 0 (W1, W2, W6a),
+1/2/2/2 (W3), 1 per loop (W4, W5) and 8 per loop on all 8 loops of W6b - the last being every block
+of every loop.
 
 | workload | arena share | maxPinned | violations |
 |---|---|---|---|
 | W1 HTTP/1.1 snoop, 4 KiB POST | 99.99% | 0 | 0 |
 | W2 HTTP/2 hello | 95.85% | 0 | 0 |
-| W3 HTTP/2 echo, 64 KiB body, small windows | 95.86% | 7 | 0 |
-| W4 HTTP/1.1 chunked echo, slow readers | 86.92% | 4 | 0 |
-| W5 aggregator, 256 KiB POST | 11.85% | 4 | 0 |
+| W3 HTTP/2 echo, 64 KiB body, small windows | 95.86% | 7 (4 loops: 1,2,2,2) | 0 |
+| W4 HTTP/1.1 chunked echo, slow readers | 86.92% | 4 (1 per loop) | 0 |
+| W5 aggregator, 256 KiB POST | 11.85% | 4 (1 per loop) | 0 |
 | W6a proxy, outbound on the SAME loop | 99.97% | 0 | 0 |
-| W6b proxy, outbound on a SEPARATE loop | 0.25% | 64 (all pinned) | **2,140** |
+| W6b proxy, outbound on a SEPARATE loop | 0.25% | 64 (8 loops x all 8 blocks) | **2,140** |
 
 **W6b is the negative test**, not a failure to fix: buffers allocated on one loop are released on
-another, the arena refuses them, 64 blocks stay pinned and 2,140 confinement violations are counted.
+another, the arena refuses them, every block of every one of the 8 loops stays pinned and 2,140
+confinement violations are counted.
 It is there to show the counter fires when confinement is broken. W5 at 11.85% is the aggregator:
 the aggregated body is above the cap and is delegated.
 
@@ -350,21 +364,23 @@ The v3 report quotes `cycles 76.8k -> 76.4k`, which are the run-1 values; the th
 instructions per request**, so three runs do not separate the two builds on this counter either.
 
 On HTTP/2 the counters are unchanged: ADAPTIVE 40,970 / 40,382 / 41,090 instructions per request
-against ARENA 40,658 / 41,425 / 40,688.
+against ARENA 40,658 / 41,424 / 40,688.
 
 ### 6.6 async-profiler: allocator share of event-loop CPU samples
 
 **One profile per build**, 14 s, CPU samples, collapsed stacks in `arena-v3/e2e/*-prof.collapsed`.
 
-The v3 report quotes **h1 8.24% -> 7.40%** and **h2 14.75% -> 12.18%**. The frame filter behind
-those four numbers is not recorded with the data, and no script that produces them is in the
-benchmark repo.
+The v3 report quotes **h1 8.24% -> 7.40%** and **h2 14.75% -> 12.18%**. A second, narrower filter -
+samples whose stack contains `SingleThreadIoEventLoop.run` (the event-loop denominator), of which
+those whose stack also contains `AdaptivePoolingAllocator`, `AdaptiveByteBufAllocator`,
+`CycleArenaAllocator` or `ArenaBuf` - gives **h1 7.72% -> 7.15%** and **h2 11.03% -> 9.25%**. Same
+direction, different magnitude, so both are recorded here instead of one.
 
-Recomputing from the copied `.collapsed` files with an explicit filter - samples whose stack
-contains `SingleThreadIoEventLoop.run` (the event-loop denominator), of which those whose stack also
-contains `AdaptivePoolingAllocator`, `AdaptiveByteBufAllocator`, `CycleArenaAllocator` or `ArenaBuf`
-- gives **h1 7.72% -> 7.15%** and **h2 11.03% -> 9.25%**. Same direction, different magnitude. Which
-filter produced the quoted numbers is unknown, so both are recorded here instead of one.
+Both filters are implemented in `../../tools/asprof-alloc-share.py`, which reproduces all eight
+numbers from the `.collapsed` files in this directory (filter A = the wide one the report quoted,
+filter B = the narrow cross-check). Neither is "right": A counts the recycler and the
+reference-count helpers as allocator work and accepts any single-thread executor as a loop, B counts
+only frames of the allocator classes on an IO event loop.
 
 What both agree on: the allocator's share of event-loop CPU samples is **single-digit to low-double-digit
 percent** and the arena build's share is lower than adaptive's on both protocols, in one profile each.
@@ -382,7 +398,8 @@ One profile is one sample; this is not a distribution.
 ### 6.8 Like-for-like against the first PoC: sizes under the cap (measured 2026-09-22, 2300 MHz, node 0, 3 forks)
 
 `CycleScopedAllocBenchmark`, k=64, FIFO, `sizes=SMALL` (64/128/256/512 B: every request under the 8 KiB cap, so both
-arenas run at 100% share, `maxPinned=0`). Files: `arena-v3/cycle/small-v3.*` (final jar + adaptive), `small-v2.*` (first PoC jar).
+arenas run at 100% share, `maxPinned=0` - stated for v3 from the twelve `arenaShare=100.00%` lines of `small-v3.log`;
+`small-v2.log` carries no `ARENATELE` line at all, that build having no counter teardown). Files: `arena-v3/cycle/small-v3.*` (final jar + adaptive), `small-v2.*` (first PoC jar).
 
 | cell | ADAPTIVE | MIMALLOC (lao port) | ARENA v2 (first PoC) | ARENA v3 (final) |
 |---|---|---|---|---|
@@ -391,10 +408,11 @@ arenas run at 100% share, `maxPinned=0`). Files: `arena-v3/cycle/small-v3.*` (fi
 | heap, ns per pair | 49.3 | 44.8 | 25.2 | 23.5 |
 | direct, ns per pair | 48.3 | 42.9 | 47.8 | 23.8 |
 
-MIMALLOC files: `arena-v3/cycle/small-mi.*` (same jar, same flags, run right after). Where the arena applies, v3 is −47%
-against the mimalloc port, which itself is −9% (heap) / −11% (direct) against adaptive on this cell.
+MIMALLOC files: `arena-v3/cycle/small-mi.*` (same jar, same flags, run right after). Where the arena applies, v3 is
+−47.7% (heap) / −44.6% (direct) against the mimalloc port, which itself is −9.1% (heap) / −11.3% (direct) against
+adaptive on this cell.
 
-v3 is −52% against adaptive on both spaces where the arena applies, level with or better than the first PoC on heap,
+v3 is −52.4% (heap) / −50.8% (direct) against adaptive where the arena applies, level with or better than the first PoC on heap,
 and twice as fast as it on direct. The gap to v2 seen on `sizes=MIXED` (section 6.2) is the cap: 16 and 32 KiB requests
 delegate in v3 and were served by v2's arena. v3's fork spread is wider than adaptive's.
 
@@ -402,11 +420,11 @@ delegate in v3 and were served by v2's arena. v3's fork spread is wider than ada
 
 `run-e2e.sh`, 4 event loops, 20 s per run, one run per cell, `JVM_OPTS="-Xms1g -Xmx1g -XX:+AlwaysPreTouch
 -XX:MaxDirectMemorySize=2g"` so that RSS differences are native memory, not heap sizing. Files:
-`arena-v3/e2e-rss-fixedheap/` (`*.rss` = RSS sampled every 0.5 s, `*-smaps_rollup-*.txt` = one `/proc/<pid>/smaps_rollup`
-at 12 s, `arena-maps-*.txt` = the arena server's `/proc/<pid>/maps`). The default-heap run in `arena-v3/e2e-rss/` is kept
+`arena-v3/e2e-rss-fixedheap/` (`h1/*.rss` and `h2/*.rss` = RSS sampled every 0.5 s, `*-smaps_rollup-*.txt` = one
+`/proc/<pid>/smaps_rollup` at 12 s, `arena-maps-*.txt` = the arena server's `/proc/<pid>/maps`). The default-heap run in `arena-v3/e2e-rss/` is kept
 but is not an RSS measurement: its heaps grew differently per run (67-97 young GCs).
 
-| proto | allocator | req/s | RSS at 12 s (smaps Rss, MB) | RSS last sample (MB) | arena counters |
+| proto | allocator | req/s | RSS at 12 s (smaps Rss, MB) | RSS last sample (MiB) | arena counters |
 |---|---|---|---|---|---|
 | h1 | adaptive | 147,804 | 1298 | 1268 | |
 | h1 | mimalloc | 148,479 | 1297 | 1267 | |
@@ -415,21 +433,29 @@ but is not an RSS measurement: its heaps grew differently per run (67-97 young G
 | h2 | mimalloc | 426,628 | 1300 | 1269 | |
 | h2 | arena | 435,282 | 1301 | 1270 | share 97.5%, 0 pinned |
 
-Allocator footprint differences are within 17 MB (about 1%) on a 1.3 GB process, arena lowest; the arena's own
-native footprint is 3 MiB of blocks. Throughput: single runs, same direction as `e2e-rss/` (h2 arena +3.5% here,
+The two RSS columns are the same quantity in different units - smaps `Rss` in kB over 1000, and the last `.rss`
+sample in kB over 1024; the underlying values differ by less than 0.01%, so the ~30 unit drop between the columns is
+the divisor, not a decline. Allocator footprint differences are within 17 MB (about 1%) on a 1.3 GB process, arena
+lowest; the arena's own native footprint is 3 MiB of blocks. Throughput: single runs, same direction as `e2e-rss/` (h2 arena +3.5% here,
 +8% there) but the three-run 2M-request comparison in 6.5 showed no change - not established without repeats.
 
-glibc: the arena's `/proc/<pid>/maps` contains no 256 KiB anonymous mapping (anonymous rw sizes: 132K x25, 1008K x24,
-4K x4), so the 256 KiB blocks obtained through `Unsafe.allocateMemory` are carved from glibc's heap segments, not
-mmapped one by one; they are never freed (trim is explicit only), so they stay in the loop threads' glibc arenas for
-the life of the process. Which segments hold them was not established.
+glibc: the arena's `/proc/<pid>/maps` holds only **two** 256 KiB anonymous `rw-p` mappings in each of the two
+captures, against the 12 blocks the counters report, so most of the 256 KiB blocks obtained through
+`Unsafe.allocateMemory` are carved from larger glibc segments rather than mmapped one by one. The anonymous rw size
+histogram is dominated by 132K and 1008K mappings (`arena-maps-1790099196.txt`: 132K x25, 1008K x24, 256K x2, 4K x4;
+`arena-maps-1790099264.txt`: 132K x27, 1008K x23, 256K x2, 4K x4). The blocks are never freed (trim is explicit
+only), so they stay in the loop threads' glibc arenas for the life of the process. Which segments hold them was not
+established.
 
 ### 6.10 The harness's E_COMMERCE "eventloop" ladder with a driven hook (measured 2026-09-22, 2300 MHz, node 0, 3 forks)
 
 `ByteBufAllocatorAllocPatternBenchmark`, 32 threads on the FastThreadLocal harness executor (not event loops: the arena's
 hook is driven every 64 operations with `-Dexpt.hookEvery=64`), `enableReadWrite=true`, seven live-buffer counts.
-ADAPTIVE and MIMALLOC rows are the merged 84-cell matrix of the same day (same harness, same machine); ARENA is
-`arena-v3/ecommerce-eventloop/arena-hook64.*`. Peak RSS in MB (max over forks). Share = arena share of allocations;
+ADAPTIVE and MIMALLOC rows are the merged 84-cell matrix of the same day (same harness, same machine). **That matrix
+is not in this repository**, so the ADAPTIVE and MIMALLOC columns, and every ratio built on them, cannot be re-derived
+here; the ARENA ns, share/pinned and `RSS ar` columns can, from `arena-v3/ecommerce-eventloop/arena-hook64.{json,log}`
+(the `pinned` column is the per-thread `ARENALOOP` maximum; the process-wide `ARENATELE` value is the sum over the 32
+threads, i.e. 32x it). Peak RSS in MB (max over forks). Share = arena share of allocations;
 pinned = max simultaneously pinned blocks per loop (8 = all).
 
 | memory | live | ADAPTIVE ns | MIMALLOC ns | ARENA ns | arena/adaptive | arena/mimalloc | RSS ad / mi / ar | share, pinned |
@@ -452,8 +478,8 @@ pinned = max simultaneously pinned blocks per loop (8 = all).
 Reading: at 128 live the arena beats both; at 1024 it beats adaptive by 24-28% and ties or loses to the mimalloc port;
 from 4096 live up the live set exceeds the 8-block bound, share falls from 49% to 4% with all eight blocks pinned in
 every fork, and the arena is 1-37% slower than adaptive while still ahead of the port at 32 K and 64 K live, where the
-port is slow. RSS is above adaptive by 50-700 MB from 4096 live up, far more than the 128 MiB the blocks can account
+port is slow. RSS is above adaptive by 75-990 MB from 4096 live up, far more than the 128 MiB the blocks can account
 for; that excess is not explained. A partial same-session re-run of adaptive and mimalloc (`adaptive-mimalloc.log`,
-20 cells, stopped) agrees with the matrix except adaptive heap 4096 (430 vs 374) and direct 1024 (277 vs 345), so the
-ratios at those two live counts carry a 15-20% run-to-run uncertainty. This is the geometric-lifetime regime the
+20 completed cells; it was stopped before JMH wrote a json, so there is no json for it) agrees with the matrix to within ~5% except adaptive heap 4096 (430 vs 374), adaptive direct 1024
+(277 vs 345) and mimalloc heap 128 (270 vs 316), so the ratios at those cells carry a 15-20% run-to-run uncertainty. This is the geometric-lifetime regime the
 design declares out of scope: the driven hook is a fixed cadence, not a lifetime boundary.

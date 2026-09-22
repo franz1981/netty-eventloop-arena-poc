@@ -27,8 +27,8 @@ produced from it**, so there is nothing to copy for it here.
 
 `provenance.txt` is the record and it matters: the measurements used a **frozen classpath**
 (`cp-frozen.txt`, snapshotted while another agent was rebuilding the netty worktree). The jar it
-names corresponds to `expt/event-loop-arena` at **`cfb23bcf63`**, not the `26bd14b195` this
-repository pins - that commit landed after the snapshot. The allocator under measurement was
+names corresponds to `expt/event-loop-arena` at **`cfb23bcf63`**, not the `3dad84f578` this
+repository pins - that commit, and the two builds between them, landed after the snapshot. The allocator under measurement was
 `-Dio.netty.allocator.type=adaptive`, and on this branch that is the size-classed variant of the
 PR-17151 line, not upstream 4.2 adaptive.
 
