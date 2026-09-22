@@ -1,0 +1,126 @@
+# JMH version: 1.37
+# VM version: JDK 21, Java HotSpot(TM) 64-Bit Server VM, 21+35-LTS-2513
+# VM invoker: /home/forked_franz/.sdkman/candidates/java/21-oracle/bin/java
+# VM options: -server -dsa -da -XX:InitialRAMPercentage=40.0 -XX:MaxRAMPercentage=40.0 -Dio.netty.leakDetection.level=disabled -Djmh.executor=CUSTOM -Djmh.executor.class=io.github.neoionet.netty.microbenchmark.executor.FastThreadLocalThreadHarnessExecutor -XX:MaxRAM=60g
+# Blackhole mode: compiler (auto-detected, use -Djmh.blackhole.autoDetect=false to disable)
+# Warmup: 10 iterations, 1 s each
+# Measurement: 10 iterations, 1 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Average time, time/op
+# Benchmark: io.github.neoionet.netty.microbenchmark.ByteBufAllocatorAllocPatternBenchmark.heapAllocation
+# Parameters: (MAX_LIVE_BUFFERS = 1024, allocatorType = ARENA, enableReadWrite = true, sizePattern = E_COMMERCE)
+
+# Run progress: 0.00% complete, ETA 00:00:20
+# Fork: 1 of 1
+# Preparing profilers: LinuxPerfNormProfiler 
+# Profilers consume stderr from target VM, use -v EXTRA to copy to console
+# Warmup Iteration   1: 91.896 ns/op
+# Warmup Iteration   2: 87.381 ns/op
+# Warmup Iteration   3: 88.200 ns/op
+# Warmup Iteration   4: 88.258 ns/op
+# Warmup Iteration   5: 88.407 ns/op
+# Warmup Iteration   6: 88.317 ns/op
+# Warmup Iteration   7: 88.377 ns/op
+# Warmup Iteration   8: 88.307 ns/op
+# Warmup Iteration   9: 88.304 ns/op
+# Warmup Iteration  10: 88.271 ns/op
+Iteration   1: 88.320 ns/op
+Iteration   2: 88.246 ns/op
+Iteration   3: 88.296 ns/op
+Iteration   4: 88.251 ns/op
+Iteration   5: 88.310 ns/op
+Iteration   6: 88.276 ns/op
+Iteration   7: 88.251 ns/op
+Iteration   8: 88.299 ns/op
+Iteration   9: 88.253 ns/op
+Iteration  10: cRSS-pRSS:[1103, 1103]
+;used-memory:[0]
+ARENATELE blockSize=262144 maxBlocks=8 cap=8192 maxObjects=16384 debug=false arenaHeap=2897 arenaDirect=0 delegateHeap=226219431 delegateDirect=0 arenaShare=0.00% blocksHeap=8 blocksDirect=1 pinned=0 reusable=0 maxPinnedHeap=0 maxPinnedDirect=0 blockReuses=0 blockGrowths=7 hooks=0 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=0 reallocMoved=0 reallocDelegated=755 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=912
+ARENALOOP thread=io.github.neoionet.netty.microbenchmark.ByteBufAllocatorAllocPatternBenchmark.heapAllocation-1-1 arenaHeap=2897 arenaDirect=0 delegateHeap=226219431 delegateDirect=0 arenaShare=0.00% blocksHeap=8 blocksDirect=1 pinned=0 reusable=0 maxPinnedHeap=0 maxPinnedDirect=0 blockReuses=0 blockGrowths=7 hooks=0 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=0 reallocMoved=0 reallocDelegated=755 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=912
+88.342 ns/op
+# Processing profiler results: LinuxPerfNormProfiler 
+
+
+Result "io.github.neoionet.netty.microbenchmark.ByteBufAllocatorAllocPatternBenchmark.heapAllocation":
+  88.284 ±(99.9%) 0.051 ns/op [Average]
+  (min, avg, max) = (88.246, 88.284, 88.342), stdev = 0.034
+  CI (99.9%): [88.233, 88.336] (assumes normal distribution)
+
+Secondary result "io.github.neoionet.netty.microbenchmark.ByteBufAllocatorAllocPatternBenchmark.heapAllocation:CPI":
+  0.294 clks/insn
+
+Secondary result "io.github.neoionet.netty.microbenchmark.ByteBufAllocatorAllocPatternBenchmark.heapAllocation:IPC":
+  3.407 insns/clk
+
+Secondary result "io.github.neoionet.netty.microbenchmark.ByteBufAllocatorAllocPatternBenchmark.heapAllocation:L1-dcache-load-misses":
+  5.147 #/op
+
+Secondary result "io.github.neoionet.netty.microbenchmark.ByteBufAllocatorAllocPatternBenchmark.heapAllocation:L1-dcache-loads":
+  293.079 #/op
+
+Secondary result "io.github.neoionet.netty.microbenchmark.ByteBufAllocatorAllocPatternBenchmark.heapAllocation:L1-icache-load-misses":
+  0.003 #/op
+
+Secondary result "io.github.neoionet.netty.microbenchmark.ByteBufAllocatorAllocPatternBenchmark.heapAllocation:L1-icache-loads":
+  1.029 #/op
+
+Secondary result "io.github.neoionet.netty.microbenchmark.ByteBufAllocatorAllocPatternBenchmark.heapAllocation:branch-misses":
+  0.813 #/op
+
+Secondary result "io.github.neoionet.netty.microbenchmark.ByteBufAllocatorAllocPatternBenchmark.heapAllocation:branches":
+  139.554 #/op
+
+Secondary result "io.github.neoionet.netty.microbenchmark.ByteBufAllocatorAllocPatternBenchmark.heapAllocation:cycles":
+  200.437 #/op
+
+Secondary result "io.github.neoionet.netty.microbenchmark.ByteBufAllocatorAllocPatternBenchmark.heapAllocation:dTLB-load-misses":
+  0.023 #/op
+
+Secondary result "io.github.neoionet.netty.microbenchmark.ByteBufAllocatorAllocPatternBenchmark.heapAllocation:dTLB-loads":
+  2.176 #/op
+
+Secondary result "io.github.neoionet.netty.microbenchmark.ByteBufAllocatorAllocPatternBenchmark.heapAllocation:iTLB-load-misses":
+  0.001 #/op
+
+Secondary result "io.github.neoionet.netty.microbenchmark.ByteBufAllocatorAllocPatternBenchmark.heapAllocation:iTLB-loads":
+  0.002 #/op
+
+Secondary result "io.github.neoionet.netty.microbenchmark.ByteBufAllocatorAllocPatternBenchmark.heapAllocation:instructions":
+  682.821 #/op
+
+Secondary result "io.github.neoionet.netty.microbenchmark.ByteBufAllocatorAllocPatternBenchmark.heapAllocation:stalled-cycles-frontend":
+  7.133 #/op
+
+
+# Run complete. Total time: 00:00:24
+
+REMEMBER: The numbers below are just data. To gain reusable insights, you need to follow up on
+why the numbers are the way they are. Use profilers (see -prof, -lprof), design factorial
+experiments, perform baseline and negative tests that provide experimental control, make sure
+the benchmarking environment is safe on JVM/OS/HW level, ask for reviews from the domain experts.
+Do not assume the numbers tell you what you want them to tell.
+
+NOTE: Current JVM experimentally supports Compiler Blackholes, and they are in use. Please exercise
+extra caution when trusting the results, look into the generated code to check the benchmark still
+works, and factor in a small probability of new VM bugs. Additionally, while comparisons between
+different JVMs are already problematic, the performance difference caused by different Blackhole
+modes can be very significant. Please make sure you use the consistent Blackhole mode for comparisons.
+
+Benchmark                                                                     (MAX_LIVE_BUFFERS)  (allocatorType)  (enableReadWrite)  (sizePattern)  Mode  Cnt    Score   Error      Units
+ByteBufAllocatorAllocPatternBenchmark.heapAllocation                                        1024            ARENA               true     E_COMMERCE  avgt   10   88.284 ± 0.051      ns/op
+ByteBufAllocatorAllocPatternBenchmark.heapAllocation:CPI                                    1024            ARENA               true     E_COMMERCE  avgt         0.294          clks/insn
+ByteBufAllocatorAllocPatternBenchmark.heapAllocation:IPC                                    1024            ARENA               true     E_COMMERCE  avgt         3.407          insns/clk
+ByteBufAllocatorAllocPatternBenchmark.heapAllocation:L1-dcache-load-misses                  1024            ARENA               true     E_COMMERCE  avgt         5.147               #/op
+ByteBufAllocatorAllocPatternBenchmark.heapAllocation:L1-dcache-loads                        1024            ARENA               true     E_COMMERCE  avgt       293.079               #/op
+ByteBufAllocatorAllocPatternBenchmark.heapAllocation:L1-icache-load-misses                  1024            ARENA               true     E_COMMERCE  avgt         0.003               #/op
+ByteBufAllocatorAllocPatternBenchmark.heapAllocation:L1-icache-loads                        1024            ARENA               true     E_COMMERCE  avgt         1.029               #/op
+ByteBufAllocatorAllocPatternBenchmark.heapAllocation:branch-misses                          1024            ARENA               true     E_COMMERCE  avgt         0.813               #/op
+ByteBufAllocatorAllocPatternBenchmark.heapAllocation:branches                               1024            ARENA               true     E_COMMERCE  avgt       139.554               #/op
+ByteBufAllocatorAllocPatternBenchmark.heapAllocation:cycles                                 1024            ARENA               true     E_COMMERCE  avgt       200.437               #/op
+ByteBufAllocatorAllocPatternBenchmark.heapAllocation:dTLB-load-misses                       1024            ARENA               true     E_COMMERCE  avgt         0.023               #/op
+ByteBufAllocatorAllocPatternBenchmark.heapAllocation:dTLB-loads                             1024            ARENA               true     E_COMMERCE  avgt         2.176               #/op
+ByteBufAllocatorAllocPatternBenchmark.heapAllocation:iTLB-load-misses                       1024            ARENA               true     E_COMMERCE  avgt         0.001               #/op
+ByteBufAllocatorAllocPatternBenchmark.heapAllocation:iTLB-loads                             1024            ARENA               true     E_COMMERCE  avgt         0.002               #/op
+ByteBufAllocatorAllocPatternBenchmark.heapAllocation:instructions                           1024            ARENA               true     E_COMMERCE  avgt       682.821               #/op
+ByteBufAllocatorAllocPatternBenchmark.heapAllocation:stalled-cycles-frontend                1024            ARENA               true     E_COMMERCE  avgt         7.133               #/op

@@ -1,0 +1,425 @@
+# JMH version: 1.37
+# VM version: JDK 21, Java HotSpot(TM) 64-Bit Server VM, 21+35-LTS-2513
+# VM invoker: /home/forked_franz/.sdkman/candidates/java/21-oracle/bin/java
+# VM options: -server -dsa -da -XX:InitialRAMPercentage=40.0 -XX:MaxRAMPercentage=40.0 -Dio.netty.leakDetection.level=disabled -Djmh.executor=CUSTOM -Djmh.executor.class=io.github.neoionet.netty.microbenchmark.executor.FastThreadLocalThreadHarnessExecutor -XX:MaxRAM=60g -Xlog:gc
+# Blackhole mode: compiler (auto-detected, use -Djmh.blackhole.autoDetect=false to disable)
+# Warmup: 10 iterations, 1 s each
+# Measurement: 10 iterations, 1 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Average time, time/op
+# Benchmark: io.github.neoionet.netty.microbenchmark.ByteBufAllocatorAllocPatternBenchmark.heapAllocation
+# Parameters: (MAX_LIVE_BUFFERS = 1024, allocatorType = ADAPTIVE, enableReadWrite = true, sizePattern = E_COMMERCE)
+
+# Run progress: 0.00% complete, ETA 00:04:00
+# Fork: 1 of 3
+[0.002s][info][gc] Using G1
+# Warmup Iteration   1: 87.600 ns/op
+# Warmup Iteration   2: 83.571 ns/op
+# Warmup Iteration   3: 84.981 ns/op
+# Warmup Iteration   4: 84.776 ns/op
+# Warmup Iteration   5: 84.744 ns/op
+# Warmup Iteration   6: 84.825 ns/op
+# Warmup Iteration   7: 84.758 ns/op
+# Warmup Iteration   8: 84.709 ns/op
+# Warmup Iteration   9: 84.789 ns/op
+# Warmup Iteration  10: 84.862 ns/op
+Iteration   1: 84.973 ns/op
+Iteration   2: 85.139 ns/op
+Iteration   3: 85.130 ns/op
+Iteration   4: 84.983 ns/op
+Iteration   5: 85.836 ns/op
+Iteration   6: 84.855 ns/op
+Iteration   7: 84.881 ns/op
+Iteration   8: 84.924 ns/op
+Iteration   9: 84.780 ns/op
+Iteration  10: cRSS-pRSS:[1098, 1098]
+;used-memory:[10]
+84.820 ns/op
+
+# Run progress: 8.33% complete, ETA 00:04:11
+# Fork: 2 of 3
+[0.002s][info][gc] Using G1
+# Warmup Iteration   1: 88.019 ns/op
+# Warmup Iteration   2: 84.269 ns/op
+# Warmup Iteration   3: 84.832 ns/op
+# Warmup Iteration   4: 84.874 ns/op
+# Warmup Iteration   5: 84.605 ns/op
+# Warmup Iteration   6: 84.585 ns/op
+# Warmup Iteration   7: 84.558 ns/op
+# Warmup Iteration   8: 84.550 ns/op
+# Warmup Iteration   9: 84.611 ns/op
+# Warmup Iteration  10: 84.601 ns/op
+Iteration   1: 84.752 ns/op
+Iteration   2: 84.610 ns/op
+Iteration   3: 84.687 ns/op
+Iteration   4: 84.811 ns/op
+Iteration   5: 84.611 ns/op
+Iteration   6: 84.717 ns/op
+Iteration   7: 84.593 ns/op
+Iteration   8: 84.894 ns/op
+Iteration   9: 84.617 ns/op
+Iteration  10: cRSS-pRSS:[1089, 1089]
+;used-memory:[11]
+84.585 ns/op
+
+# Run progress: 16.67% complete, ETA 00:03:48
+# Fork: 3 of 3
+[0.002s][info][gc] Using G1
+# Warmup Iteration   1: 87.531 ns/op
+# Warmup Iteration   2: 84.175 ns/op
+# Warmup Iteration   3: 82.130 ns/op
+# Warmup Iteration   4: 82.072 ns/op
+# Warmup Iteration   5: 82.217 ns/op
+# Warmup Iteration   6: 82.198 ns/op
+# Warmup Iteration   7: 82.222 ns/op
+# Warmup Iteration   8: 82.188 ns/op
+# Warmup Iteration   9: 82.209 ns/op
+# Warmup Iteration  10: 82.221 ns/op
+Iteration   1: 82.251 ns/op
+Iteration   2: 82.359 ns/op
+Iteration   3: 81.898 ns/op
+Iteration   4: 82.201 ns/op
+Iteration   5: 82.476 ns/op
+Iteration   6: 83.085 ns/op
+Iteration   7: 82.815 ns/op
+Iteration   8: 82.138 ns/op
+Iteration   9: 82.354 ns/op
+Iteration  10: cRSS-pRSS:[1095, 1095]
+;used-memory:[10]
+82.261 ns/op
+
+
+Result "io.github.neoionet.netty.microbenchmark.ByteBufAllocatorAllocPatternBenchmark.heapAllocation":
+  84.035 ±(99.9%) 0.818 ns/op [Average]
+  (min, avg, max) = (81.898, 84.035, 85.836), stdev = 1.224
+  CI (99.9%): [83.217, 84.852] (assumes normal distribution)
+
+
+# JMH version: 1.37
+# VM version: JDK 21, Java HotSpot(TM) 64-Bit Server VM, 21+35-LTS-2513
+# VM invoker: /home/forked_franz/.sdkman/candidates/java/21-oracle/bin/java
+# VM options: -server -dsa -da -XX:InitialRAMPercentage=40.0 -XX:MaxRAMPercentage=40.0 -Dio.netty.leakDetection.level=disabled -Djmh.executor=CUSTOM -Djmh.executor.class=io.github.neoionet.netty.microbenchmark.executor.FastThreadLocalThreadHarnessExecutor -XX:MaxRAM=60g -Xlog:gc
+# Blackhole mode: compiler (auto-detected, use -Djmh.blackhole.autoDetect=false to disable)
+# Warmup: 10 iterations, 1 s each
+# Measurement: 10 iterations, 1 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Average time, time/op
+# Benchmark: io.github.neoionet.netty.microbenchmark.ByteBufAllocatorAllocPatternBenchmark.heapAllocation
+# Parameters: (MAX_LIVE_BUFFERS = 1024, allocatorType = ARENA, enableReadWrite = true, sizePattern = E_COMMERCE)
+
+# Run progress: 25.00% complete, ETA 00:03:25
+# Fork: 1 of 3
+[0.002s][info][gc] Using G1
+# Warmup Iteration   1: 97.520 ns/op
+# Warmup Iteration   2: 89.451 ns/op
+# Warmup Iteration   3: 86.762 ns/op
+# Warmup Iteration   4: 95.892 ns/op
+# Warmup Iteration   5: 86.801 ns/op
+# Warmup Iteration   6: 86.790 ns/op
+# Warmup Iteration   7: 86.747 ns/op
+# Warmup Iteration   8: 86.698 ns/op
+# Warmup Iteration   9: 86.701 ns/op
+# Warmup Iteration  10: 86.680 ns/op
+Iteration   1: 86.708 ns/op
+Iteration   2: 86.674 ns/op
+Iteration   3: 86.788 ns/op
+Iteration   4: 86.762 ns/op
+Iteration   5: 86.759 ns/op
+Iteration   6: 86.757 ns/op
+Iteration   7: 86.763 ns/op
+Iteration   8: 87.699 ns/op
+Iteration   9: 86.723 ns/op
+Iteration  10: cRSS-pRSS:[1097, 1097]
+;used-memory:[0]
+ARENATELE blockSize=262144 maxBlocks=8 cap=8192 maxObjects=16384 debug=false arenaHeap=2902 arenaDirect=0 delegateHeap=227714180 delegateDirect=0 arenaShare=0.00% blocksHeap=8 blocksDirect=1 pinned=0 reusable=0 maxPinnedHeap=0 maxPinnedDirect=0 blockReuses=0 blockGrowths=7 hooks=0 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=0 reallocMoved=0 reallocDelegated=760 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=912
+ARENALOOP thread=io.github.neoionet.netty.microbenchmark.ByteBufAllocatorAllocPatternBenchmark.heapAllocation-1-1 arenaHeap=2902 arenaDirect=0 delegateHeap=227714180 delegateDirect=0 arenaShare=0.00% blocksHeap=8 blocksDirect=1 pinned=0 reusable=0 maxPinnedHeap=0 maxPinnedDirect=0 blockReuses=0 blockGrowths=7 hooks=0 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=0 reallocMoved=0 reallocDelegated=760 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=912
+87.010 ns/op
+
+# Run progress: 33.33% complete, ETA 00:03:02
+# Fork: 2 of 3
+[0.002s][info][gc] Using G1
+# Warmup Iteration   1: 91.103 ns/op
+# Warmup Iteration   2: 88.176 ns/op
+# Warmup Iteration   3: 91.216 ns/op
+# Warmup Iteration   4: 91.155 ns/op
+# Warmup Iteration   5: 91.187 ns/op
+# Warmup Iteration   6: 91.196 ns/op
+# Warmup Iteration   7: 91.231 ns/op
+# Warmup Iteration   8: 91.148 ns/op
+# Warmup Iteration   9: 91.161 ns/op
+# Warmup Iteration  10: 91.131 ns/op
+Iteration   1: 91.208 ns/op
+Iteration   2: 91.398 ns/op
+Iteration   3: 91.248 ns/op
+Iteration   4: 91.383 ns/op
+Iteration   5: 91.282 ns/op
+Iteration   6: 91.123 ns/op
+Iteration   7: 91.072 ns/op
+Iteration   8: 91.177 ns/op
+Iteration   9: 91.129 ns/op
+Iteration  10: cRSS-pRSS:[1098, 1098]
+;used-memory:[0]
+ARENATELE blockSize=262144 maxBlocks=8 cap=8192 maxObjects=16384 debug=false arenaHeap=2877 arenaDirect=0 delegateHeap=219709996 delegateDirect=0 arenaShare=0.00% blocksHeap=8 blocksDirect=1 pinned=0 reusable=0 maxPinnedHeap=0 maxPinnedDirect=0 blockReuses=0 blockGrowths=7 hooks=0 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=0 reallocMoved=0 reallocDelegated=735 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=912
+ARENALOOP thread=io.github.neoionet.netty.microbenchmark.ByteBufAllocatorAllocPatternBenchmark.heapAllocation-1-1 arenaHeap=2877 arenaDirect=0 delegateHeap=219709996 delegateDirect=0 arenaShare=0.00% blocksHeap=8 blocksDirect=1 pinned=0 reusable=0 maxPinnedHeap=0 maxPinnedDirect=0 blockReuses=0 blockGrowths=7 hooks=0 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=0 reallocMoved=0 reallocDelegated=735 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=912
+91.174 ns/op
+
+# Run progress: 41.67% complete, ETA 00:02:39
+# Fork: 3 of 3
+[0.002s][info][gc] Using G1
+# Warmup Iteration   1: 92.710 ns/op
+# Warmup Iteration   2: 87.624 ns/op
+# Warmup Iteration   3: 86.131 ns/op
+# Warmup Iteration   4: 86.711 ns/op
+# Warmup Iteration   5: 86.701 ns/op
+# Warmup Iteration   6: 86.555 ns/op
+# Warmup Iteration   7: 86.669 ns/op
+# Warmup Iteration   8: 86.565 ns/op
+# Warmup Iteration   9: 86.738 ns/op
+# Warmup Iteration  10: 86.470 ns/op
+Iteration   1: 86.895 ns/op
+Iteration   2: 86.865 ns/op
+Iteration   3: 86.557 ns/op
+Iteration   4: 86.695 ns/op
+Iteration   5: 86.618 ns/op
+Iteration   6: 86.879 ns/op
+Iteration   7: 86.830 ns/op
+Iteration   8: 86.609 ns/op
+Iteration   9: 86.654 ns/op
+Iteration  10: cRSS-pRSS:[1099, 1099]
+;used-memory:[0]
+ARENATELE blockSize=262144 maxBlocks=8 cap=8192 maxObjects=16384 debug=false arenaHeap=2911 arenaDirect=0 delegateHeap=229955352 delegateDirect=0 arenaShare=0.00% blocksHeap=8 blocksDirect=1 pinned=0 reusable=0 maxPinnedHeap=0 maxPinnedDirect=0 blockReuses=0 blockGrowths=7 hooks=0 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=0 reallocMoved=0 reallocDelegated=769 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=912
+ARENALOOP thread=io.github.neoionet.netty.microbenchmark.ByteBufAllocatorAllocPatternBenchmark.heapAllocation-1-1 arenaHeap=2911 arenaDirect=0 delegateHeap=229955352 delegateDirect=0 arenaShare=0.00% blocksHeap=8 blocksDirect=1 pinned=0 reusable=0 maxPinnedHeap=0 maxPinnedDirect=0 blockReuses=0 blockGrowths=7 hooks=0 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=0 reallocMoved=0 reallocDelegated=769 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=912
+86.597 ns/op
+
+
+Result "io.github.neoionet.netty.microbenchmark.ByteBufAllocatorAllocPatternBenchmark.heapAllocation":
+  88.268 ±(99.9%) 1.425 ns/op [Average]
+  (min, avg, max) = (86.557, 88.268, 91.398), stdev = 2.133
+  CI (99.9%): [86.843, 89.693] (assumes normal distribution)
+
+
+# JMH version: 1.37
+# VM version: JDK 21, Java HotSpot(TM) 64-Bit Server VM, 21+35-LTS-2513
+# VM invoker: /home/forked_franz/.sdkman/candidates/java/21-oracle/bin/java
+# VM options: -server -dsa -da -XX:InitialRAMPercentage=40.0 -XX:MaxRAMPercentage=40.0 -Dio.netty.leakDetection.level=disabled -Djmh.executor=CUSTOM -Djmh.executor.class=io.github.neoionet.netty.microbenchmark.executor.FastThreadLocalThreadHarnessExecutor -XX:MaxRAM=60g -Xlog:gc
+# Blackhole mode: compiler (auto-detected, use -Djmh.blackhole.autoDetect=false to disable)
+# Warmup: 10 iterations, 1 s each
+# Measurement: 10 iterations, 1 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Average time, time/op
+# Benchmark: io.github.neoionet.netty.microbenchmark.ByteBufAllocatorAllocPatternBenchmark.heapAllocation
+# Parameters: (MAX_LIVE_BUFFERS = 4096, allocatorType = ADAPTIVE, enableReadWrite = true, sizePattern = E_COMMERCE)
+
+# Run progress: 50.00% complete, ETA 00:02:17
+# Fork: 1 of 3
+[0.002s][info][gc] Using G1
+# Warmup Iteration   1: 102.662 ns/op
+# Warmup Iteration   2: 99.235 ns/op
+# Warmup Iteration   3: 97.366 ns/op
+# Warmup Iteration   4: 97.197 ns/op
+# Warmup Iteration   5: 97.320 ns/op
+# Warmup Iteration   6: 97.277 ns/op
+# Warmup Iteration   7: 97.056 ns/op
+# Warmup Iteration   8: 97.068 ns/op
+# Warmup Iteration   9: 97.075 ns/op
+# Warmup Iteration  10: 97.062 ns/op
+Iteration   1: 97.158 ns/op
+Iteration   2: 97.065 ns/op
+Iteration   3: 97.046 ns/op
+Iteration   4: 97.092 ns/op
+Iteration   5: 97.084 ns/op
+Iteration   6: 97.195 ns/op
+Iteration   7: 97.197 ns/op
+Iteration   8: 97.467 ns/op
+Iteration   9: 97.937 ns/op
+Iteration  10: cRSS-pRSS:[1100, 1100]
+;used-memory:[25]
+97.371 ns/op
+
+# Run progress: 58.33% complete, ETA 00:01:54
+# Fork: 2 of 3
+[0.002s][info][gc] Using G1
+# Warmup Iteration   1: 104.217 ns/op
+# Warmup Iteration   2: 98.845 ns/op
+# Warmup Iteration   3: 97.608 ns/op
+# Warmup Iteration   4: 97.579 ns/op
+# Warmup Iteration   5: 97.550 ns/op
+# Warmup Iteration   6: 97.715 ns/op
+# Warmup Iteration   7: 97.612 ns/op
+# Warmup Iteration   8: 97.370 ns/op
+# Warmup Iteration   9: 97.324 ns/op
+# Warmup Iteration  10: 97.255 ns/op
+Iteration   1: 97.419 ns/op
+Iteration   2: 97.331 ns/op
+Iteration   3: 97.433 ns/op
+Iteration   4: 97.487 ns/op
+Iteration   5: 97.467 ns/op
+Iteration   6: 97.421 ns/op
+Iteration   7: 97.328 ns/op
+Iteration   8: 97.306 ns/op
+Iteration   9: 97.489 ns/op
+Iteration  10: cRSS-pRSS:[1099, 1099]
+;used-memory:[26]
+97.698 ns/op
+
+# Run progress: 66.67% complete, ETA 00:01:31
+# Fork: 3 of 3
+[0.002s][info][gc] Using G1
+# Warmup Iteration   1: 106.029 ns/op
+# Warmup Iteration   2: 100.701 ns/op
+# Warmup Iteration   3: 99.315 ns/op
+# Warmup Iteration   4: 100.326 ns/op
+# Warmup Iteration   5: 99.611 ns/op
+# Warmup Iteration   6: 99.291 ns/op
+# Warmup Iteration   7: 99.205 ns/op
+# Warmup Iteration   8: 99.203 ns/op
+# Warmup Iteration   9: 99.178 ns/op
+# Warmup Iteration  10: 99.170 ns/op
+Iteration   1: 99.211 ns/op
+Iteration   2: 99.142 ns/op
+Iteration   3: 99.136 ns/op
+Iteration   4: 99.207 ns/op
+Iteration   5: 99.208 ns/op
+Iteration   6: 99.298 ns/op
+Iteration   7: 99.187 ns/op
+Iteration   8: 99.803 ns/op
+Iteration   9: 99.303 ns/op
+Iteration  10: cRSS-pRSS:[1096, 1097]
+;used-memory:[26]
+99.124 ns/op
+
+
+Result "io.github.neoionet.netty.microbenchmark.ByteBufAllocatorAllocPatternBenchmark.heapAllocation":
+  97.987 ±(99.9%) 0.629 ns/op [Average]
+  (min, avg, max) = (97.046, 97.987, 99.803), stdev = 0.941
+  CI (99.9%): [97.358, 98.616] (assumes normal distribution)
+
+
+# JMH version: 1.37
+# VM version: JDK 21, Java HotSpot(TM) 64-Bit Server VM, 21+35-LTS-2513
+# VM invoker: /home/forked_franz/.sdkman/candidates/java/21-oracle/bin/java
+# VM options: -server -dsa -da -XX:InitialRAMPercentage=40.0 -XX:MaxRAMPercentage=40.0 -Dio.netty.leakDetection.level=disabled -Djmh.executor=CUSTOM -Djmh.executor.class=io.github.neoionet.netty.microbenchmark.executor.FastThreadLocalThreadHarnessExecutor -XX:MaxRAM=60g -Xlog:gc
+# Blackhole mode: compiler (auto-detected, use -Djmh.blackhole.autoDetect=false to disable)
+# Warmup: 10 iterations, 1 s each
+# Measurement: 10 iterations, 1 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Average time, time/op
+# Benchmark: io.github.neoionet.netty.microbenchmark.ByteBufAllocatorAllocPatternBenchmark.heapAllocation
+# Parameters: (MAX_LIVE_BUFFERS = 4096, allocatorType = ARENA, enableReadWrite = true, sizePattern = E_COMMERCE)
+
+# Run progress: 75.00% complete, ETA 00:01:08
+# Fork: 1 of 3
+[0.002s][info][gc] Using G1
+# Warmup Iteration   1: 108.587 ns/op
+# Warmup Iteration   2: 101.794 ns/op
+# Warmup Iteration   3: 100.382 ns/op
+# Warmup Iteration   4: 100.324 ns/op
+# Warmup Iteration   5: 100.381 ns/op
+# Warmup Iteration   6: 100.928 ns/op
+# Warmup Iteration   7: 100.249 ns/op
+# Warmup Iteration   8: 100.471 ns/op
+# Warmup Iteration   9: 100.321 ns/op
+# Warmup Iteration  10: 100.267 ns/op
+Iteration   1: 100.372 ns/op
+Iteration   2: 100.360 ns/op
+Iteration   3: 100.388 ns/op
+Iteration   4: 100.342 ns/op
+Iteration   5: 100.158 ns/op
+Iteration   6: 100.408 ns/op
+Iteration   7: 100.352 ns/op
+Iteration   8: 100.322 ns/op
+Iteration   9: 100.234 ns/op
+Iteration  10: cRSS-pRSS:[1101, 1101]
+;used-memory:[0]
+ARENATELE blockSize=262144 maxBlocks=8 cap=8192 maxObjects=16384 debug=false arenaHeap=2903 arenaDirect=0 delegateHeap=198406811 delegateDirect=0 arenaShare=0.00% blocksHeap=8 blocksDirect=1 pinned=0 reusable=0 maxPinnedHeap=0 maxPinnedDirect=0 blockReuses=0 blockGrowths=7 hooks=0 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=0 reallocMoved=0 reallocDelegated=662 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=2240
+ARENALOOP thread=io.github.neoionet.netty.microbenchmark.ByteBufAllocatorAllocPatternBenchmark.heapAllocation-1-1 arenaHeap=2903 arenaDirect=0 delegateHeap=198406811 delegateDirect=0 arenaShare=0.00% blocksHeap=8 blocksDirect=1 pinned=0 reusable=0 maxPinnedHeap=0 maxPinnedDirect=0 blockReuses=0 blockGrowths=7 hooks=0 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=0 reallocMoved=0 reallocDelegated=662 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=2240
+100.319 ns/op
+
+# Run progress: 83.33% complete, ETA 00:00:45
+# Fork: 2 of 3
+[0.002s][info][gc] Using G1
+# Warmup Iteration   1: 108.777 ns/op
+# Warmup Iteration   2: 103.022 ns/op
+# Warmup Iteration   3: 102.446 ns/op
+# Warmup Iteration   4: 102.268 ns/op
+# Warmup Iteration   5: 102.337 ns/op
+# Warmup Iteration   6: 102.287 ns/op
+# Warmup Iteration   7: 102.204 ns/op
+# Warmup Iteration   8: 102.223 ns/op
+# Warmup Iteration   9: 102.144 ns/op
+# Warmup Iteration  10: 101.969 ns/op
+Iteration   1: 102.138 ns/op
+Iteration   2: 102.673 ns/op
+Iteration   3: 102.455 ns/op
+Iteration   4: 102.431 ns/op
+Iteration   5: 102.234 ns/op
+Iteration   6: 102.356 ns/op
+Iteration   7: 102.202 ns/op
+Iteration   8: 102.108 ns/op
+Iteration   9: 102.304 ns/op
+Iteration  10: cRSS-pRSS:[1108, 1108]
+;used-memory:[0]
+ARENATELE blockSize=262144 maxBlocks=8 cap=8192 maxObjects=16384 debug=false arenaHeap=2894 arenaDirect=0 delegateHeap=194922972 delegateDirect=0 arenaShare=0.00% blocksHeap=8 blocksDirect=1 pinned=0 reusable=0 maxPinnedHeap=0 maxPinnedDirect=0 blockReuses=0 blockGrowths=7 hooks=0 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=0 reallocMoved=0 reallocDelegated=653 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=2240
+ARENALOOP thread=io.github.neoionet.netty.microbenchmark.ByteBufAllocatorAllocPatternBenchmark.heapAllocation-1-1 arenaHeap=2894 arenaDirect=0 delegateHeap=194922972 delegateDirect=0 arenaShare=0.00% blocksHeap=8 blocksDirect=1 pinned=0 reusable=0 maxPinnedHeap=0 maxPinnedDirect=0 blockReuses=0 blockGrowths=7 hooks=0 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=0 reallocMoved=0 reallocDelegated=653 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=2240
+102.160 ns/op
+
+# Run progress: 91.67% complete, ETA 00:00:22
+# Fork: 3 of 3
+[0.002s][info][gc] Using G1
+# Warmup Iteration   1: 105.159 ns/op
+# Warmup Iteration   2: 98.386 ns/op
+# Warmup Iteration   3: 97.550 ns/op
+# Warmup Iteration   4: 97.632 ns/op
+# Warmup Iteration   5: 97.458 ns/op
+# Warmup Iteration   6: 97.408 ns/op
+# Warmup Iteration   7: 97.313 ns/op
+# Warmup Iteration   8: 97.294 ns/op
+# Warmup Iteration   9: 97.620 ns/op
+# Warmup Iteration  10: 97.433 ns/op
+Iteration   1: 97.233 ns/op
+Iteration   2: 97.280 ns/op
+Iteration   3: 97.263 ns/op
+Iteration   4: 97.462 ns/op
+Iteration   5: 97.511 ns/op
+Iteration   6: 97.544 ns/op
+Iteration   7: 97.162 ns/op
+Iteration   8: 97.339 ns/op
+Iteration   9: 97.391 ns/op
+Iteration  10: cRSS-pRSS:[1103, 1103]
+;used-memory:[0]
+ARENATELE blockSize=262144 maxBlocks=8 cap=8192 maxObjects=16384 debug=false arenaHeap=2926 arenaDirect=0 delegateHeap=204502360 delegateDirect=0 arenaShare=0.00% blocksHeap=8 blocksDirect=1 pinned=0 reusable=0 maxPinnedHeap=0 maxPinnedDirect=0 blockReuses=0 blockGrowths=7 hooks=0 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=0 reallocMoved=0 reallocDelegated=685 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=2240
+ARENALOOP thread=io.github.neoionet.netty.microbenchmark.ByteBufAllocatorAllocPatternBenchmark.heapAllocation-1-1 arenaHeap=2926 arenaDirect=0 delegateHeap=204502360 delegateDirect=0 arenaShare=0.00% blocksHeap=8 blocksDirect=1 pinned=0 reusable=0 maxPinnedHeap=0 maxPinnedDirect=0 blockReuses=0 blockGrowths=7 hooks=0 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=0 reallocMoved=0 reallocDelegated=685 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=2240
+97.321 ns/op
+
+
+Result "io.github.neoionet.netty.microbenchmark.ByteBufAllocatorAllocPatternBenchmark.heapAllocation":
+  99.994 ±(99.9%) 1.387 ns/op [Average]
+  (min, avg, max) = (97.162, 99.994, 102.673), stdev = 2.075
+  CI (99.9%): [98.608, 101.381] (assumes normal distribution)
+
+
+# Run complete. Total time: 00:04:34
+
+REMEMBER: The numbers below are just data. To gain reusable insights, you need to follow up on
+why the numbers are the way they are. Use profilers (see -prof, -lprof), design factorial
+experiments, perform baseline and negative tests that provide experimental control, make sure
+the benchmarking environment is safe on JVM/OS/HW level, ask for reviews from the domain experts.
+Do not assume the numbers tell you what you want them to tell.
+
+NOTE: Current JVM experimentally supports Compiler Blackholes, and they are in use. Please exercise
+extra caution when trusting the results, look into the generated code to check the benchmark still
+works, and factor in a small probability of new VM bugs. Additionally, while comparisons between
+different JVMs are already problematic, the performance difference caused by different Blackhole
+modes can be very significant. Please make sure you use the consistent Blackhole mode for comparisons.
+
+Benchmark                                             (MAX_LIVE_BUFFERS)  (allocatorType)  (enableReadWrite)  (sizePattern)  Mode  Cnt   Score   Error  Units
+ByteBufAllocatorAllocPatternBenchmark.heapAllocation                1024         ADAPTIVE               true     E_COMMERCE  avgt   30  84.035 ± 0.818  ns/op
+ByteBufAllocatorAllocPatternBenchmark.heapAllocation                1024            ARENA               true     E_COMMERCE  avgt   30  88.268 ± 1.425  ns/op
+ByteBufAllocatorAllocPatternBenchmark.heapAllocation                4096         ADAPTIVE               true     E_COMMERCE  avgt   30  97.987 ± 0.629  ns/op
+ByteBufAllocatorAllocPatternBenchmark.heapAllocation                4096            ARENA               true     E_COMMERCE  avgt   30  99.994 ± 1.387  ns/op
+
+Benchmark result is saved to /home/forked_franz/IdeaProjects/netty-bench/results/h2h-merged-x86-2026-09-22/arena-v3/micro/t1-heap.json

@@ -1,0 +1,197 @@
+# JMH version: 1.37
+# VM version: JDK 21, Java HotSpot(TM) 64-Bit Server VM, 21+35-LTS-2513
+# VM invoker: /home/forked_franz/.sdkman/candidates/java/21-oracle/bin/java
+# VM options: -server -dsa -da -XX:InitialRAMPercentage=40.0 -XX:MaxRAMPercentage=40.0 -Dio.netty.leakDetection.level=disabled -Djmh.executor=CUSTOM -Djmh.executor.class=io.github.neoionet.netty.microbenchmark.executor.FastThreadLocalThreadHarnessExecutor -XX:MaxRAM=60g
+# Blackhole mode: compiler (auto-detected, use -Djmh.blackhole.autoDetect=false to disable)
+# Warmup: 10 iterations, 1 s each
+# Measurement: 10 iterations, 1 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Average time, time/op
+# Benchmark: io.github.neoionet.netty.microbenchmark.CycleScopedAllocBenchmark.cycleDirect
+# Parameters: (allocatorType = ARENA, k = 64, releaseOrder = FIFO, sizes = MIXED)
+
+# Run progress: 0.00% complete, ETA 00:02:00
+# Fork: 1 of 3
+# Warmup Iteration   1: 3752.620 ns/op
+# Warmup Iteration   2: 3275.582 ns/op
+# Warmup Iteration   3: 3258.229 ns/op
+# Warmup Iteration   4: 3259.962 ns/op
+# Warmup Iteration   5: 3259.242 ns/op
+# Warmup Iteration   6: 3257.591 ns/op
+# Warmup Iteration   7: 3259.023 ns/op
+# Warmup Iteration   8: 3286.077 ns/op
+# Warmup Iteration   9: 3284.566 ns/op
+# Warmup Iteration  10: 3277.264 ns/op
+Iteration   1: 3281.457 ns/op
+Iteration   2: 3281.951 ns/op
+Iteration   3: 3269.012 ns/op
+Iteration   4: 3249.256 ns/op
+Iteration   5: 3253.606 ns/op
+Iteration   6: 3251.492 ns/op
+Iteration   7: 3252.438 ns/op
+Iteration   8: 3250.998 ns/op
+Iteration   9: 3250.418 ns/op
+Iteration  10: 3247.123 ns/op
+
+# Run progress: 16.67% complete, ETA 00:01:42
+# Fork: 2 of 3
+# Warmup Iteration   1: 3752.394 ns/op
+# Warmup Iteration   2: 3254.719 ns/op
+# Warmup Iteration   3: 3253.876 ns/op
+# Warmup Iteration   4: 3254.032 ns/op
+# Warmup Iteration   5: 3252.667 ns/op
+# Warmup Iteration   6: 3253.303 ns/op
+# Warmup Iteration   7: 3254.565 ns/op
+# Warmup Iteration   8: 3253.716 ns/op
+# Warmup Iteration   9: 3252.977 ns/op
+# Warmup Iteration  10: 3249.630 ns/op
+Iteration   1: 3250.360 ns/op
+Iteration   2: 3248.677 ns/op
+Iteration   3: 3249.853 ns/op
+Iteration   4: 3248.742 ns/op
+Iteration   5: 3251.855 ns/op
+Iteration   6: 3247.806 ns/op
+Iteration   7: 3250.269 ns/op
+Iteration   8: 3251.270 ns/op
+Iteration   9: 3246.583 ns/op
+Iteration  10: 3253.676 ns/op
+
+# Run progress: 33.33% complete, ETA 00:01:21
+# Fork: 3 of 3
+# Warmup Iteration   1: 3756.451 ns/op
+# Warmup Iteration   2: 3272.083 ns/op
+# Warmup Iteration   3: 3265.272 ns/op
+# Warmup Iteration   4: 3265.679 ns/op
+# Warmup Iteration   5: 3267.565 ns/op
+# Warmup Iteration   6: 3272.609 ns/op
+# Warmup Iteration   7: 3272.433 ns/op
+# Warmup Iteration   8: 3278.745 ns/op
+# Warmup Iteration   9: 3280.482 ns/op
+# Warmup Iteration  10: 3272.453 ns/op
+Iteration   1: 3274.936 ns/op
+Iteration   2: 3270.908 ns/op
+Iteration   3: 3272.327 ns/op
+Iteration   4: 3268.210 ns/op
+Iteration   5: 3265.407 ns/op
+Iteration   6: 3266.804 ns/op
+Iteration   7: 3266.387 ns/op
+Iteration   8: 3267.603 ns/op
+Iteration   9: 3264.638 ns/op
+Iteration  10: 3264.387 ns/op
+
+
+Result "io.github.neoionet.netty.microbenchmark.CycleScopedAllocBenchmark.cycleDirect":
+  3258.948 ±(99.9%) 7.285 ns/op [Average]
+  (min, avg, max) = (3246.583, 3258.948, 3281.951), stdev = 10.904
+  CI (99.9%): [3251.663, 3266.233] (assumes normal distribution)
+
+
+# JMH version: 1.37
+# VM version: JDK 21, Java HotSpot(TM) 64-Bit Server VM, 21+35-LTS-2513
+# VM invoker: /home/forked_franz/.sdkman/candidates/java/21-oracle/bin/java
+# VM options: -server -dsa -da -XX:InitialRAMPercentage=40.0 -XX:MaxRAMPercentage=40.0 -Dio.netty.leakDetection.level=disabled -Djmh.executor=CUSTOM -Djmh.executor.class=io.github.neoionet.netty.microbenchmark.executor.FastThreadLocalThreadHarnessExecutor -XX:MaxRAM=60g
+# Blackhole mode: compiler (auto-detected, use -Djmh.blackhole.autoDetect=false to disable)
+# Warmup: 10 iterations, 1 s each
+# Measurement: 10 iterations, 1 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Average time, time/op
+# Benchmark: io.github.neoionet.netty.microbenchmark.CycleScopedAllocBenchmark.cycleHeap
+# Parameters: (allocatorType = ARENA, k = 64, releaseOrder = FIFO, sizes = MIXED)
+
+# Run progress: 50.00% complete, ETA 00:01:01
+# Fork: 1 of 3
+# Warmup Iteration   1: 1763.449 ns/op
+# Warmup Iteration   2: 1692.718 ns/op
+# Warmup Iteration   3: 1703.504 ns/op
+# Warmup Iteration   4: 1702.333 ns/op
+# Warmup Iteration   5: 1703.162 ns/op
+# Warmup Iteration   6: 1703.108 ns/op
+# Warmup Iteration   7: 1703.198 ns/op
+# Warmup Iteration   8: 1702.448 ns/op
+# Warmup Iteration   9: 1702.434 ns/op
+# Warmup Iteration  10: 1702.410 ns/op
+Iteration   1: 1702.172 ns/op
+Iteration   2: 1702.882 ns/op
+Iteration   3: 1703.187 ns/op
+Iteration   4: 1703.176 ns/op
+Iteration   5: 1702.884 ns/op
+Iteration   6: 1701.034 ns/op
+Iteration   7: 1701.719 ns/op
+Iteration   8: 1701.094 ns/op
+Iteration   9: 1702.584 ns/op
+Iteration  10: 1704.461 ns/op
+
+# Run progress: 66.67% complete, ETA 00:00:40
+# Fork: 2 of 3
+# Warmup Iteration   1: 1731.546 ns/op
+# Warmup Iteration   2: 1668.553 ns/op
+# Warmup Iteration   3: 1669.845 ns/op
+# Warmup Iteration   4: 1669.215 ns/op
+# Warmup Iteration   5: 1668.447 ns/op
+# Warmup Iteration   6: 1668.713 ns/op
+# Warmup Iteration   7: 1669.102 ns/op
+# Warmup Iteration   8: 1667.906 ns/op
+# Warmup Iteration   9: 1669.314 ns/op
+# Warmup Iteration  10: 1669.413 ns/op
+Iteration   1: 1668.820 ns/op
+Iteration   2: 1669.161 ns/op
+Iteration   3: 1669.260 ns/op
+Iteration   4: 1668.831 ns/op
+Iteration   5: 1669.559 ns/op
+Iteration   6: 1669.001 ns/op
+Iteration   7: 1668.879 ns/op
+Iteration   8: 1668.524 ns/op
+Iteration   9: 1670.505 ns/op
+Iteration  10: 1668.616 ns/op
+
+# Run progress: 83.33% complete, ETA 00:00:20
+# Fork: 3 of 3
+# Warmup Iteration   1: 1778.289 ns/op
+# Warmup Iteration   2: 1691.732 ns/op
+# Warmup Iteration   3: 1702.383 ns/op
+# Warmup Iteration   4: 1702.544 ns/op
+# Warmup Iteration   5: 1700.978 ns/op
+# Warmup Iteration   6: 1701.873 ns/op
+# Warmup Iteration   7: 1702.207 ns/op
+# Warmup Iteration   8: 1701.709 ns/op
+# Warmup Iteration   9: 1701.388 ns/op
+# Warmup Iteration  10: 1701.413 ns/op
+Iteration   1: 1704.202 ns/op
+Iteration   2: 1702.606 ns/op
+Iteration   3: 1701.614 ns/op
+Iteration   4: 1702.928 ns/op
+Iteration   5: 1702.745 ns/op
+Iteration   6: 1700.799 ns/op
+Iteration   7: 1700.463 ns/op
+Iteration   8: 1701.410 ns/op
+Iteration   9: 1702.349 ns/op
+Iteration  10: 1701.460 ns/op
+
+
+Result "io.github.neoionet.netty.microbenchmark.CycleScopedAllocBenchmark.cycleHeap":
+  1691.231 ±(99.9%) 10.645 ns/op [Average]
+  (min, avg, max) = (1668.524, 1691.231, 1704.461), stdev = 15.932
+  CI (99.9%): [1680.586, 1701.876] (assumes normal distribution)
+
+
+# Run complete. Total time: 00:02:02
+
+REMEMBER: The numbers below are just data. To gain reusable insights, you need to follow up on
+why the numbers are the way they are. Use profilers (see -prof, -lprof), design factorial
+experiments, perform baseline and negative tests that provide experimental control, make sure
+the benchmarking environment is safe on JVM/OS/HW level, ask for reviews from the domain experts.
+Do not assume the numbers tell you what you want them to tell.
+
+NOTE: Current JVM experimentally supports Compiler Blackholes, and they are in use. Please exercise
+extra caution when trusting the results, look into the generated code to check the benchmark still
+works, and factor in a small probability of new VM bugs. Additionally, while comparisons between
+different JVMs are already problematic, the performance difference caused by different Blackhole
+modes can be very significant. Please make sure you use the consistent Blackhole mode for comparisons.
+
+Benchmark                              (allocatorType)  (k)  (releaseOrder)  (sizes)  Mode  Cnt     Score    Error  Units
+CycleScopedAllocBenchmark.cycleDirect            ARENA   64            FIFO    MIXED  avgt   30  3258.948 ±  7.285  ns/op
+CycleScopedAllocBenchmark.cycleHeap              ARENA   64            FIFO    MIXED  avgt   30  1691.231 ± 10.645  ns/op
+
+Benchmark result is saved to /home/forked_franz/IdeaProjects/netty-bench/results/h2h-merged-x86-2026-09-22/arena-v3/cycle/cycle-v2.json

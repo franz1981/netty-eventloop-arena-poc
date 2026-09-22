@@ -1,0 +1,11 @@
+# started on Tue Sep 22 17:26:24 2026
+
+
+ Performance counter stats for process id '677714':
+
+   210,577,675,367      instructions                                                          
+   153,225,134,622      cycles                                                                
+         69,195.71 msec task-clock                                                            
+
+      11.490861652 seconds time elapsed
+

@@ -1,0 +1,623 @@
+# JMH version: 1.37
+# VM version: JDK 21, Java HotSpot(TM) 64-Bit Server VM, 21+35-LTS-2513
+# VM invoker: /home/forked_franz/.sdkman/candidates/java/21-oracle/bin/java
+# VM options: -server -dsa -da -XX:InitialRAMPercentage=40.0 -XX:MaxRAMPercentage=40.0 -Dio.netty.leakDetection.level=disabled -Djmh.executor=CUSTOM -Djmh.executor.class=io.github.neoionet.netty.microbenchmark.executor.FastThreadLocalThreadHarnessExecutor -XX:MaxRAM=60g -Xlog:gc
+# Blackhole mode: compiler (auto-detected, use -Djmh.blackhole.autoDetect=false to disable)
+# Warmup: 10 iterations, 1 s each
+# Measurement: 10 iterations, 1 s each
+# Timeout: 10 min per iteration
+# Threads: 32 threads, will synchronize iterations
+# Benchmark mode: Average time, time/op
+# Benchmark: io.github.neoionet.netty.microbenchmark.ByteBufAllocatorAllocPatternBenchmark.heapAllocation
+# Parameters: (MAX_LIVE_BUFFERS = 1024, allocatorType = ADAPTIVE, enableReadWrite = true, sizePattern = E_COMMERCE)
+
+# Run progress: 0.00% complete, ETA 00:04:00
+# Fork: 1 of 3
+[0.002s][info][gc] Using G1
+# Warmup Iteration   1: [2.880s][info][gc] GC(0) Pause Young (Normal) (G1 Evacuation Pause) 2289M->1359M(24576M) 36.648ms
+349.021 ±(99.9%) 43.936 ns/op
+# Warmup Iteration   2: 398.633 ±(99.9%) 85.852 ns/op
+# Warmup Iteration   3: 271.743 ±(99.9%) 37.125 ns/op
+# Warmup Iteration   4: 280.473 ±(99.9%) 51.365 ns/op
+# Warmup Iteration   5: 317.169 ±(99.9%) 91.560 ns/op
+# Warmup Iteration   6: 297.883 ±(99.9%) 71.778 ns/op
+# Warmup Iteration   7: 270.358 ±(99.9%) 37.757 ns/op
+# Warmup Iteration   8: 278.688 ±(99.9%) 48.156 ns/op
+# Warmup Iteration   9: 295.296 ±(99.9%) 71.857 ns/op
+# Warmup Iteration  10: 288.799 ±(99.9%) 61.103 ns/op
+Iteration   1: 277.952 ±(99.9%) 49.924 ns/op
+Iteration   2: 303.113 ±(99.9%) 80.397 ns/op
+Iteration   3: 290.491 ±(99.9%) 67.411 ns/op
+Iteration   4: 299.602 ±(99.9%) 89.436 ns/op
+Iteration   5: 278.772 ±(99.9%) 49.215 ns/op
+Iteration   6: 277.944 ±(99.9%) 51.886 ns/op
+Iteration   7: 271.552 ±(99.9%) 36.498 ns/op
+Iteration   8: 277.515 ±(99.9%) 49.035 ns/op
+Iteration   9: 288.591 ±(99.9%) 60.587 ns/op
+Iteration  10: cRSS-pRSS:[2142, 2142]
+;used-memory:[221]
+285.565 ±(99.9%) 57.903 ns/op
+
+# Run progress: 8.33% complete, ETA 00:04:23
+# Fork: 2 of 3
+[0.002s][info][gc] Using G1
+# Warmup Iteration   1: [2.904s][info][gc] GC(0) Pause Young (Normal) (G1 Evacuation Pause) 2289M->1357M(24576M) 36.909ms
+477.717 ±(99.9%) 76.335 ns/op
+# Warmup Iteration   2: 503.673 ±(99.9%) 58.280 ns/op
+# Warmup Iteration   3: 380.470 ±(99.9%) 84.273 ns/op
+# Warmup Iteration   4: 372.128 ±(99.9%) 163.933 ns/op
+# Warmup Iteration   5: 353.498 ±(99.9%) 79.869 ns/op
+# Warmup Iteration   6: 358.831 ±(99.9%) 70.080 ns/op
+# Warmup Iteration   7: 360.848 ±(99.9%) 98.579 ns/op
+# Warmup Iteration   8: 339.662 ±(99.9%) 106.807 ns/op
+# Warmup Iteration   9: 339.025 ±(99.9%) 86.174 ns/op
+# Warmup Iteration  10: 390.215 ±(99.9%) 86.740 ns/op
+Iteration   1: 384.514 ±(99.9%) 119.218 ns/op
+Iteration   2: 339.730 ±(99.9%) 68.966 ns/op
+Iteration   3: 351.163 ±(99.9%) 83.291 ns/op
+Iteration   4: 337.037 ±(99.9%) 93.320 ns/op
+Iteration   5: 357.348 ±(99.9%) 129.944 ns/op
+Iteration   6: 358.110 ±(99.9%) 126.522 ns/op
+Iteration   7: 382.961 ±(99.9%) 145.445 ns/op
+Iteration   8: 338.380 ±(99.9%) 80.478 ns/op
+Iteration   9: 354.692 ±(99.9%) 108.436 ns/op
+Iteration  10: cRSS-pRSS:[2135, 2136]
+;used-memory:[222]
+377.684 ±(99.9%) 61.812 ns/op
+
+# Run progress: 16.67% complete, ETA 00:03:59
+# Fork: 3 of 3
+[0.002s][info][gc] Using G1
+# Warmup Iteration   1: [2.881s][info][gc] GC(0) Pause Young (Normal) (G1 Evacuation Pause) 2289M->1360M(24576M) 36.952ms
+335.289 ±(99.9%) 29.940 ns/op
+# Warmup Iteration   2: 433.964 ±(99.9%) 50.068 ns/op
+# Warmup Iteration   3: 295.999 ±(99.9%) 57.126 ns/op
+# Warmup Iteration   4: 293.259 ±(99.9%) 58.843 ns/op
+# Warmup Iteration   5: 278.542 ±(99.9%) 33.386 ns/op
+# Warmup Iteration   6: 286.195 ±(99.9%) 49.487 ns/op
+# Warmup Iteration   7: 291.240 ±(99.9%) 57.614 ns/op
+# Warmup Iteration   8: 275.807 ±(99.9%) 36.985 ns/op
+# Warmup Iteration   9: 281.357 ±(99.9%) 41.706 ns/op
+# Warmup Iteration  10: 269.105 ±(99.9%) 25.232 ns/op
+Iteration   1: 291.219 ±(99.9%) 62.274 ns/op
+Iteration   2: 278.621 ±(99.9%) 40.096 ns/op
+Iteration   3: 290.937 ±(99.9%) 60.441 ns/op
+Iteration   4: 282.629 ±(99.9%) 44.789 ns/op
+Iteration   5: 271.575 ±(99.9%) 26.564 ns/op
+Iteration   6: 279.863 ±(99.9%) 45.245 ns/op
+Iteration   7: 291.810 ±(99.9%) 52.735 ns/op
+Iteration   8: 318.162 ±(99.9%) 88.078 ns/op
+Iteration   9: 281.500 ±(99.9%) 40.334 ns/op
+Iteration  10: cRSS-pRSS:[2139, 2141]
+;used-memory:[225]
+289.235 ±(99.9%) 51.050 ns/op
+
+
+Result "io.github.neoionet.netty.microbenchmark.ByteBufAllocatorAllocPatternBenchmark.heapAllocation":
+  310.276 ±(99.9%) 24.737 ns/op [Average]
+  (min, avg, max) = (271.552, 310.276, 384.514), stdev = 37.024
+  CI (99.9%): [285.539, 335.012] (assumes normal distribution)
+
+
+# JMH version: 1.37
+# VM version: JDK 21, Java HotSpot(TM) 64-Bit Server VM, 21+35-LTS-2513
+# VM invoker: /home/forked_franz/.sdkman/candidates/java/21-oracle/bin/java
+# VM options: -server -dsa -da -XX:InitialRAMPercentage=40.0 -XX:MaxRAMPercentage=40.0 -Dio.netty.leakDetection.level=disabled -Djmh.executor=CUSTOM -Djmh.executor.class=io.github.neoionet.netty.microbenchmark.executor.FastThreadLocalThreadHarnessExecutor -XX:MaxRAM=60g -Xlog:gc
+# Blackhole mode: compiler (auto-detected, use -Djmh.blackhole.autoDetect=false to disable)
+# Warmup: 10 iterations, 1 s each
+# Measurement: 10 iterations, 1 s each
+# Timeout: 10 min per iteration
+# Threads: 32 threads, will synchronize iterations
+# Benchmark mode: Average time, time/op
+# Benchmark: io.github.neoionet.netty.microbenchmark.ByteBufAllocatorAllocPatternBenchmark.heapAllocation
+# Parameters: (MAX_LIVE_BUFFERS = 1024, allocatorType = ARENA, enableReadWrite = true, sizePattern = E_COMMERCE)
+
+# Run progress: 25.00% complete, ETA 00:03:35
+# Fork: 1 of 3
+[0.002s][info][gc] Using G1
+# Warmup Iteration   1: [2.839s][info][gc] GC(0) Pause Young (Normal) (G1 Evacuation Pause) 2289M->1368M(24576M) 37.415ms
+422.681 ±(99.9%) 53.479 ns/op
+# Warmup Iteration   2: 500.430 ±(99.9%) 91.423 ns/op
+# Warmup Iteration   3: 339.929 ±(99.9%) 71.965 ns/op
+# Warmup Iteration   4: 323.106 ±(99.9%) 44.689 ns/op
+# Warmup Iteration   5: 342.238 ±(99.9%) 61.418 ns/op
+# Warmup Iteration   6: 327.726 ±(99.9%) 51.383 ns/op
+# Warmup Iteration   7: 335.186 ±(99.9%) 56.783 ns/op
+# Warmup Iteration   8: 327.783 ±(99.9%) 52.022 ns/op
+# Warmup Iteration   9: 352.090 ±(99.9%) 86.898 ns/op
+# Warmup Iteration  10: 318.037 ±(99.9%) 42.680 ns/op
+Iteration   1: 325.234 ±(99.9%) 49.070 ns/op
+Iteration   2: 317.209 ±(99.9%) 42.646 ns/op
+Iteration   3: 359.706 ±(99.9%) 93.782 ns/op
+Iteration   4: 319.084 ±(99.9%) 39.882 ns/op
+Iteration   5: 331.217 ±(99.9%) 60.971 ns/op
+Iteration   6: 325.602 ±(99.9%) 53.609 ns/op
+Iteration   7: 345.406 ±(99.9%) 73.389 ns/op
+Iteration   8: 333.721 ±(99.9%) 63.477 ns/op
+Iteration   9: 410.963 ±(99.9%) 158.973 ns/op
+Iteration  10: cRSS-pRSS:[2172, 2176]
+;used-memory:[0]
+ARENATELE blockSize=262144 maxBlocks=8 cap=8192 maxObjects=16384 debug=false arenaHeap=75629 arenaDirect=0 delegateHeap=2108883840 delegateDirect=0 arenaShare=0.00% blocksHeap=256 blocksDirect=32 pinned=0 reusable=0 maxPinnedHeap=0 maxPinnedDirect=0 blockReuses=0 blockGrowths=224 hooks=0 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=0 reallocMoved=0 reallocDelegated=7085 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=29184
+ARENALOOP thread=io.github.neoionet.netty.microbenchmark.ByteBufAllocatorAllocPatternBenchmark.heapAllocation-1-15 arenaHeap=2369 arenaDirect=0 delegateHeap=67942398 delegateDirect=0 arenaShare=0.00% blocksHeap=8 blocksDirect=1 pinned=0 reusable=0 maxPinnedHeap=0 maxPinnedDirect=0 blockReuses=0 blockGrowths=7 hooks=0 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=0 reallocMoved=0 reallocDelegated=227 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=912
+ARENALOOP thread=io.github.neoionet.netty.microbenchmark.ByteBufAllocatorAllocPatternBenchmark.heapAllocation-1-3 arenaHeap=2366 arenaDirect=0 delegateHeap=67119847 delegateDirect=0 arenaShare=0.00% blocksHeap=8 blocksDirect=1 pinned=0 reusable=0 maxPinnedHeap=0 maxPinnedDirect=0 blockReuses=0 blockGrowths=7 hooks=0 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=0 reallocMoved=0 reallocDelegated=224 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=912
+ARENALOOP thread=io.github.neoionet.netty.microbenchmark.ByteBufAllocatorAllocPatternBenchmark.heapAllocation-1-18 arenaHeap=2377 arenaDirect=0 delegateHeap=69205071 delegateDirect=0 arenaShare=0.00% blocksHeap=8 blocksDirect=1 pinned=0 reusable=0 maxPinnedHeap=0 maxPinnedDirect=0 blockReuses=0 blockGrowths=7 hooks=0 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=0 reallocMoved=0 reallocDelegated=235 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=912
+ARENALOOP thread=io.github.neoionet.netty.microbenchmark.ByteBufAllocatorAllocPatternBenchmark.heapAllocation-1-2 arenaHeap=2333 arenaDirect=0 delegateHeap=56551512 delegateDirect=0 arenaShare=0.00% blocksHeap=8 blocksDirect=1 pinned=0 reusable=0 maxPinnedHeap=0 maxPinnedDirect=0 blockReuses=0 blockGrowths=7 hooks=0 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=0 reallocMoved=0 reallocDelegated=191 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=912
+ARENALOOP thread=io.github.neoionet.netty.microbenchmark.ByteBufAllocatorAllocPatternBenchmark.heapAllocation-1-24 arenaHeap=2373 arenaDirect=0 delegateHeap=68763764 delegateDirect=0 arenaShare=0.00% blocksHeap=8 blocksDirect=1 pinned=0 reusable=0 maxPinnedHeap=0 maxPinnedDirect=0 blockReuses=0 blockGrowths=7 hooks=0 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=0 reallocMoved=0 reallocDelegated=231 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=912
+ARENALOOP thread=io.github.neoionet.netty.microbenchmark.ByteBufAllocatorAllocPatternBenchmark.heapAllocation-1-11 arenaHeap=2365 arenaDirect=0 delegateHeap=66095600 delegateDirect=0 arenaShare=0.00% blocksHeap=8 blocksDirect=1 pinned=0 reusable=0 maxPinnedHeap=0 maxPinnedDirect=0 blockReuses=0 blockGrowths=7 hooks=0 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=0 reallocMoved=0 reallocDelegated=223 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=912
+ARENALOOP thread=io.github.neoionet.netty.microbenchmark.ByteBufAllocatorAllocPatternBenchmark.heapAllocation-1-16 arenaHeap=2366 arenaDirect=0 delegateHeap=67026383 delegateDirect=0 arenaShare=0.00% blocksHeap=8 blocksDirect=1 pinned=0 reusable=0 maxPinnedHeap=0 maxPinnedDirect=0 blockReuses=0 blockGrowths=7 hooks=0 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=0 reallocMoved=0 reallocDelegated=224 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=912
+ARENALOOP thread=io.github.neoionet.netty.microbenchmark.ByteBufAllocatorAllocPatternBenchmark.heapAllocation-1-23 arenaHeap=2406 arenaDirect=0 delegateHeap=78317313 delegateDirect=0 arenaShare=0.00% blocksHeap=8 blocksDirect=1 pinned=0 reusable=0 maxPinnedHeap=0 maxPinnedDirect=0 blockReuses=0 blockGrowths=7 hooks=0 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=0 reallocMoved=0 reallocDelegated=264 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=912
+ARENALOOP thread=io.github.neoionet.netty.microbenchmark.ByteBufAllocatorAllocPatternBenchmark.heapAllocation-1-6 arenaHeap=2321 arenaDirect=0 delegateHeap=52685971 delegateDirect=0 arenaShare=0.00% blocksHeap=8 blocksDirect=1 pinned=0 reusable=0 maxPinnedHeap=0 maxPinnedDirect=0 blockReuses=0 blockGrowths=7 hooks=0 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=0 reallocMoved=0 reallocDelegated=179 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=912
+ARENALOOP thread=io.github.neoionet.netty.microbenchmark.ByteBufAllocatorAllocPatternBenchmark.heapAllocation-1-10 arenaHeap=2351 arenaDirect=0 delegateHeap=62156966 delegateDirect=0 arenaShare=0.00% blocksHeap=8 blocksDirect=1 pinned=0 reusable=0 maxPinnedHeap=0 maxPinnedDirect=0 blockReuses=0 blockGrowths=7 hooks=0 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=0 reallocMoved=0 reallocDelegated=209 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=912
+ARENALOOP thread=io.github.neoionet.netty.microbenchmark.ByteBufAllocatorAllocPatternBenchmark.heapAllocation-1-22 arenaHeap=2354 arenaDirect=0 delegateHeap=63261780 delegateDirect=0 arenaShare=0.00% blocksHeap=8 blocksDirect=1 pinned=0 reusable=0 maxPinnedHeap=0 maxPinnedDirect=0 blockReuses=0 blockGrowths=7 hooks=0 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=0 reallocMoved=0 reallocDelegated=212 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=912
+ARENALOOP thread=io.github.neoionet.netty.microbenchmark.ByteBufAllocatorAllocPatternBenchmark.heapAllocation-1-7 arenaHeap=2379 arenaDirect=0 delegateHeap=70908425 delegateDirect=0 arenaShare=0.00% blocksHeap=8 blocksDirect=1 pinned=0 reusable=0 maxPinnedHeap=0 maxPinnedDirect=0 blockReuses=0 blockGrowths=7 hooks=0 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=0 reallocMoved=0 reallocDelegated=237 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=912
+ARENALOOP thread=io.github.neoionet.netty.microbenchmark.ByteBufAllocatorAllocPatternBenchmark.heapAllocation-1-27 arenaHeap=2356 arenaDirect=0 delegateHeap=64143740 delegateDirect=0 arenaShare=0.00% blocksHeap=8 blocksDirect=1 pinned=0 reusable=0 maxPinnedHeap=0 maxPinnedDirect=0 blockReuses=0 blockGrowths=7 hooks=0 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=0 reallocMoved=0 reallocDelegated=214 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=912
+ARENALOOP thread=io.github.neoionet.netty.microbenchmark.ByteBufAllocatorAllocPatternBenchmark.heapAllocation-1-19 arenaHeap=2393 arenaDirect=0 delegateHeap=74854273 delegateDirect=0 arenaShare=0.00% blocksHeap=8 blocksDirect=1 pinned=0 reusable=0 maxPinnedHeap=0 maxPinnedDirect=0 blockReuses=0 blockGrowths=7 hooks=0 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=0 reallocMoved=0 reallocDelegated=251 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=912
+ARENALOOP thread=io.github.neoionet.netty.microbenchmark.ByteBufAllocatorAllocPatternBenchmark.heapAllocation-1-5 arenaHeap=2393 arenaDirect=0 delegateHeap=75106281 delegateDirect=0 arenaShare=0.00% blocksHeap=8 blocksDirect=1 pinned=0 reusable=0 maxPinnedHeap=0 maxPinnedDirect=0 blockReuses=0 blockGrowths=7 hooks=0 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=0 reallocMoved=0 reallocDelegated=251 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=912
+ARENALOOP thread=io.github.neoionet.netty.microbenchmark.ByteBufAllocatorAllocPatternBenchmark.heapAllocation-1-8 arenaHeap=2365 arenaDirect=0 delegateHeap=66416561 delegateDirect=0 arenaShare=0.00% blocksHeap=8 blocksDirect=1 pinned=0 reusable=0 maxPinnedHeap=0 maxPinnedDirect=0 blockReuses=0 blockGrowths=7 hooks=0 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=0 reallocMoved=0 reallocDelegated=223 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=912
+ARENALOOP thread=io.github.neoionet.netty.microbenchmark.ByteBufAllocatorAllocPatternBenchmark.heapAllocation-1-21 arenaHeap=2394 arenaDirect=0 delegateHeap=75473946 delegateDirect=0 arenaShare=0.00% blocksHeap=8 blocksDirect=1 pinned=0 reusable=0 maxPinnedHeap=0 maxPinnedDirect=0 blockReuses=0 blockGrowths=7 hooks=0 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=0 reallocMoved=0 reallocDelegated=252 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=912
+ARENALOOP thread=io.github.neoionet.netty.microbenchmark.ByteBufAllocatorAllocPatternBenchmark.heapAllocation-1-29 arenaHeap=2359 arenaDirect=0 delegateHeap=64534765 delegateDirect=0 arenaShare=0.00% blocksHeap=8 blocksDirect=1 pinned=0 reusable=0 maxPinnedHeap=0 maxPinnedDirect=0 blockReuses=0 blockGrowths=7 hooks=0 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=0 reallocMoved=0 reallocDelegated=217 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=912
+ARENALOOP thread=io.github.neoionet.netty.microbenchmark.ByteBufAllocatorAllocPatternBenchmark.heapAllocation-1-12 arenaHeap=2356 arenaDirect=0 delegateHeap=64228579 delegateDirect=0 arenaShare=0.00% blocksHeap=8 blocksDirect=1 pinned=0 reusable=0 maxPinnedHeap=0 maxPinnedDirect=0 blockReuses=0 blockGrowths=7 hooks=0 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=0 reallocMoved=0 reallocDelegated=214 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=912
+ARENALOOP thread=io.github.neoionet.netty.microbenchmark.ByteBufAllocatorAllocPatternBenchmark.heapAllocation-1-30 arenaHeap=2351 arenaDirect=0 delegateHeap=62144264 delegateDirect=0 arenaShare=0.00% blocksHeap=8 blocksDirect=1 pinned=0 reusable=0 maxPinnedHeap=0 maxPinnedDirect=0 blockReuses=0 blockGrowths=7 hooks=0 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=0 reallocMoved=0 reallocDelegated=209 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=912
+ARENALOOP thread=io.github.neoionet.netty.microbenchmark.ByteBufAllocatorAllocPatternBenchmark.heapAllocation-1-20 arenaHeap=2342 arenaDirect=0 delegateHeap=59865034 delegateDirect=0 arenaShare=0.00% blocksHeap=8 blocksDirect=1 pinned=0 reusable=0 maxPinnedHeap=0 maxPinnedDirect=0 blockReuses=0 blockGrowths=7 hooks=0 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=0 reallocMoved=0 reallocDelegated=200 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=912
+ARENALOOP thread=io.github.neoionet.netty.microbenchmark.ByteBufAllocatorAllocPatternBenchmark.heapAllocation-1-31 arenaHeap=2393 arenaDirect=0 delegateHeap=75251618 delegateDirect=0 arenaShare=0.00% blocksHeap=8 blocksDirect=1 pinned=0 reusable=0 maxPinnedHeap=0 maxPinnedDirect=0 blockReuses=0 blockGrowths=7 hooks=0 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=0 reallocMoved=0 reallocDelegated=251 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=912
+ARENALOOP thread=io.github.neoionet.netty.microbenchmark.ByteBufAllocatorAllocPatternBenchmark.heapAllocation-1-4 arenaHeap=2357 arenaDirect=0 delegateHeap=64328760 delegateDirect=0 arenaShare=0.00% blocksHeap=8 blocksDirect=1 pinned=0 reusable=0 maxPinnedHeap=0 maxPinnedDirect=0 blockReuses=0 blockGrowths=7 hooks=0 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=0 reallocMoved=0 reallocDelegated=215 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=912
+ARENALOOP thread=io.github.neoionet.netty.microbenchmark.ByteBufAllocatorAllocPatternBenchmark.heapAllocation-1-13 arenaHeap=2379 arenaDirect=0 delegateHeap=70355879 delegateDirect=0 arenaShare=0.00% blocksHeap=8 blocksDirect=1 pinned=0 reusable=0 maxPinnedHeap=0 maxPinnedDirect=0 blockReuses=0 blockGrowths=7 hooks=0 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=0 reallocMoved=0 reallocDelegated=237 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=912
+ARENALOOP thread=io.github.neoionet.netty.microbenchmark.ByteBufAllocatorAllocPatternBenchmark.heapAllocation-1-9 arenaHeap=2332 arenaDirect=0 delegateHeap=56290163 delegateDirect=0 arenaShare=0.00% blocksHeap=8 blocksDirect=1 pinned=0 reusable=0 maxPinnedHeap=0 maxPinnedDirect=0 blockReuses=0 blockGrowths=7 hooks=0 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=0 reallocMoved=0 reallocDelegated=190 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=912
+ARENALOOP thread=io.github.neoionet.netty.microbenchmark.ByteBufAllocatorAllocPatternBenchmark.heapAllocation-1-25 arenaHeap=2361 arenaDirect=0 delegateHeap=64839521 delegateDirect=0 arenaShare=0.00% blocksHeap=8 blocksDirect=1 pinned=0 reusable=0 maxPinnedHeap=0 maxPinnedDirect=0 blockReuses=0 blockGrowths=7 hooks=0 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=0 reallocMoved=0 reallocDelegated=219 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=912
+ARENALOOP thread=io.github.neoionet.netty.microbenchmark.ByteBufAllocatorAllocPatternBenchmark.heapAllocation-1-26 arenaHeap=2363 arenaDirect=0 delegateHeap=65070563 delegateDirect=0 arenaShare=0.00% blocksHeap=8 blocksDirect=1 pinned=0 reusable=0 maxPinnedHeap=0 maxPinnedDirect=0 blockReuses=0 blockGrowths=7 hooks=0 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=0 reallocMoved=0 reallocDelegated=221 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=912
+ARENALOOP thread=io.github.neoionet.netty.microbenchmark.ByteBufAllocatorAllocPatternBenchmark.heapAllocation-1-1 arenaHeap=2351 arenaDirect=0 delegateHeap=62091820 delegateDirect=0 arenaShare=0.00% blocksHeap=8 blocksDirect=1 pinned=0 reusable=0 maxPinnedHeap=0 maxPinnedDirect=0 blockReuses=0 blockGrowths=7 hooks=0 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=0 reallocMoved=0 reallocDelegated=209 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=912
+ARENALOOP thread=io.github.neoionet.netty.microbenchmark.ByteBufAllocatorAllocPatternBenchmark.heapAllocation-1-14 arenaHeap=2379 arenaDirect=0 delegateHeap=70515862 delegateDirect=0 arenaShare=0.00% blocksHeap=8 blocksDirect=1 pinned=0 reusable=0 maxPinnedHeap=0 maxPinnedDirect=0 blockReuses=0 blockGrowths=7 hooks=0 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=0 reallocMoved=0 reallocDelegated=237 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=912
+ARENALOOP thread=io.github.neoionet.netty.microbenchmark.ByteBufAllocatorAllocPatternBenchmark.heapAllocation-1-28 arenaHeap=2335 arenaDirect=0 delegateHeap=56759839 delegateDirect=0 arenaShare=0.00% blocksHeap=8 blocksDirect=1 pinned=0 reusable=0 maxPinnedHeap=0 maxPinnedDirect=0 blockReuses=0 blockGrowths=7 hooks=0 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=0 reallocMoved=0 reallocDelegated=193 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=912
+ARENALOOP thread=io.github.neoionet.netty.microbenchmark.ByteBufAllocatorAllocPatternBenchmark.heapAllocation-1-32 arenaHeap=2379 arenaDirect=0 delegateHeap=70411530 delegateDirect=0 arenaShare=0.00% blocksHeap=8 blocksDirect=1 pinned=0 reusable=0 maxPinnedHeap=0 maxPinnedDirect=0 blockReuses=0 blockGrowths=7 hooks=0 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=0 reallocMoved=0 reallocDelegated=237 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=912
+ARENALOOP thread=io.github.neoionet.netty.microbenchmark.ByteBufAllocatorAllocPatternBenchmark.heapAllocation-1-17 arenaHeap=2331 arenaDirect=0 delegateHeap=56165812 delegateDirect=0 arenaShare=0.00% blocksHeap=8 blocksDirect=1 pinned=0 reusable=0 maxPinnedHeap=0 maxPinnedDirect=0 blockReuses=0 blockGrowths=7 hooks=0 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=0 reallocMoved=0 reallocDelegated=189 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=912
+351.519 ±(99.9%) 85.936 ns/op
+
+# Run progress: 33.33% complete, ETA 00:03:13
+# Fork: 2 of 3
+[0.002s][info][gc] Using G1
+# Warmup Iteration   1: [2.836s][info][gc] GC(0) Pause Young (Normal) (G1 Evacuation Pause) 2289M->1375M(24576M) 38.426ms
+677.684 ±(99.9%) 106.723 ns/op
+# Warmup Iteration   2: 563.710 ±(99.9%) 123.639 ns/op
+# Warmup Iteration   3: 509.083 ±(99.9%) 130.680 ns/op
+# Warmup Iteration   4: 503.530 ±(99.9%) 122.576 ns/op
+# Warmup Iteration   5: 565.604 ±(99.9%) 92.422 ns/op
+# Warmup Iteration   6: 533.551 ±(99.9%) 112.203 ns/op
+# Warmup Iteration   7: 536.684 ±(99.9%) 169.959 ns/op
+# Warmup Iteration   8: 565.756 ±(99.9%) 150.076 ns/op
+# Warmup Iteration   9: 533.198 ±(99.9%) 102.241 ns/op
+# Warmup Iteration  10: 530.365 ±(99.9%) 83.723 ns/op
+Iteration   1: 583.874 ±(99.9%) 122.783 ns/op
+Iteration   2: 512.757 ±(99.9%) 99.383 ns/op
+Iteration   3: 511.433 ±(99.9%) 107.699 ns/op
+Iteration   4: 524.990 ±(99.9%) 115.879 ns/op
+Iteration   5: 643.228 ±(99.9%) 175.303 ns/op
+Iteration   6: 589.658 ±(99.9%) 126.606 ns/op
+Iteration   7: 552.906 ±(99.9%) 133.691 ns/op
+Iteration   8: 584.635 ±(99.9%) 111.741 ns/op
+Iteration   9: 507.432 ±(99.9%) 150.545 ns/op
+Iteration  10: cRSS-pRSS:[2175, 2177]
+;used-memory:[0]
+ARENATELE blockSize=262144 maxBlocks=8 cap=8192 maxObjects=16384 debug=false arenaHeap=73192 arenaDirect=0 delegateHeap=1373289846 delegateDirect=0 arenaShare=0.01% blocksHeap=256 blocksDirect=32 pinned=0 reusable=0 maxPinnedHeap=0 maxPinnedDirect=0 blockReuses=0 blockGrowths=224 hooks=0 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=0 reallocMoved=0 reallocDelegated=4648 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=29184
+ARENALOOP thread=io.github.neoionet.netty.microbenchmark.ByteBufAllocatorAllocPatternBenchmark.heapAllocation-1-10 arenaHeap=2294 arenaDirect=0 delegateHeap=44723003 delegateDirect=0 arenaShare=0.01% blocksHeap=8 blocksDirect=1 pinned=0 reusable=0 maxPinnedHeap=0 maxPinnedDirect=0 blockReuses=0 blockGrowths=7 hooks=0 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=0 reallocMoved=0 reallocDelegated=152 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=912
+ARENALOOP thread=io.github.neoionet.netty.microbenchmark.ByteBufAllocatorAllocPatternBenchmark.heapAllocation-1-18 arenaHeap=2267 arenaDirect=0 delegateHeap=37472156 delegateDirect=0 arenaShare=0.01% blocksHeap=8 blocksDirect=1 pinned=0 reusable=0 maxPinnedHeap=0 maxPinnedDirect=0 blockReuses=0 blockGrowths=7 hooks=0 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=0 reallocMoved=0 reallocDelegated=125 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=912
+ARENALOOP thread=io.github.neoionet.netty.microbenchmark.ByteBufAllocatorAllocPatternBenchmark.heapAllocation-1-24 arenaHeap=2295 arenaDirect=0 delegateHeap=45198165 delegateDirect=0 arenaShare=0.01% blocksHeap=8 blocksDirect=1 pinned=0 reusable=0 maxPinnedHeap=0 maxPinnedDirect=0 blockReuses=0 blockGrowths=7 hooks=0 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=0 reallocMoved=0 reallocDelegated=153 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=912
+ARENALOOP thread=io.github.neoionet.netty.microbenchmark.ByteBufAllocatorAllocPatternBenchmark.heapAllocation-1-22 arenaHeap=2295 arenaDirect=0 delegateHeap=45179956 delegateDirect=0 arenaShare=0.01% blocksHeap=8 blocksDirect=1 pinned=0 reusable=0 maxPinnedHeap=0 maxPinnedDirect=0 blockReuses=0 blockGrowths=7 hooks=0 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=0 reallocMoved=0 reallocDelegated=153 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=912
+ARENALOOP thread=io.github.neoionet.netty.microbenchmark.ByteBufAllocatorAllocPatternBenchmark.heapAllocation-1-4 arenaHeap=2237 arenaDirect=0 delegateHeap=27562877 delegateDirect=0 arenaShare=0.01% blocksHeap=8 blocksDirect=1 pinned=0 reusable=0 maxPinnedHeap=0 maxPinnedDirect=0 blockReuses=0 blockGrowths=7 hooks=0 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=0 reallocMoved=0 reallocDelegated=95 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=912
+ARENALOOP thread=io.github.neoionet.netty.microbenchmark.ByteBufAllocatorAllocPatternBenchmark.heapAllocation-1-21 arenaHeap=2307 arenaDirect=0 delegateHeap=48502321 delegateDirect=0 arenaShare=0.00% blocksHeap=8 blocksDirect=1 pinned=0 reusable=0 maxPinnedHeap=0 maxPinnedDirect=0 blockReuses=0 blockGrowths=7 hooks=0 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=0 reallocMoved=0 reallocDelegated=165 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=912
+ARENALOOP thread=io.github.neoionet.netty.microbenchmark.ByteBufAllocatorAllocPatternBenchmark.heapAllocation-1-27 arenaHeap=2278 arenaDirect=0 delegateHeap=39808132 delegateDirect=0 arenaShare=0.01% blocksHeap=8 blocksDirect=1 pinned=0 reusable=0 maxPinnedHeap=0 maxPinnedDirect=0 blockReuses=0 blockGrowths=7 hooks=0 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=0 reallocMoved=0 reallocDelegated=136 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=912
+ARENALOOP thread=io.github.neoionet.netty.microbenchmark.ByteBufAllocatorAllocPatternBenchmark.heapAllocation-1-31 arenaHeap=2285 arenaDirect=0 delegateHeap=42607084 delegateDirect=0 arenaShare=0.01% blocksHeap=8 blocksDirect=1 pinned=0 reusable=0 maxPinnedHeap=0 maxPinnedDirect=0 blockReuses=0 blockGrowths=7 hooks=0 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=0 reallocMoved=0 reallocDelegated=143 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=912
+ARENALOOP thread=io.github.neoionet.netty.microbenchmark.ByteBufAllocatorAllocPatternBenchmark.heapAllocation-1-5 arenaHeap=2242 arenaDirect=0 delegateHeap=29646809 delegateDirect=0 arenaShare=0.01% blocksHeap=8 blocksDirect=1 pinned=0 reusable=0 maxPinnedHeap=0 maxPinnedDirect=0 blockReuses=0 blockGrowths=7 hooks=0 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=0 reallocMoved=0 reallocDelegated=100 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=912
+ARENALOOP thread=io.github.neoionet.netty.microbenchmark.ByteBufAllocatorAllocPatternBenchmark.heapAllocation-1-6 arenaHeap=2295 arenaDirect=0 delegateHeap=44980001 delegateDirect=0 arenaShare=0.01% blocksHeap=8 blocksDirect=1 pinned=0 reusable=0 maxPinnedHeap=0 maxPinnedDirect=0 blockReuses=0 blockGrowths=7 hooks=0 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=0 reallocMoved=0 reallocDelegated=153 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=912
+ARENALOOP thread=io.github.neoionet.netty.microbenchmark.ByteBufAllocatorAllocPatternBenchmark.heapAllocation-1-15 arenaHeap=2282 arenaDirect=0 delegateHeap=41965771 delegateDirect=0 arenaShare=0.01% blocksHeap=8 blocksDirect=1 pinned=0 reusable=0 maxPinnedHeap=0 maxPinnedDirect=0 blockReuses=0 blockGrowths=7 hooks=0 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=0 reallocMoved=0 reallocDelegated=140 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=912
+ARENALOOP thread=io.github.neoionet.netty.microbenchmark.ByteBufAllocatorAllocPatternBenchmark.heapAllocation-1-12 arenaHeap=2305 arenaDirect=0 delegateHeap=48154846 delegateDirect=0 arenaShare=0.00% blocksHeap=8 blocksDirect=1 pinned=0 reusable=0 maxPinnedHeap=0 maxPinnedDirect=0 blockReuses=0 blockGrowths=7 hooks=0 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=0 reallocMoved=0 reallocDelegated=163 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=912
+ARENALOOP thread=io.github.neoionet.netty.microbenchmark.ByteBufAllocatorAllocPatternBenchmark.heapAllocation-1-30 arenaHeap=2296 arenaDirect=0 delegateHeap=46240791 delegateDirect=0 arenaShare=0.00% blocksHeap=8 blocksDirect=1 pinned=0 reusable=0 maxPinnedHeap=0 maxPinnedDirect=0 blockReuses=0 blockGrowths=7 hooks=0 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=0 reallocMoved=0 reallocDelegated=154 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=912
+ARENALOOP thread=io.github.neoionet.netty.microbenchmark.ByteBufAllocatorAllocPatternBenchmark.heapAllocation-1-11 arenaHeap=2295 arenaDirect=0 delegateHeap=44838006 delegateDirect=0 arenaShare=0.01% blocksHeap=8 blocksDirect=1 pinned=0 reusable=0 maxPinnedHeap=0 maxPinnedDirect=0 blockReuses=0 blockGrowths=7 hooks=0 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=0 reallocMoved=0 reallocDelegated=153 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=912
+ARENALOOP thread=io.github.neoionet.netty.microbenchmark.ByteBufAllocatorAllocPatternBenchmark.heapAllocation-1-13 arenaHeap=2275 arenaDirect=0 delegateHeap=39399189 delegateDirect=0 arenaShare=0.01% blocksHeap=8 blocksDirect=1 pinned=0 reusable=0 maxPinnedHeap=0 maxPinnedDirect=0 blockReuses=0 blockGrowths=7 hooks=0 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=0 reallocMoved=0 reallocDelegated=133 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=912
+ARENALOOP thread=io.github.neoionet.netty.microbenchmark.ByteBufAllocatorAllocPatternBenchmark.heapAllocation-1-17 arenaHeap=2307 arenaDirect=0 delegateHeap=48508093 delegateDirect=0 arenaShare=0.00% blocksHeap=8 blocksDirect=1 pinned=0 reusable=0 maxPinnedHeap=0 maxPinnedDirect=0 blockReuses=0 blockGrowths=7 hooks=0 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=0 reallocMoved=0 reallocDelegated=165 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=912
+ARENALOOP thread=io.github.neoionet.netty.microbenchmark.ByteBufAllocatorAllocPatternBenchmark.heapAllocation-1-1 arenaHeap=2293 arenaDirect=0 delegateHeap=44243967 delegateDirect=0 arenaShare=0.01% blocksHeap=8 blocksDirect=1 pinned=0 reusable=0 maxPinnedHeap=0 maxPinnedDirect=0 blockReuses=0 blockGrowths=7 hooks=0 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=0 reallocMoved=0 reallocDelegated=151 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=912
+ARENALOOP thread=io.github.neoionet.netty.microbenchmark.ByteBufAllocatorAllocPatternBenchmark.heapAllocation-1-3 arenaHeap=2281 arenaDirect=0 delegateHeap=40843667 delegateDirect=0 arenaShare=0.01% blocksHeap=8 blocksDirect=1 pinned=0 reusable=0 maxPinnedHeap=0 maxPinnedDirect=0 blockReuses=0 blockGrowths=7 hooks=0 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=0 reallocMoved=0 reallocDelegated=139 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=912
+ARENALOOP thread=io.github.neoionet.netty.microbenchmark.ByteBufAllocatorAllocPatternBenchmark.heapAllocation-1-16 arenaHeap=2323 arenaDirect=0 delegateHeap=53309954 delegateDirect=0 arenaShare=0.00% blocksHeap=8 blocksDirect=1 pinned=0 reusable=0 maxPinnedHeap=0 maxPinnedDirect=0 blockReuses=0 blockGrowths=7 hooks=0 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=0 reallocMoved=0 reallocDelegated=181 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=912
+ARENALOOP thread=io.github.neoionet.netty.microbenchmark.ByteBufAllocatorAllocPatternBenchmark.heapAllocation-1-14 arenaHeap=2319 arenaDirect=0 delegateHeap=52261606 delegateDirect=0 arenaShare=0.00% blocksHeap=8 blocksDirect=1 pinned=0 reusable=0 maxPinnedHeap=0 maxPinnedDirect=0 blockReuses=0 blockGrowths=7 hooks=0 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=0 reallocMoved=0 reallocDelegated=177 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=912
+ARENALOOP thread=io.github.neoionet.netty.microbenchmark.ByteBufAllocatorAllocPatternBenchmark.heapAllocation-1-9 arenaHeap=2239 arenaDirect=0 delegateHeap=28459884 delegateDirect=0 arenaShare=0.01% blocksHeap=8 blocksDirect=1 pinned=0 reusable=0 maxPinnedHeap=0 maxPinnedDirect=0 blockReuses=0 blockGrowths=7 hooks=0 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=0 reallocMoved=0 reallocDelegated=97 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=912
+ARENALOOP thread=io.github.neoionet.netty.microbenchmark.ByteBufAllocatorAllocPatternBenchmark.heapAllocation-1-29 arenaHeap=2271 arenaDirect=0 delegateHeap=38143958 delegateDirect=0 arenaShare=0.01% blocksHeap=8 blocksDirect=1 pinned=0 reusable=0 maxPinnedHeap=0 maxPinnedDirect=0 blockReuses=0 blockGrowths=7 hooks=0 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=0 reallocMoved=0 reallocDelegated=129 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=912
+ARENALOOP thread=io.github.neoionet.netty.microbenchmark.ByteBufAllocatorAllocPatternBenchmark.heapAllocation-1-20 arenaHeap=2303 arenaDirect=0 delegateHeap=47848584 delegateDirect=0 arenaShare=0.00% blocksHeap=8 blocksDirect=1 pinned=0 reusable=0 maxPinnedHeap=0 maxPinnedDirect=0 blockReuses=0 blockGrowths=7 hooks=0 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=0 reallocMoved=0 reallocDelegated=161 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=912
+ARENALOOP thread=io.github.neoionet.netty.microbenchmark.ByteBufAllocatorAllocPatternBenchmark.heapAllocation-1-8 arenaHeap=2271 arenaDirect=0 delegateHeap=38312076 delegateDirect=0 arenaShare=0.01% blocksHeap=8 blocksDirect=1 pinned=0 reusable=0 maxPinnedHeap=0 maxPinnedDirect=0 blockReuses=0 blockGrowths=7 hooks=0 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=0 reallocMoved=0 reallocDelegated=129 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=912
+ARENALOOP thread=io.github.neoionet.netty.microbenchmark.ByteBufAllocatorAllocPatternBenchmark.heapAllocation-1-7 arenaHeap=2291 arenaDirect=0 delegateHeap=43899698 delegateDirect=0 arenaShare=0.01% blocksHeap=8 blocksDirect=1 pinned=0 reusable=0 maxPinnedHeap=0 maxPinnedDirect=0 blockReuses=0 blockGrowths=7 hooks=0 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=0 reallocMoved=0 reallocDelegated=149 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=912
+ARENALOOP thread=io.github.neoionet.netty.microbenchmark.ByteBufAllocatorAllocPatternBenchmark.heapAllocation-1-28 arenaHeap=2281 arenaDirect=0 delegateHeap=41708917 delegateDirect=0 arenaShare=0.01% blocksHeap=8 blocksDirect=1 pinned=0 reusable=0 maxPinnedHeap=0 maxPinnedDirect=0 blockReuses=0 blockGrowths=7 hooks=0 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=0 reallocMoved=0 reallocDelegated=139 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=912
+ARENALOOP thread=io.github.neoionet.netty.microbenchmark.ByteBufAllocatorAllocPatternBenchmark.heapAllocation-1-2 arenaHeap=2313 arenaDirect=0 delegateHeap=50747969 delegateDirect=0 arenaShare=0.00% blocksHeap=8 blocksDirect=1 pinned=0 reusable=0 maxPinnedHeap=0 maxPinnedDirect=0 blockReuses=0 blockGrowths=7 hooks=0 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=0 reallocMoved=0 reallocDelegated=171 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=912
+ARENALOOP thread=io.github.neoionet.netty.microbenchmark.ByteBufAllocatorAllocPatternBenchmark.heapAllocation-1-26 arenaHeap=2278 arenaDirect=0 delegateHeap=39808255 delegateDirect=0 arenaShare=0.01% blocksHeap=8 blocksDirect=1 pinned=0 reusable=0 maxPinnedHeap=0 maxPinnedDirect=0 blockReuses=0 blockGrowths=7 hooks=0 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=0 reallocMoved=0 reallocDelegated=136 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=912
+ARENALOOP thread=io.github.neoionet.netty.microbenchmark.ByteBufAllocatorAllocPatternBenchmark.heapAllocation-1-25 arenaHeap=2304 arenaDirect=0 delegateHeap=47961367 delegateDirect=0 arenaShare=0.00% blocksHeap=8 blocksDirect=1 pinned=0 reusable=0 maxPinnedHeap=0 maxPinnedDirect=0 blockReuses=0 blockGrowths=7 hooks=0 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=0 reallocMoved=0 reallocDelegated=162 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=912
+ARENALOOP thread=io.github.neoionet.netty.microbenchmark.ByteBufAllocatorAllocPatternBenchmark.heapAllocation-1-19 arenaHeap=2282 arenaDirect=0 delegateHeap=41890319 delegateDirect=0 arenaShare=0.01% blocksHeap=8 blocksDirect=1 pinned=0 reusable=0 maxPinnedHeap=0 maxPinnedDirect=0 blockReuses=0 blockGrowths=7 hooks=0 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=0 reallocMoved=0 reallocDelegated=140 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=912
+ARENALOOP thread=io.github.neoionet.netty.microbenchmark.ByteBufAllocatorAllocPatternBenchmark.heapAllocation-1-23 arenaHeap=2293 arenaDirect=0 delegateHeap=44121128 delegateDirect=0 arenaShare=0.01% blocksHeap=8 blocksDirect=1 pinned=0 reusable=0 maxPinnedHeap=0 maxPinnedDirect=0 blockReuses=0 blockGrowths=7 hooks=0 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=0 reallocMoved=0 reallocDelegated=151 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=912
+ARENALOOP thread=io.github.neoionet.netty.microbenchmark.ByteBufAllocatorAllocPatternBenchmark.heapAllocation-1-32 arenaHeap=2295 arenaDirect=0 delegateHeap=44941297 delegateDirect=0 arenaShare=0.01% blocksHeap=8 blocksDirect=1 pinned=0 reusable=0 maxPinnedHeap=0 maxPinnedDirect=0 blockReuses=0 blockGrowths=7 hooks=0 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=0 reallocMoved=0 reallocDelegated=153 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=912
+533.894 ±(99.9%) 205.039 ns/op
+
+# Run progress: 41.67% complete, ETA 00:02:50
+# Fork: 3 of 3
+[0.002s][info][gc] Using G1
+# Warmup Iteration   1: [2.843s][info][gc] GC(0) Pause Young (Normal) (G1 Evacuation Pause) 2289M->1366M(24576M) 38.319ms
+475.096 ±(99.9%) 73.154 ns/op
+# Warmup Iteration   2: 353.169 ±(99.9%) 54.916 ns/op
+# Warmup Iteration   3: 362.477 ±(99.9%) 57.720 ns/op
+# Warmup Iteration   4: 387.263 ±(99.9%) 63.514 ns/op
+# Warmup Iteration   5: 387.672 ±(99.9%) 126.810 ns/op
+# Warmup Iteration   6: 393.749 ±(99.9%) 85.462 ns/op
+# Warmup Iteration   7: 382.315 ±(99.9%) 101.424 ns/op
+# Warmup Iteration   8: 405.762 ±(99.9%) 75.797 ns/op
+# Warmup Iteration   9: 369.618 ±(99.9%) 76.519 ns/op
+# Warmup Iteration  10: 356.052 ±(99.9%) 73.148 ns/op
+Iteration   1: 400.089 ±(99.9%) 72.344 ns/op
+Iteration   2: 358.631 ±(99.9%) 77.565 ns/op
+Iteration   3: 363.993 ±(99.9%) 105.800 ns/op
+Iteration   4: 388.150 ±(99.9%) 95.795 ns/op
+Iteration   5: 415.861 ±(99.9%) 101.336 ns/op
+Iteration   6: 410.957 ±(99.9%) 81.768 ns/op
+Iteration   7: 358.803 ±(99.9%) 70.161 ns/op
+Iteration   8: 386.506 ±(99.9%) 42.527 ns/op
+Iteration   9: 411.946 ±(99.9%) 60.110 ns/op
+Iteration  10: cRSS-pRSS:[2169, 2171]
+;used-memory:[0]
+ARENATELE blockSize=262144 maxBlocks=8 cap=8192 maxObjects=16384 debug=false arenaHeap=74860 arenaDirect=0 delegateHeap=1876208447 delegateDirect=0 arenaShare=0.00% blocksHeap=256 blocksDirect=32 pinned=0 reusable=0 maxPinnedHeap=0 maxPinnedDirect=0 blockReuses=0 blockGrowths=224 hooks=0 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=0 reallocMoved=0 reallocDelegated=6316 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=29184
+ARENALOOP thread=io.github.neoionet.netty.microbenchmark.ByteBufAllocatorAllocPatternBenchmark.heapAllocation-1-17 arenaHeap=2350 arenaDirect=0 delegateHeap=61540153 delegateDirect=0 arenaShare=0.00% blocksHeap=8 blocksDirect=1 pinned=0 reusable=0 maxPinnedHeap=0 maxPinnedDirect=0 blockReuses=0 blockGrowths=7 hooks=0 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=0 reallocMoved=0 reallocDelegated=208 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=912
+ARENALOOP thread=io.github.neoionet.netty.microbenchmark.ByteBufAllocatorAllocPatternBenchmark.heapAllocation-1-21 arenaHeap=2335 arenaDirect=0 delegateHeap=57197598 delegateDirect=0 arenaShare=0.00% blocksHeap=8 blocksDirect=1 pinned=0 reusable=0 maxPinnedHeap=0 maxPinnedDirect=0 blockReuses=0 blockGrowths=7 hooks=0 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=0 reallocMoved=0 reallocDelegated=193 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=912
+ARENALOOP thread=io.github.neoionet.netty.microbenchmark.ByteBufAllocatorAllocPatternBenchmark.heapAllocation-1-27 arenaHeap=2359 arenaDirect=0 delegateHeap=64485993 delegateDirect=0 arenaShare=0.00% blocksHeap=8 blocksDirect=1 pinned=0 reusable=0 maxPinnedHeap=0 maxPinnedDirect=0 blockReuses=0 blockGrowths=7 hooks=0 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=0 reallocMoved=0 reallocDelegated=217 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=912
+ARENALOOP thread=io.github.neoionet.netty.microbenchmark.ByteBufAllocatorAllocPatternBenchmark.heapAllocation-1-14 arenaHeap=2354 arenaDirect=0 delegateHeap=63123815 delegateDirect=0 arenaShare=0.00% blocksHeap=8 blocksDirect=1 pinned=0 reusable=0 maxPinnedHeap=0 maxPinnedDirect=0 blockReuses=0 blockGrowths=7 hooks=0 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=0 reallocMoved=0 reallocDelegated=212 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=912
+ARENALOOP thread=io.github.neoionet.netty.microbenchmark.ByteBufAllocatorAllocPatternBenchmark.heapAllocation-1-13 arenaHeap=2335 arenaDirect=0 delegateHeap=56986863 delegateDirect=0 arenaShare=0.00% blocksHeap=8 blocksDirect=1 pinned=0 reusable=0 maxPinnedHeap=0 maxPinnedDirect=0 blockReuses=0 blockGrowths=7 hooks=0 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=0 reallocMoved=0 reallocDelegated=193 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=912
+ARENALOOP thread=io.github.neoionet.netty.microbenchmark.ByteBufAllocatorAllocPatternBenchmark.heapAllocation-1-11 arenaHeap=2347 arenaDirect=0 delegateHeap=60641662 delegateDirect=0 arenaShare=0.00% blocksHeap=8 blocksDirect=1 pinned=0 reusable=0 maxPinnedHeap=0 maxPinnedDirect=0 blockReuses=0 blockGrowths=7 hooks=0 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=0 reallocMoved=0 reallocDelegated=205 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=912
+ARENALOOP thread=io.github.neoionet.netty.microbenchmark.ByteBufAllocatorAllocPatternBenchmark.heapAllocation-1-5 arenaHeap=2337 arenaDirect=0 delegateHeap=58632147 delegateDirect=0 arenaShare=0.00% blocksHeap=8 blocksDirect=1 pinned=0 reusable=0 maxPinnedHeap=0 maxPinnedDirect=0 blockReuses=0 blockGrowths=7 hooks=0 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=0 reallocMoved=0 reallocDelegated=195 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=912
+ARENALOOP thread=io.github.neoionet.netty.microbenchmark.ByteBufAllocatorAllocPatternBenchmark.heapAllocation-1-24 arenaHeap=2340 arenaDirect=0 delegateHeap=58974709 delegateDirect=0 arenaShare=0.00% blocksHeap=8 blocksDirect=1 pinned=0 reusable=0 maxPinnedHeap=0 maxPinnedDirect=0 blockReuses=0 blockGrowths=7 hooks=0 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=0 reallocMoved=0 reallocDelegated=198 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=912
+ARENALOOP thread=io.github.neoionet.netty.microbenchmark.ByteBufAllocatorAllocPatternBenchmark.heapAllocation-1-3 arenaHeap=2351 arenaDirect=0 delegateHeap=62449921 delegateDirect=0 arenaShare=0.00% blocksHeap=8 blocksDirect=1 pinned=0 reusable=0 maxPinnedHeap=0 maxPinnedDirect=0 blockReuses=0 blockGrowths=7 hooks=0 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=0 reallocMoved=0 reallocDelegated=209 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=912
+ARENALOOP thread=io.github.neoionet.netty.microbenchmark.ByteBufAllocatorAllocPatternBenchmark.heapAllocation-1-8 arenaHeap=2335 arenaDirect=0 delegateHeap=56861104 delegateDirect=0 arenaShare=0.00% blocksHeap=8 blocksDirect=1 pinned=0 reusable=0 maxPinnedHeap=0 maxPinnedDirect=0 blockReuses=0 blockGrowths=7 hooks=0 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=0 reallocMoved=0 reallocDelegated=193 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=912
+ARENALOOP thread=io.github.neoionet.netty.microbenchmark.ByteBufAllocatorAllocPatternBenchmark.heapAllocation-1-19 arenaHeap=2359 arenaDirect=0 delegateHeap=64493163 delegateDirect=0 arenaShare=0.00% blocksHeap=8 blocksDirect=1 pinned=0 reusable=0 maxPinnedHeap=0 maxPinnedDirect=0 blockReuses=0 blockGrowths=7 hooks=0 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=0 reallocMoved=0 reallocDelegated=217 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=912
+ARENALOOP thread=io.github.neoionet.netty.microbenchmark.ByteBufAllocatorAllocPatternBenchmark.heapAllocation-1-18 arenaHeap=2341 arenaDirect=0 delegateHeap=59129239 delegateDirect=0 arenaShare=0.00% blocksHeap=8 blocksDirect=1 pinned=0 reusable=0 maxPinnedHeap=0 maxPinnedDirect=0 blockReuses=0 blockGrowths=7 hooks=0 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=0 reallocMoved=0 reallocDelegated=199 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=912
+ARENALOOP thread=io.github.neoionet.netty.microbenchmark.ByteBufAllocatorAllocPatternBenchmark.heapAllocation-1-2 arenaHeap=2341 arenaDirect=0 delegateHeap=59440861 delegateDirect=0 arenaShare=0.00% blocksHeap=8 blocksDirect=1 pinned=0 reusable=0 maxPinnedHeap=0 maxPinnedDirect=0 blockReuses=0 blockGrowths=7 hooks=0 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=0 reallocMoved=0 reallocDelegated=199 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=912
+ARENALOOP thread=io.github.neoionet.netty.microbenchmark.ByteBufAllocatorAllocPatternBenchmark.heapAllocation-1-4 arenaHeap=2335 arenaDirect=0 delegateHeap=56982497 delegateDirect=0 arenaShare=0.00% blocksHeap=8 blocksDirect=1 pinned=0 reusable=0 maxPinnedHeap=0 maxPinnedDirect=0 blockReuses=0 blockGrowths=7 hooks=0 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=0 reallocMoved=0 reallocDelegated=193 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=912
+ARENALOOP thread=io.github.neoionet.netty.microbenchmark.ByteBufAllocatorAllocPatternBenchmark.heapAllocation-1-29 arenaHeap=2351 arenaDirect=0 delegateHeap=62740275 delegateDirect=0 arenaShare=0.00% blocksHeap=8 blocksDirect=1 pinned=0 reusable=0 maxPinnedHeap=0 maxPinnedDirect=0 blockReuses=0 blockGrowths=7 hooks=0 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=0 reallocMoved=0 reallocDelegated=209 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=912
+ARENALOOP thread=io.github.neoionet.netty.microbenchmark.ByteBufAllocatorAllocPatternBenchmark.heapAllocation-1-25 arenaHeap=2330 arenaDirect=0 delegateHeap=56030207 delegateDirect=0 arenaShare=0.00% blocksHeap=8 blocksDirect=1 pinned=0 reusable=0 maxPinnedHeap=0 maxPinnedDirect=0 blockReuses=0 blockGrowths=7 hooks=0 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=0 reallocMoved=0 reallocDelegated=188 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=912
+ARENALOOP thread=io.github.neoionet.netty.microbenchmark.ByteBufAllocatorAllocPatternBenchmark.heapAllocation-1-31 arenaHeap=2343 arenaDirect=0 delegateHeap=60075786 delegateDirect=0 arenaShare=0.00% blocksHeap=8 blocksDirect=1 pinned=0 reusable=0 maxPinnedHeap=0 maxPinnedDirect=0 blockReuses=0 blockGrowths=7 hooks=0 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=0 reallocMoved=0 reallocDelegated=201 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=912
+ARENALOOP thread=io.github.neoionet.netty.microbenchmark.ByteBufAllocatorAllocPatternBenchmark.heapAllocation-1-12 arenaHeap=2335 arenaDirect=0 delegateHeap=56620505 delegateDirect=0 arenaShare=0.00% blocksHeap=8 blocksDirect=1 pinned=0 reusable=0 maxPinnedHeap=0 maxPinnedDirect=0 blockReuses=0 blockGrowths=7 hooks=0 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=0 reallocMoved=0 reallocDelegated=193 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=912
+ARENALOOP thread=io.github.neoionet.netty.microbenchmark.ByteBufAllocatorAllocPatternBenchmark.heapAllocation-1-28 arenaHeap=2369 arenaDirect=0 delegateHeap=67664971 delegateDirect=0 arenaShare=0.00% blocksHeap=8 blocksDirect=1 pinned=0 reusable=0 maxPinnedHeap=0 maxPinnedDirect=0 blockReuses=0 blockGrowths=7 hooks=0 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=0 reallocMoved=0 reallocDelegated=227 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=912
+ARENALOOP thread=io.github.neoionet.netty.microbenchmark.ByteBufAllocatorAllocPatternBenchmark.heapAllocation-1-10 arenaHeap=2335 arenaDirect=0 delegateHeap=57195918 delegateDirect=0 arenaShare=0.00% blocksHeap=8 blocksDirect=1 pinned=0 reusable=0 maxPinnedHeap=0 maxPinnedDirect=0 blockReuses=0 blockGrowths=7 hooks=0 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=0 reallocMoved=0 reallocDelegated=193 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=912
+ARENALOOP thread=io.github.neoionet.netty.microbenchmark.ByteBufAllocatorAllocPatternBenchmark.heapAllocation-1-1 arenaHeap=2314 arenaDirect=0 delegateHeap=51510643 delegateDirect=0 arenaShare=0.00% blocksHeap=8 blocksDirect=1 pinned=0 reusable=0 maxPinnedHeap=0 maxPinnedDirect=0 blockReuses=0 blockGrowths=7 hooks=0 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=0 reallocMoved=0 reallocDelegated=172 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=912
+ARENALOOP thread=io.github.neoionet.netty.microbenchmark.ByteBufAllocatorAllocPatternBenchmark.heapAllocation-1-7 arenaHeap=2337 arenaDirect=0 delegateHeap=57896986 delegateDirect=0 arenaShare=0.00% blocksHeap=8 blocksDirect=1 pinned=0 reusable=0 maxPinnedHeap=0 maxPinnedDirect=0 blockReuses=0 blockGrowths=7 hooks=0 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=0 reallocMoved=0 reallocDelegated=195 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=912
+ARENALOOP thread=io.github.neoionet.netty.microbenchmark.ByteBufAllocatorAllocPatternBenchmark.heapAllocation-1-22 arenaHeap=2349 arenaDirect=0 delegateHeap=61058126 delegateDirect=0 arenaShare=0.00% blocksHeap=8 blocksDirect=1 pinned=0 reusable=0 maxPinnedHeap=0 maxPinnedDirect=0 blockReuses=0 blockGrowths=7 hooks=0 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=0 reallocMoved=0 reallocDelegated=207 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=912
+ARENALOOP thread=io.github.neoionet.netty.microbenchmark.ByteBufAllocatorAllocPatternBenchmark.heapAllocation-1-9 arenaHeap=2327 arenaDirect=0 delegateHeap=54994203 delegateDirect=0 arenaShare=0.00% blocksHeap=8 blocksDirect=1 pinned=0 reusable=0 maxPinnedHeap=0 maxPinnedDirect=0 blockReuses=0 blockGrowths=7 hooks=0 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=0 reallocMoved=0 reallocDelegated=185 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=912
+ARENALOOP thread=io.github.neoionet.netty.microbenchmark.ByteBufAllocatorAllocPatternBenchmark.heapAllocation-1-32 arenaHeap=2309 arenaDirect=0 delegateHeap=49849359 delegateDirect=0 arenaShare=0.00% blocksHeap=8 blocksDirect=1 pinned=0 reusable=0 maxPinnedHeap=0 maxPinnedDirect=0 blockReuses=0 blockGrowths=7 hooks=0 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=0 reallocMoved=0 reallocDelegated=167 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=912
+ARENALOOP thread=io.github.neoionet.netty.microbenchmark.ByteBufAllocatorAllocPatternBenchmark.heapAllocation-1-15 arenaHeap=2351 arenaDirect=0 delegateHeap=62030421 delegateDirect=0 arenaShare=0.00% blocksHeap=8 blocksDirect=1 pinned=0 reusable=0 maxPinnedHeap=0 maxPinnedDirect=0 blockReuses=0 blockGrowths=7 hooks=0 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=0 reallocMoved=0 reallocDelegated=209 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=912
+ARENALOOP thread=io.github.neoionet.netty.microbenchmark.ByteBufAllocatorAllocPatternBenchmark.heapAllocation-1-23 arenaHeap=2364 arenaDirect=0 delegateHeap=65654476 delegateDirect=0 arenaShare=0.00% blocksHeap=8 blocksDirect=1 pinned=0 reusable=0 maxPinnedHeap=0 maxPinnedDirect=0 blockReuses=0 blockGrowths=7 hooks=0 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=0 reallocMoved=0 reallocDelegated=222 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=912
+ARENALOOP thread=io.github.neoionet.netty.microbenchmark.ByteBufAllocatorAllocPatternBenchmark.heapAllocation-1-30 arenaHeap=2334 arenaDirect=0 delegateHeap=56578744 delegateDirect=0 arenaShare=0.00% blocksHeap=8 blocksDirect=1 pinned=0 reusable=0 maxPinnedHeap=0 maxPinnedDirect=0 blockReuses=0 blockGrowths=7 hooks=0 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=0 reallocMoved=0 reallocDelegated=192 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=912
+ARENALOOP thread=io.github.neoionet.netty.microbenchmark.ByteBufAllocatorAllocPatternBenchmark.heapAllocation-1-6 arenaHeap=2253 arenaDirect=0 delegateHeap=33164245 delegateDirect=0 arenaShare=0.01% blocksHeap=8 blocksDirect=1 pinned=0 reusable=0 maxPinnedHeap=0 maxPinnedDirect=0 blockReuses=0 blockGrowths=7 hooks=0 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=0 reallocMoved=0 reallocDelegated=111 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=912
+ARENALOOP thread=io.github.neoionet.netty.microbenchmark.ByteBufAllocatorAllocPatternBenchmark.heapAllocation-1-20 arenaHeap=2344 arenaDirect=0 delegateHeap=60204836 delegateDirect=0 arenaShare=0.00% blocksHeap=8 blocksDirect=1 pinned=0 reusable=0 maxPinnedHeap=0 maxPinnedDirect=0 blockReuses=0 blockGrowths=7 hooks=0 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=0 reallocMoved=0 reallocDelegated=202 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=912
+ARENALOOP thread=io.github.neoionet.netty.microbenchmark.ByteBufAllocatorAllocPatternBenchmark.heapAllocation-1-26 arenaHeap=2351 arenaDirect=0 delegateHeap=61675343 delegateDirect=0 arenaShare=0.00% blocksHeap=8 blocksDirect=1 pinned=0 reusable=0 maxPinnedHeap=0 maxPinnedDirect=0 blockReuses=0 blockGrowths=7 hooks=0 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=0 reallocMoved=0 reallocDelegated=209 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=912
+ARENALOOP thread=io.github.neoionet.netty.microbenchmark.ByteBufAllocatorAllocPatternBenchmark.heapAllocation-1-16 arenaHeap=2345 arenaDirect=0 delegateHeap=60323678 delegateDirect=0 arenaShare=0.00% blocksHeap=8 blocksDirect=1 pinned=0 reusable=0 maxPinnedHeap=0 maxPinnedDirect=0 blockReuses=0 blockGrowths=7 hooks=0 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=0 reallocMoved=0 reallocDelegated=203 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=912
+438.243 ±(99.9%) 98.476 ns/op
+
+
+Result "io.github.neoionet.netty.microbenchmark.ByteBufAllocatorAllocPatternBenchmark.heapAllocation":
+  429.922 ±(99.9%) 65.356 ns/op [Average]
+  (min, avg, max) = (317.209, 429.922, 643.228), stdev = 97.822
+  CI (99.9%): [364.566, 495.278] (assumes normal distribution)
+
+
+# JMH version: 1.37
+# VM version: JDK 21, Java HotSpot(TM) 64-Bit Server VM, 21+35-LTS-2513
+# VM invoker: /home/forked_franz/.sdkman/candidates/java/21-oracle/bin/java
+# VM options: -server -dsa -da -XX:InitialRAMPercentage=40.0 -XX:MaxRAMPercentage=40.0 -Dio.netty.leakDetection.level=disabled -Djmh.executor=CUSTOM -Djmh.executor.class=io.github.neoionet.netty.microbenchmark.executor.FastThreadLocalThreadHarnessExecutor -XX:MaxRAM=60g -Xlog:gc
+# Blackhole mode: compiler (auto-detected, use -Djmh.blackhole.autoDetect=false to disable)
+# Warmup: 10 iterations, 1 s each
+# Measurement: 10 iterations, 1 s each
+# Timeout: 10 min per iteration
+# Threads: 32 threads, will synchronize iterations
+# Benchmark mode: Average time, time/op
+# Benchmark: io.github.neoionet.netty.microbenchmark.ByteBufAllocatorAllocPatternBenchmark.heapAllocation
+# Parameters: (MAX_LIVE_BUFFERS = 4096, allocatorType = ADAPTIVE, enableReadWrite = true, sizePattern = E_COMMERCE)
+
+# Run progress: 50.00% complete, ETA 00:02:26
+# Fork: 1 of 3
+[0.002s][info][gc] Using G1
+# Warmup Iteration   1: [2.846s][info][gc] GC(0) Pause Young (Normal) (G1 Evacuation Pause) 2289M->1331M(24576M) 37.689ms
+425.269 ±(99.9%) 51.916 ns/op
+# Warmup Iteration   2: 589.703 ±(99.9%) 137.285 ns/op
+# Warmup Iteration   3: 357.833 ±(99.9%) 56.611 ns/op
+# Warmup Iteration   4: 369.661 ±(99.9%) 72.602 ns/op
+# Warmup Iteration   5: 362.776 ±(99.9%) 51.030 ns/op
+# Warmup Iteration   6: 387.302 ±(99.9%) 101.141 ns/op
+# Warmup Iteration   7: 338.520 ±(99.9%) 22.002 ns/op
+# Warmup Iteration   8: 346.257 ±(99.9%) 47.505 ns/op
+# Warmup Iteration   9: 376.212 ±(99.9%) 94.171 ns/op
+# Warmup Iteration  10: 354.066 ±(99.9%) 58.452 ns/op
+Iteration   1: 348.005 ±(99.9%) 51.439 ns/op
+Iteration   2: 356.901 ±(99.9%) 64.842 ns/op
+Iteration   3: 353.106 ±(99.9%) 61.300 ns/op
+Iteration   4: 369.324 ±(99.9%) 69.525 ns/op
+Iteration   5: 371.473 ±(99.9%) 72.388 ns/op
+Iteration   6: 365.373 ±(99.9%) 64.175 ns/op
+Iteration   7: 385.198 ±(99.9%) 96.454 ns/op
+Iteration   8: 382.312 ±(99.9%) 78.848 ns/op
+Iteration   9: 379.557 ±(99.9%) 89.133 ns/op
+Iteration  10: cRSS-pRSS:[2126, 2130]
+;used-memory:[634]
+417.896 ±(99.9%) 114.747 ns/op
+
+# Run progress: 58.33% complete, ETA 00:02:01
+# Fork: 2 of 3
+[0.002s][info][gc] Using G1
+# Warmup Iteration   1: [2.841s][info][gc] GC(0) Pause Young (Normal) (G1 Evacuation Pause) 2289M->1344M(24576M) 36.781ms
+434.605 ±(99.9%) 64.118 ns/op
+# Warmup Iteration   2: 452.463 ±(99.9%) 56.928 ns/op
+# Warmup Iteration   3: 338.942 ±(99.9%) 42.652 ns/op
+# Warmup Iteration   4: 335.761 ±(99.9%) 38.186 ns/op
+# Warmup Iteration   5: 392.653 ±(99.9%) 104.590 ns/op
+# Warmup Iteration   6: 348.242 ±(99.9%) 61.584 ns/op
+# Warmup Iteration   7: 418.931 ±(99.9%) 140.373 ns/op
+# Warmup Iteration   8: 353.591 ±(99.9%) 60.880 ns/op
+# Warmup Iteration   9: 369.911 ±(99.9%) 97.464 ns/op
+# Warmup Iteration  10: 334.724 ±(99.9%) 41.196 ns/op
+Iteration   1: 333.128 ±(99.9%) 38.671 ns/op
+Iteration   2: 370.489 ±(99.9%) 93.337 ns/op
+Iteration   3: 365.043 ±(99.9%) 76.277 ns/op
+Iteration   4: 354.802 ±(99.9%) 66.047 ns/op
+Iteration   5: 346.771 ±(99.9%) 56.956 ns/op
+Iteration   6: 376.605 ±(99.9%) 98.827 ns/op
+Iteration   7: 338.152 ±(99.9%) 46.380 ns/op
+Iteration   8: 361.478 ±(99.9%) 77.319 ns/op
+Iteration   9: 352.193 ±(99.9%) 61.825 ns/op
+Iteration  10: cRSS-pRSS:[2135, 2138]
+;used-memory:[628]
+384.127 ±(99.9%) 110.467 ns/op
+
+# Run progress: 66.67% complete, ETA 00:01:37
+# Fork: 3 of 3
+[0.002s][info][gc] Using G1
+# Warmup Iteration   1: [2.842s][info][gc] GC(0) Pause Young (Normal) (G1 Evacuation Pause) 2289M->1350M(24576M) 36.495ms
+482.363 ±(99.9%) 115.152 ns/op
+# Warmup Iteration   2: 619.941 ±(99.9%) 91.351 ns/op
+# Warmup Iteration   3: 430.516 ±(99.9%) 97.250 ns/op
+# Warmup Iteration   4: 404.328 ±(99.9%) 85.031 ns/op
+# Warmup Iteration   5: 412.420 ±(99.9%) 80.276 ns/op
+# Warmup Iteration   6: 403.865 ±(99.9%) 66.893 ns/op
+# Warmup Iteration   7: 394.724 ±(99.9%) 74.086 ns/op
+# Warmup Iteration   8: 440.885 ±(99.9%) 86.192 ns/op
+# Warmup Iteration   9: 516.292 ±(99.9%) 113.025 ns/op
+# Warmup Iteration  10: 418.831 ±(99.9%) 98.174 ns/op
+Iteration   1: 415.602 ±(99.9%) 83.584 ns/op
+Iteration   2: 414.883 ±(99.9%) 122.929 ns/op
+Iteration   3: 467.602 ±(99.9%) 113.061 ns/op
+Iteration   4: 442.647 ±(99.9%) 47.192 ns/op
+Iteration   5: 414.050 ±(99.9%) 55.776 ns/op
+Iteration   6: 426.646 ±(99.9%) 94.929 ns/op
+Iteration   7: 439.421 ±(99.9%) 97.533 ns/op
+Iteration   8: 410.353 ±(99.9%) 91.981 ns/op
+Iteration   9: 458.960 ±(99.9%) 119.927 ns/op
+Iteration  10: cRSS-pRSS:[2135, 2138]
+;used-memory:[628]
+413.223 ±(99.9%) 115.828 ns/op
+
+
+Result "io.github.neoionet.netty.microbenchmark.ByteBufAllocatorAllocPatternBenchmark.heapAllocation":
+  387.177 ±(99.9%) 24.488 ns/op [Average]
+  (min, avg, max) = (333.128, 387.177, 467.602), stdev = 36.653
+  CI (99.9%): [362.689, 411.666] (assumes normal distribution)
+
+
+# JMH version: 1.37
+# VM version: JDK 21, Java HotSpot(TM) 64-Bit Server VM, 21+35-LTS-2513
+# VM invoker: /home/forked_franz/.sdkman/candidates/java/21-oracle/bin/java
+# VM options: -server -dsa -da -XX:InitialRAMPercentage=40.0 -XX:MaxRAMPercentage=40.0 -Dio.netty.leakDetection.level=disabled -Djmh.executor=CUSTOM -Djmh.executor.class=io.github.neoionet.netty.microbenchmark.executor.FastThreadLocalThreadHarnessExecutor -XX:MaxRAM=60g -Xlog:gc
+# Blackhole mode: compiler (auto-detected, use -Djmh.blackhole.autoDetect=false to disable)
+# Warmup: 10 iterations, 1 s each
+# Measurement: 10 iterations, 1 s each
+# Timeout: 10 min per iteration
+# Threads: 32 threads, will synchronize iterations
+# Benchmark mode: Average time, time/op
+# Benchmark: io.github.neoionet.netty.microbenchmark.ByteBufAllocatorAllocPatternBenchmark.heapAllocation
+# Parameters: (MAX_LIVE_BUFFERS = 4096, allocatorType = ARENA, enableReadWrite = true, sizePattern = E_COMMERCE)
+
+# Run progress: 75.00% complete, ETA 00:01:12
+# Fork: 1 of 3
+[0.002s][info][gc] Using G1
+# Warmup Iteration   1: [2.911s][info][gc] GC(0) Pause Young (Normal) (G1 Evacuation Pause) 2288M->1392M(24576M) 39.516ms
+543.543 ±(99.9%) 109.287 ns/op
+# Warmup Iteration   2: 770.024 ±(99.9%) 141.794 ns/op
+# Warmup Iteration   3: 401.694 ±(99.9%) 79.822 ns/op
+# Warmup Iteration   4: 394.761 ±(99.9%) 75.258 ns/op
+# Warmup Iteration   5: 402.805 ±(99.9%) 71.981 ns/op
+# Warmup Iteration   6: 381.015 ±(99.9%) 55.720 ns/op
+# Warmup Iteration   7: 375.377 ±(99.9%) 53.458 ns/op
+# Warmup Iteration   8: 386.828 ±(99.9%) 71.693 ns/op
+# Warmup Iteration   9: 374.809 ±(99.9%) 56.410 ns/op
+# Warmup Iteration  10: 384.649 ±(99.9%) 72.028 ns/op
+Iteration   1: 405.964 ±(99.9%) 98.059 ns/op
+Iteration   2: 389.352 ±(99.9%) 75.628 ns/op
+Iteration   3: 385.138 ±(99.9%) 65.114 ns/op
+Iteration   4: 398.522 ±(99.9%) 75.591 ns/op
+Iteration   5: 404.584 ±(99.9%) 90.680 ns/op
+Iteration   6: 397.607 ±(99.9%) 94.434 ns/op
+Iteration   7: 397.148 ±(99.9%) 84.479 ns/op
+Iteration   8: 379.966 ±(99.9%) 61.065 ns/op
+Iteration   9: 373.407 ±(99.9%) 46.245 ns/op
+Iteration  10: cRSS-pRSS:[2223, 2227]
+;used-memory:[0]
+ARENATELE blockSize=262144 maxBlocks=8 cap=8192 maxObjects=16384 debug=false arenaHeap=77689 arenaDirect=0 delegateHeap=1781557326 delegateDirect=0 arenaShare=0.00% blocksHeap=256 blocksDirect=32 pinned=0 reusable=0 maxPinnedHeap=0 maxPinnedDirect=0 blockReuses=0 blockGrowths=224 hooks=0 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=0 reallocMoved=0 reallocDelegated=5977 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=71680
+ARENALOOP thread=io.github.neoionet.netty.microbenchmark.ByteBufAllocatorAllocPatternBenchmark.heapAllocation-1-3 arenaHeap=2416 arenaDirect=0 delegateHeap=52052586 delegateDirect=0 arenaShare=0.00% blocksHeap=8 blocksDirect=1 pinned=0 reusable=0 maxPinnedHeap=0 maxPinnedDirect=0 blockReuses=0 blockGrowths=7 hooks=0 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=0 reallocMoved=0 reallocDelegated=175 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=2240
+ARENALOOP thread=io.github.neoionet.netty.microbenchmark.ByteBufAllocatorAllocPatternBenchmark.heapAllocation-1-27 arenaHeap=2440 arenaDirect=0 delegateHeap=59405040 delegateDirect=0 arenaShare=0.00% blocksHeap=8 blocksDirect=1 pinned=0 reusable=0 maxPinnedHeap=0 maxPinnedDirect=0 blockReuses=0 blockGrowths=7 hooks=0 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=0 reallocMoved=0 reallocDelegated=199 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=2240
+ARENALOOP thread=io.github.neoionet.netty.microbenchmark.ByteBufAllocatorAllocPatternBenchmark.heapAllocation-1-25 arenaHeap=2399 arenaDirect=0 delegateHeap=47234327 delegateDirect=0 arenaShare=0.01% blocksHeap=8 blocksDirect=1 pinned=0 reusable=0 maxPinnedHeap=0 maxPinnedDirect=0 blockReuses=0 blockGrowths=7 hooks=0 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=0 reallocMoved=0 reallocDelegated=158 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=2240
+ARENALOOP thread=io.github.neoionet.netty.microbenchmark.ByteBufAllocatorAllocPatternBenchmark.heapAllocation-1-9 arenaHeap=2437 arenaDirect=0 delegateHeap=58648098 delegateDirect=0 arenaShare=0.00% blocksHeap=8 blocksDirect=1 pinned=0 reusable=0 maxPinnedHeap=0 maxPinnedDirect=0 blockReuses=0 blockGrowths=7 hooks=0 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=0 reallocMoved=0 reallocDelegated=196 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=2240
+ARENALOOP thread=io.github.neoionet.netty.microbenchmark.ByteBufAllocatorAllocPatternBenchmark.heapAllocation-1-11 arenaHeap=2458 arenaDirect=0 delegateHeap=64555445 delegateDirect=0 arenaShare=0.00% blocksHeap=8 blocksDirect=1 pinned=0 reusable=0 maxPinnedHeap=0 maxPinnedDirect=0 blockReuses=0 blockGrowths=7 hooks=0 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=0 reallocMoved=0 reallocDelegated=217 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=2240
+ARENALOOP thread=io.github.neoionet.netty.microbenchmark.ByteBufAllocatorAllocPatternBenchmark.heapAllocation-1-17 arenaHeap=2450 arenaDirect=0 delegateHeap=61919734 delegateDirect=0 arenaShare=0.00% blocksHeap=8 blocksDirect=1 pinned=0 reusable=0 maxPinnedHeap=0 maxPinnedDirect=0 blockReuses=0 blockGrowths=7 hooks=0 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=0 reallocMoved=0 reallocDelegated=209 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=2240
+ARENALOOP thread=io.github.neoionet.netty.microbenchmark.ByteBufAllocatorAllocPatternBenchmark.heapAllocation-1-1 arenaHeap=2422 arenaDirect=0 delegateHeap=53727762 delegateDirect=0 arenaShare=0.00% blocksHeap=8 blocksDirect=1 pinned=0 reusable=0 maxPinnedHeap=0 maxPinnedDirect=0 blockReuses=0 blockGrowths=7 hooks=0 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=0 reallocMoved=0 reallocDelegated=181 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=2240
+ARENALOOP thread=io.github.neoionet.netty.microbenchmark.ByteBufAllocatorAllocPatternBenchmark.heapAllocation-1-31 arenaHeap=2427 arenaDirect=0 delegateHeap=55487665 delegateDirect=0 arenaShare=0.00% blocksHeap=8 blocksDirect=1 pinned=0 reusable=0 maxPinnedHeap=0 maxPinnedDirect=0 blockReuses=0 blockGrowths=7 hooks=0 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=0 reallocMoved=0 reallocDelegated=186 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=2240
+ARENALOOP thread=io.github.neoionet.netty.microbenchmark.ByteBufAllocatorAllocPatternBenchmark.heapAllocation-1-18 arenaHeap=2423 arenaDirect=0 delegateHeap=54446711 delegateDirect=0 arenaShare=0.00% blocksHeap=8 blocksDirect=1 pinned=0 reusable=0 maxPinnedHeap=0 maxPinnedDirect=0 blockReuses=0 blockGrowths=7 hooks=0 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=0 reallocMoved=0 reallocDelegated=182 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=2240
+ARENALOOP thread=io.github.neoionet.netty.microbenchmark.ByteBufAllocatorAllocPatternBenchmark.heapAllocation-1-13 arenaHeap=2427 arenaDirect=0 delegateHeap=55415739 delegateDirect=0 arenaShare=0.00% blocksHeap=8 blocksDirect=1 pinned=0 reusable=0 maxPinnedHeap=0 maxPinnedDirect=0 blockReuses=0 blockGrowths=7 hooks=0 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=0 reallocMoved=0 reallocDelegated=186 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=2240
+ARENALOOP thread=io.github.neoionet.netty.microbenchmark.ByteBufAllocatorAllocPatternBenchmark.heapAllocation-1-8 arenaHeap=2413 arenaDirect=0 delegateHeap=51504535 delegateDirect=0 arenaShare=0.00% blocksHeap=8 blocksDirect=1 pinned=0 reusable=0 maxPinnedHeap=0 maxPinnedDirect=0 blockReuses=0 blockGrowths=7 hooks=0 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=0 reallocMoved=0 reallocDelegated=172 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=2240
+ARENALOOP thread=io.github.neoionet.netty.microbenchmark.ByteBufAllocatorAllocPatternBenchmark.heapAllocation-1-2 arenaHeap=2423 arenaDirect=0 delegateHeap=54623490 delegateDirect=0 arenaShare=0.00% blocksHeap=8 blocksDirect=1 pinned=0 reusable=0 maxPinnedHeap=0 maxPinnedDirect=0 blockReuses=0 blockGrowths=7 hooks=0 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=0 reallocMoved=0 reallocDelegated=182 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=2240
+ARENALOOP thread=io.github.neoionet.netty.microbenchmark.ByteBufAllocatorAllocPatternBenchmark.heapAllocation-1-26 arenaHeap=2436 arenaDirect=0 delegateHeap=58225063 delegateDirect=0 arenaShare=0.00% blocksHeap=8 blocksDirect=1 pinned=0 reusable=0 maxPinnedHeap=0 maxPinnedDirect=0 blockReuses=0 blockGrowths=7 hooks=0 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=0 reallocMoved=0 reallocDelegated=195 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=2240
+ARENALOOP thread=io.github.neoionet.netty.microbenchmark.ByteBufAllocatorAllocPatternBenchmark.heapAllocation-1-14 arenaHeap=2436 arenaDirect=0 delegateHeap=58180080 delegateDirect=0 arenaShare=0.00% blocksHeap=8 blocksDirect=1 pinned=0 reusable=0 maxPinnedHeap=0 maxPinnedDirect=0 blockReuses=0 blockGrowths=7 hooks=0 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=0 reallocMoved=0 reallocDelegated=195 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=2240
+ARENALOOP thread=io.github.neoionet.netty.microbenchmark.ByteBufAllocatorAllocPatternBenchmark.heapAllocation-1-6 arenaHeap=2427 arenaDirect=0 delegateHeap=55593608 delegateDirect=0 arenaShare=0.00% blocksHeap=8 blocksDirect=1 pinned=0 reusable=0 maxPinnedHeap=0 maxPinnedDirect=0 blockReuses=0 blockGrowths=7 hooks=0 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=0 reallocMoved=0 reallocDelegated=186 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=2240
+ARENALOOP thread=io.github.neoionet.netty.microbenchmark.ByteBufAllocatorAllocPatternBenchmark.heapAllocation-1-32 arenaHeap=2425 arenaDirect=0 delegateHeap=54749390 delegateDirect=0 arenaShare=0.00% blocksHeap=8 blocksDirect=1 pinned=0 reusable=0 maxPinnedHeap=0 maxPinnedDirect=0 blockReuses=0 blockGrowths=7 hooks=0 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=0 reallocMoved=0 reallocDelegated=184 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=2240
+ARENALOOP thread=io.github.neoionet.netty.microbenchmark.ByteBufAllocatorAllocPatternBenchmark.heapAllocation-1-7 arenaHeap=2457 arenaDirect=0 delegateHeap=64360839 delegateDirect=0 arenaShare=0.00% blocksHeap=8 blocksDirect=1 pinned=0 reusable=0 maxPinnedHeap=0 maxPinnedDirect=0 blockReuses=0 blockGrowths=7 hooks=0 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=0 reallocMoved=0 reallocDelegated=216 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=2240
+ARENALOOP thread=io.github.neoionet.netty.microbenchmark.ByteBufAllocatorAllocPatternBenchmark.heapAllocation-1-24 arenaHeap=2441 arenaDirect=0 delegateHeap=59921118 delegateDirect=0 arenaShare=0.00% blocksHeap=8 blocksDirect=1 pinned=0 reusable=0 maxPinnedHeap=0 maxPinnedDirect=0 blockReuses=0 blockGrowths=7 hooks=0 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=0 reallocMoved=0 reallocDelegated=200 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=2240
+ARENALOOP thread=io.github.neoionet.netty.microbenchmark.ByteBufAllocatorAllocPatternBenchmark.heapAllocation-1-5 arenaHeap=2422 arenaDirect=0 delegateHeap=54156178 delegateDirect=0 arenaShare=0.00% blocksHeap=8 blocksDirect=1 pinned=0 reusable=0 maxPinnedHeap=0 maxPinnedDirect=0 blockReuses=0 blockGrowths=7 hooks=0 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=0 reallocMoved=0 reallocDelegated=181 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=2240
+ARENALOOP thread=io.github.neoionet.netty.microbenchmark.ByteBufAllocatorAllocPatternBenchmark.heapAllocation-1-12 arenaHeap=2440 arenaDirect=0 delegateHeap=59380250 delegateDirect=0 arenaShare=0.00% blocksHeap=8 blocksDirect=1 pinned=0 reusable=0 maxPinnedHeap=0 maxPinnedDirect=0 blockReuses=0 blockGrowths=7 hooks=0 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=0 reallocMoved=0 reallocDelegated=199 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=2240
+ARENALOOP thread=io.github.neoionet.netty.microbenchmark.ByteBufAllocatorAllocPatternBenchmark.heapAllocation-1-28 arenaHeap=2422 arenaDirect=0 delegateHeap=54211830 delegateDirect=0 arenaShare=0.00% blocksHeap=8 blocksDirect=1 pinned=0 reusable=0 maxPinnedHeap=0 maxPinnedDirect=0 blockReuses=0 blockGrowths=7 hooks=0 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=0 reallocMoved=0 reallocDelegated=181 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=2240
+ARENALOOP thread=io.github.neoionet.netty.microbenchmark.ByteBufAllocatorAllocPatternBenchmark.heapAllocation-1-21 arenaHeap=2422 arenaDirect=0 delegateHeap=53718588 delegateDirect=0 arenaShare=0.00% blocksHeap=8 blocksDirect=1 pinned=0 reusable=0 maxPinnedHeap=0 maxPinnedDirect=0 blockReuses=0 blockGrowths=7 hooks=0 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=0 reallocMoved=0 reallocDelegated=181 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=2240
+ARENALOOP thread=io.github.neoionet.netty.microbenchmark.ByteBufAllocatorAllocPatternBenchmark.heapAllocation-1-4 arenaHeap=2411 arenaDirect=0 delegateHeap=50646195 delegateDirect=0 arenaShare=0.00% blocksHeap=8 blocksDirect=1 pinned=0 reusable=0 maxPinnedHeap=0 maxPinnedDirect=0 blockReuses=0 blockGrowths=7 hooks=0 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=0 reallocMoved=0 reallocDelegated=170 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=2240
+ARENALOOP thread=io.github.neoionet.netty.microbenchmark.ByteBufAllocatorAllocPatternBenchmark.heapAllocation-1-10 arenaHeap=2412 arenaDirect=0 delegateHeap=51149435 delegateDirect=0 arenaShare=0.00% blocksHeap=8 blocksDirect=1 pinned=0 reusable=0 maxPinnedHeap=0 maxPinnedDirect=0 blockReuses=0 blockGrowths=7 hooks=0 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=0 reallocMoved=0 reallocDelegated=171 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=2240
+ARENALOOP thread=io.github.neoionet.netty.microbenchmark.ByteBufAllocatorAllocPatternBenchmark.heapAllocation-1-19 arenaHeap=2431 arenaDirect=0 delegateHeap=56296398 delegateDirect=0 arenaShare=0.00% blocksHeap=8 blocksDirect=1 pinned=0 reusable=0 maxPinnedHeap=0 maxPinnedDirect=0 blockReuses=0 blockGrowths=7 hooks=0 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=0 reallocMoved=0 reallocDelegated=190 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=2240
+ARENALOOP thread=io.github.neoionet.netty.microbenchmark.ByteBufAllocatorAllocPatternBenchmark.heapAllocation-1-15 arenaHeap=2442 arenaDirect=0 delegateHeap=60056307 delegateDirect=0 arenaShare=0.00% blocksHeap=8 blocksDirect=1 pinned=0 reusable=0 maxPinnedHeap=0 maxPinnedDirect=0 blockReuses=0 blockGrowths=7 hooks=0 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=0 reallocMoved=0 reallocDelegated=201 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=2240
+ARENALOOP thread=io.github.neoionet.netty.microbenchmark.ByteBufAllocatorAllocPatternBenchmark.heapAllocation-1-23 arenaHeap=2408 arenaDirect=0 delegateHeap=49400752 delegateDirect=0 arenaShare=0.00% blocksHeap=8 blocksDirect=1 pinned=0 reusable=0 maxPinnedHeap=0 maxPinnedDirect=0 blockReuses=0 blockGrowths=7 hooks=0 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=0 reallocMoved=0 reallocDelegated=167 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=2240
+ARENALOOP thread=io.github.neoionet.netty.microbenchmark.ByteBufAllocatorAllocPatternBenchmark.heapAllocation-1-20 arenaHeap=2413 arenaDirect=0 delegateHeap=51414626 delegateDirect=0 arenaShare=0.00% blocksHeap=8 blocksDirect=1 pinned=0 reusable=0 maxPinnedHeap=0 maxPinnedDirect=0 blockReuses=0 blockGrowths=7 hooks=0 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=0 reallocMoved=0 reallocDelegated=172 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=2240
+ARENALOOP thread=io.github.neoionet.netty.microbenchmark.ByteBufAllocatorAllocPatternBenchmark.heapAllocation-1-30 arenaHeap=2448 arenaDirect=0 delegateHeap=61259701 delegateDirect=0 arenaShare=0.00% blocksHeap=8 blocksDirect=1 pinned=0 reusable=0 maxPinnedHeap=0 maxPinnedDirect=0 blockReuses=0 blockGrowths=7 hooks=0 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=0 reallocMoved=0 reallocDelegated=207 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=2240
+ARENALOOP thread=io.github.neoionet.netty.microbenchmark.ByteBufAllocatorAllocPatternBenchmark.heapAllocation-1-16 arenaHeap=2431 arenaDirect=0 delegateHeap=56378166 delegateDirect=0 arenaShare=0.00% blocksHeap=8 blocksDirect=1 pinned=0 reusable=0 maxPinnedHeap=0 maxPinnedDirect=0 blockReuses=0 blockGrowths=7 hooks=0 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=0 reallocMoved=0 reallocDelegated=190 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=2240
+ARENALOOP thread=io.github.neoionet.netty.microbenchmark.ByteBufAllocatorAllocPatternBenchmark.heapAllocation-1-22 arenaHeap=2422 arenaDirect=0 delegateHeap=54346050 delegateDirect=0 arenaShare=0.00% blocksHeap=8 blocksDirect=1 pinned=0 reusable=0 maxPinnedHeap=0 maxPinnedDirect=0 blockReuses=0 blockGrowths=7 hooks=0 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=0 reallocMoved=0 reallocDelegated=181 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=2240
+ARENALOOP thread=io.github.neoionet.netty.microbenchmark.ByteBufAllocatorAllocPatternBenchmark.heapAllocation-1-29 arenaHeap=2408 arenaDirect=0 delegateHeap=49091620 delegateDirect=0 arenaShare=0.00% blocksHeap=8 blocksDirect=1 pinned=0 reusable=0 maxPinnedHeap=0 maxPinnedDirect=0 blockReuses=0 blockGrowths=7 hooks=0 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=0 reallocMoved=0 reallocDelegated=167 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=2240
+385.924 ±(99.9%) 66.846 ns/op
+
+# Run progress: 83.33% complete, ETA 00:00:48
+# Fork: 2 of 3
+[0.002s][info][gc] Using G1
+# Warmup Iteration   1: [2.853s][info][gc] GC(0) Pause Young (Normal) (G1 Evacuation Pause) 2288M->1388M(24576M) 41.634ms
+455.545 ±(99.9%) 45.887 ns/op
+# Warmup Iteration   2: 550.355 ±(99.9%) 75.443 ns/op
+# Warmup Iteration   3: 354.796 ±(99.9%) 45.550 ns/op
+# Warmup Iteration   4: 360.326 ±(99.9%) 61.190 ns/op
+# Warmup Iteration   5: 378.037 ±(99.9%) 64.173 ns/op
+# Warmup Iteration   6: 370.507 ±(99.9%) 72.790 ns/op
+# Warmup Iteration   7: 371.688 ±(99.9%) 84.448 ns/op
+# Warmup Iteration   8: 358.724 ±(99.9%) 60.668 ns/op
+# Warmup Iteration   9: 365.424 ±(99.9%) 78.919 ns/op
+# Warmup Iteration  10: 342.159 ±(99.9%) 41.575 ns/op
+Iteration   1: 398.418 ±(99.9%) 120.139 ns/op
+Iteration   2: 358.182 ±(99.9%) 66.499 ns/op
+Iteration   3: 365.358 ±(99.9%) 72.417 ns/op
+Iteration   4: 373.837 ±(99.9%) 80.015 ns/op
+Iteration   5: 367.939 ±(99.9%) 71.759 ns/op
+Iteration   6: 358.142 ±(99.9%) 55.338 ns/op
+Iteration   7: 360.961 ±(99.9%) 56.492 ns/op
+Iteration   8: 363.812 ±(99.9%) 63.592 ns/op
+Iteration   9: 379.961 ±(99.9%) 82.507 ns/op
+Iteration  10: cRSS-pRSS:[2213, 2217]
+;used-memory:[0]
+ARENATELE blockSize=262144 maxBlocks=8 cap=8192 maxObjects=16384 debug=false arenaHeap=78214 arenaDirect=0 delegateHeap=1933077394 delegateDirect=0 arenaShare=0.00% blocksHeap=256 blocksDirect=32 pinned=0 reusable=0 maxPinnedHeap=0 maxPinnedDirect=0 blockReuses=0 blockGrowths=224 hooks=0 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=0 reallocMoved=0 reallocDelegated=6502 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=71680
+ARENALOOP thread=io.github.neoionet.netty.microbenchmark.ByteBufAllocatorAllocPatternBenchmark.heapAllocation-1-26 arenaHeap=2444 arenaDirect=0 delegateHeap=60457253 delegateDirect=0 arenaShare=0.00% blocksHeap=8 blocksDirect=1 pinned=0 reusable=0 maxPinnedHeap=0 maxPinnedDirect=0 blockReuses=0 blockGrowths=7 hooks=0 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=0 reallocMoved=0 reallocDelegated=203 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=2240
+ARENALOOP thread=io.github.neoionet.netty.microbenchmark.ByteBufAllocatorAllocPatternBenchmark.heapAllocation-1-13 arenaHeap=2422 arenaDirect=0 delegateHeap=54371587 delegateDirect=0 arenaShare=0.00% blocksHeap=8 blocksDirect=1 pinned=0 reusable=0 maxPinnedHeap=0 maxPinnedDirect=0 blockReuses=0 blockGrowths=7 hooks=0 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=0 reallocMoved=0 reallocDelegated=181 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=2240
+ARENALOOP thread=io.github.neoionet.netty.microbenchmark.ByteBufAllocatorAllocPatternBenchmark.heapAllocation-1-27 arenaHeap=2448 arenaDirect=0 delegateHeap=60823514 delegateDirect=0 arenaShare=0.00% blocksHeap=8 blocksDirect=1 pinned=0 reusable=0 maxPinnedHeap=0 maxPinnedDirect=0 blockReuses=0 blockGrowths=7 hooks=0 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=0 reallocMoved=0 reallocDelegated=207 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=2240
+ARENALOOP thread=io.github.neoionet.netty.microbenchmark.ByteBufAllocatorAllocPatternBenchmark.heapAllocation-1-11 arenaHeap=2450 arenaDirect=0 delegateHeap=61905436 delegateDirect=0 arenaShare=0.00% blocksHeap=8 blocksDirect=1 pinned=0 reusable=0 maxPinnedHeap=0 maxPinnedDirect=0 blockReuses=0 blockGrowths=7 hooks=0 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=0 reallocMoved=0 reallocDelegated=209 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=2240
+ARENALOOP thread=io.github.neoionet.netty.microbenchmark.ByteBufAllocatorAllocPatternBenchmark.heapAllocation-1-19 arenaHeap=2431 arenaDirect=0 delegateHeap=56403211 delegateDirect=0 arenaShare=0.00% blocksHeap=8 blocksDirect=1 pinned=0 reusable=0 maxPinnedHeap=0 maxPinnedDirect=0 blockReuses=0 blockGrowths=7 hooks=0 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=0 reallocMoved=0 reallocDelegated=190 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=2240
+ARENALOOP thread=io.github.neoionet.netty.microbenchmark.ByteBufAllocatorAllocPatternBenchmark.heapAllocation-1-15 arenaHeap=2450 arenaDirect=0 delegateHeap=62776851 delegateDirect=0 arenaShare=0.00% blocksHeap=8 blocksDirect=1 pinned=0 reusable=0 maxPinnedHeap=0 maxPinnedDirect=0 blockReuses=0 blockGrowths=7 hooks=0 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=0 reallocMoved=0 reallocDelegated=209 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=2240
+ARENALOOP thread=io.github.neoionet.netty.microbenchmark.ByteBufAllocatorAllocPatternBenchmark.heapAllocation-1-12 arenaHeap=2467 arenaDirect=0 delegateHeap=67481957 delegateDirect=0 arenaShare=0.00% blocksHeap=8 blocksDirect=1 pinned=0 reusable=0 maxPinnedHeap=0 maxPinnedDirect=0 blockReuses=0 blockGrowths=7 hooks=0 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=0 reallocMoved=0 reallocDelegated=226 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=2240
+ARENALOOP thread=io.github.neoionet.netty.microbenchmark.ByteBufAllocatorAllocPatternBenchmark.heapAllocation-1-10 arenaHeap=2448 arenaDirect=0 delegateHeap=60900192 delegateDirect=0 arenaShare=0.00% blocksHeap=8 blocksDirect=1 pinned=0 reusable=0 maxPinnedHeap=0 maxPinnedDirect=0 blockReuses=0 blockGrowths=7 hooks=0 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=0 reallocMoved=0 reallocDelegated=207 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=2240
+ARENALOOP thread=io.github.neoionet.netty.microbenchmark.ByteBufAllocatorAllocPatternBenchmark.heapAllocation-1-8 arenaHeap=2406 arenaDirect=0 delegateHeap=48573565 delegateDirect=0 arenaShare=0.00% blocksHeap=8 blocksDirect=1 pinned=0 reusable=0 maxPinnedHeap=0 maxPinnedDirect=0 blockReuses=0 blockGrowths=7 hooks=0 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=0 reallocMoved=0 reallocDelegated=165 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=2240
+ARENALOOP thread=io.github.neoionet.netty.microbenchmark.ByteBufAllocatorAllocPatternBenchmark.heapAllocation-1-25 arenaHeap=2486 arenaDirect=0 delegateHeap=72897973 delegateDirect=0 arenaShare=0.00% blocksHeap=8 blocksDirect=1 pinned=0 reusable=0 maxPinnedHeap=0 maxPinnedDirect=0 blockReuses=0 blockGrowths=7 hooks=0 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=0 reallocMoved=0 reallocDelegated=245 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=2240
+ARENALOOP thread=io.github.neoionet.netty.microbenchmark.ByteBufAllocatorAllocPatternBenchmark.heapAllocation-1-20 arenaHeap=2415 arenaDirect=0 delegateHeap=51883545 delegateDirect=0 arenaShare=0.00% blocksHeap=8 blocksDirect=1 pinned=0 reusable=0 maxPinnedHeap=0 maxPinnedDirect=0 blockReuses=0 blockGrowths=7 hooks=0 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=0 reallocMoved=0 reallocDelegated=174 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=2240
+ARENALOOP thread=io.github.neoionet.netty.microbenchmark.ByteBufAllocatorAllocPatternBenchmark.heapAllocation-1-2 arenaHeap=2450 arenaDirect=0 delegateHeap=62785004 delegateDirect=0 arenaShare=0.00% blocksHeap=8 blocksDirect=1 pinned=0 reusable=0 maxPinnedHeap=0 maxPinnedDirect=0 blockReuses=0 blockGrowths=7 hooks=0 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=0 reallocMoved=0 reallocDelegated=209 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=2240
+ARENALOOP thread=io.github.neoionet.netty.microbenchmark.ByteBufAllocatorAllocPatternBenchmark.heapAllocation-1-23 arenaHeap=2500 arenaDirect=0 delegateHeap=77125966 delegateDirect=0 arenaShare=0.00% blocksHeap=8 blocksDirect=1 pinned=0 reusable=0 maxPinnedHeap=0 maxPinnedDirect=0 blockReuses=0 blockGrowths=7 hooks=0 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=0 reallocMoved=0 reallocDelegated=259 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=2240
+ARENALOOP thread=io.github.neoionet.netty.microbenchmark.ByteBufAllocatorAllocPatternBenchmark.heapAllocation-1-6 arenaHeap=2468 arenaDirect=0 delegateHeap=67659625 delegateDirect=0 arenaShare=0.00% blocksHeap=8 blocksDirect=1 pinned=0 reusable=0 maxPinnedHeap=0 maxPinnedDirect=0 blockReuses=0 blockGrowths=7 hooks=0 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=0 reallocMoved=0 reallocDelegated=227 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=2240
+ARENALOOP thread=io.github.neoionet.netty.microbenchmark.ByteBufAllocatorAllocPatternBenchmark.heapAllocation-1-22 arenaHeap=2464 arenaDirect=0 delegateHeap=66893700 delegateDirect=0 arenaShare=0.00% blocksHeap=8 blocksDirect=1 pinned=0 reusable=0 maxPinnedHeap=0 maxPinnedDirect=0 blockReuses=0 blockGrowths=7 hooks=0 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=0 reallocMoved=0 reallocDelegated=223 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=2240
+ARENALOOP thread=io.github.neoionet.netty.microbenchmark.ByteBufAllocatorAllocPatternBenchmark.heapAllocation-1-24 arenaHeap=2441 arenaDirect=0 delegateHeap=59903638 delegateDirect=0 arenaShare=0.00% blocksHeap=8 blocksDirect=1 pinned=0 reusable=0 maxPinnedHeap=0 maxPinnedDirect=0 blockReuses=0 blockGrowths=7 hooks=0 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=0 reallocMoved=0 reallocDelegated=200 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=2240
+ARENALOOP thread=io.github.neoionet.netty.microbenchmark.ByteBufAllocatorAllocPatternBenchmark.heapAllocation-1-1 arenaHeap=2450 arenaDirect=0 delegateHeap=61888824 delegateDirect=0 arenaShare=0.00% blocksHeap=8 blocksDirect=1 pinned=0 reusable=0 maxPinnedHeap=0 maxPinnedDirect=0 blockReuses=0 blockGrowths=7 hooks=0 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=0 reallocMoved=0 reallocDelegated=209 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=2240
+ARENALOOP thread=io.github.neoionet.netty.microbenchmark.ByteBufAllocatorAllocPatternBenchmark.heapAllocation-1-29 arenaHeap=2462 arenaDirect=0 delegateHeap=65138391 delegateDirect=0 arenaShare=0.00% blocksHeap=8 blocksDirect=1 pinned=0 reusable=0 maxPinnedHeap=0 maxPinnedDirect=0 blockReuses=0 blockGrowths=7 hooks=0 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=0 reallocMoved=0 reallocDelegated=221 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=2240
+ARENALOOP thread=io.github.neoionet.netty.microbenchmark.ByteBufAllocatorAllocPatternBenchmark.heapAllocation-1-14 arenaHeap=2434 arenaDirect=0 delegateHeap=56641383 delegateDirect=0 arenaShare=0.00% blocksHeap=8 blocksDirect=1 pinned=0 reusable=0 maxPinnedHeap=0 maxPinnedDirect=0 blockReuses=0 blockGrowths=7 hooks=0 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=0 reallocMoved=0 reallocDelegated=193 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=2240
+ARENALOOP thread=io.github.neoionet.netty.microbenchmark.ByteBufAllocatorAllocPatternBenchmark.heapAllocation-1-30 arenaHeap=2443 arenaDirect=0 delegateHeap=60178980 delegateDirect=0 arenaShare=0.00% blocksHeap=8 blocksDirect=1 pinned=0 reusable=0 maxPinnedHeap=0 maxPinnedDirect=0 blockReuses=0 blockGrowths=7 hooks=0 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=0 reallocMoved=0 reallocDelegated=202 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=2240
+ARENALOOP thread=io.github.neoionet.netty.microbenchmark.ByteBufAllocatorAllocPatternBenchmark.heapAllocation-1-21 arenaHeap=2422 arenaDirect=0 delegateHeap=54163152 delegateDirect=0 arenaShare=0.00% blocksHeap=8 blocksDirect=1 pinned=0 reusable=0 maxPinnedHeap=0 maxPinnedDirect=0 blockReuses=0 blockGrowths=7 hooks=0 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=0 reallocMoved=0 reallocDelegated=181 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=2240
+ARENALOOP thread=io.github.neoionet.netty.microbenchmark.ByteBufAllocatorAllocPatternBenchmark.heapAllocation-1-7 arenaHeap=2450 arenaDirect=0 delegateHeap=61829567 delegateDirect=0 arenaShare=0.00% blocksHeap=8 blocksDirect=1 pinned=0 reusable=0 maxPinnedHeap=0 maxPinnedDirect=0 blockReuses=0 blockGrowths=7 hooks=0 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=0 reallocMoved=0 reallocDelegated=209 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=2240
+ARENALOOP thread=io.github.neoionet.netty.microbenchmark.ByteBufAllocatorAllocPatternBenchmark.heapAllocation-1-5 arenaHeap=2416 arenaDirect=0 delegateHeap=51977104 delegateDirect=0 arenaShare=0.00% blocksHeap=8 blocksDirect=1 pinned=0 reusable=0 maxPinnedHeap=0 maxPinnedDirect=0 blockReuses=0 blockGrowths=7 hooks=0 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=0 reallocMoved=0 reallocDelegated=175 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=2240
+ARENALOOP thread=io.github.neoionet.netty.microbenchmark.ByteBufAllocatorAllocPatternBenchmark.heapAllocation-1-31 arenaHeap=2450 arenaDirect=0 delegateHeap=61660144 delegateDirect=0 arenaShare=0.00% blocksHeap=8 blocksDirect=1 pinned=0 reusable=0 maxPinnedHeap=0 maxPinnedDirect=0 blockReuses=0 blockGrowths=7 hooks=0 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=0 reallocMoved=0 reallocDelegated=209 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=2240
+ARENALOOP thread=io.github.neoionet.netty.microbenchmark.ByteBufAllocatorAllocPatternBenchmark.heapAllocation-1-16 arenaHeap=2445 arenaDirect=0 delegateHeap=60578481 delegateDirect=0 arenaShare=0.00% blocksHeap=8 blocksDirect=1 pinned=0 reusable=0 maxPinnedHeap=0 maxPinnedDirect=0 blockReuses=0 blockGrowths=7 hooks=0 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=0 reallocMoved=0 reallocDelegated=204 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=2240
+ARENALOOP thread=io.github.neoionet.netty.microbenchmark.ByteBufAllocatorAllocPatternBenchmark.heapAllocation-1-3 arenaHeap=2425 arenaDirect=0 delegateHeap=54876201 delegateDirect=0 arenaShare=0.00% blocksHeap=8 blocksDirect=1 pinned=0 reusable=0 maxPinnedHeap=0 maxPinnedDirect=0 blockReuses=0 blockGrowths=7 hooks=0 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=0 reallocMoved=0 reallocDelegated=184 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=2240
+ARENALOOP thread=io.github.neoionet.netty.microbenchmark.ByteBufAllocatorAllocPatternBenchmark.heapAllocation-1-4 arenaHeap=2439 arenaDirect=0 delegateHeap=58997551 delegateDirect=0 arenaShare=0.00% blocksHeap=8 blocksDirect=1 pinned=0 reusable=0 maxPinnedHeap=0 maxPinnedDirect=0 blockReuses=0 blockGrowths=7 hooks=0 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=0 reallocMoved=0 reallocDelegated=198 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=2240
+ARENALOOP thread=io.github.neoionet.netty.microbenchmark.ByteBufAllocatorAllocPatternBenchmark.heapAllocation-1-9 arenaHeap=2423 arenaDirect=0 delegateHeap=54583084 delegateDirect=0 arenaShare=0.00% blocksHeap=8 blocksDirect=1 pinned=0 reusable=0 maxPinnedHeap=0 maxPinnedDirect=0 blockReuses=0 blockGrowths=7 hooks=0 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=0 reallocMoved=0 reallocDelegated=182 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=2240
+ARENALOOP thread=io.github.neoionet.netty.microbenchmark.ByteBufAllocatorAllocPatternBenchmark.heapAllocation-1-18 arenaHeap=2407 arenaDirect=0 delegateHeap=48955696 delegateDirect=0 arenaShare=0.00% blocksHeap=8 blocksDirect=1 pinned=0 reusable=0 maxPinnedHeap=0 maxPinnedDirect=0 blockReuses=0 blockGrowths=7 hooks=0 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=0 reallocMoved=0 reallocDelegated=166 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=2240
+ARENALOOP thread=io.github.neoionet.netty.microbenchmark.ByteBufAllocatorAllocPatternBenchmark.heapAllocation-1-17 arenaHeap=2440 arenaDirect=0 delegateHeap=59373572 delegateDirect=0 arenaShare=0.00% blocksHeap=8 blocksDirect=1 pinned=0 reusable=0 maxPinnedHeap=0 maxPinnedDirect=0 blockReuses=0 blockGrowths=7 hooks=0 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=0 reallocMoved=0 reallocDelegated=199 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=2240
+ARENALOOP thread=io.github.neoionet.netty.microbenchmark.ByteBufAllocatorAllocPatternBenchmark.heapAllocation-1-28 arenaHeap=2460 arenaDirect=0 delegateHeap=64871141 delegateDirect=0 arenaShare=0.00% blocksHeap=8 blocksDirect=1 pinned=0 reusable=0 maxPinnedHeap=0 maxPinnedDirect=0 blockReuses=0 blockGrowths=7 hooks=0 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=0 reallocMoved=0 reallocDelegated=219 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=2240
+ARENALOOP thread=io.github.neoionet.netty.microbenchmark.ByteBufAllocatorAllocPatternBenchmark.heapAllocation-1-32 arenaHeap=2458 arenaDirect=0 delegateHeap=64521106 delegateDirect=0 arenaShare=0.00% blocksHeap=8 blocksDirect=1 pinned=0 reusable=0 maxPinnedHeap=0 maxPinnedDirect=0 blockReuses=0 blockGrowths=7 hooks=0 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=0 reallocMoved=0 reallocDelegated=217 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=2240
+373.178 ±(99.9%) 71.553 ns/op
+
+# Run progress: 91.67% complete, ETA 00:00:24
+# Fork: 3 of 3
+[0.002s][info][gc] Using G1
+# Warmup Iteration   1: [2.845s][info][gc] GC(0) Pause Young (Normal) (G1 Evacuation Pause) 2288M->1388M(24576M) 39.421ms
+497.484 ±(99.9%) 70.680 ns/op
+# Warmup Iteration   2: 508.119 ±(99.9%) 112.858 ns/op
+# Warmup Iteration   3: 408.382 ±(99.9%) 75.582 ns/op
+# Warmup Iteration   4: 421.377 ±(99.9%) 77.187 ns/op
+# Warmup Iteration   5: 433.831 ±(99.9%) 109.957 ns/op
+# Warmup Iteration   6: 432.727 ±(99.9%) 64.841 ns/op
+# Warmup Iteration   7: 456.872 ±(99.9%) 98.985 ns/op
+# Warmup Iteration   8: 469.115 ±(99.9%) 103.288 ns/op
+# Warmup Iteration   9: 437.352 ±(99.9%) 97.182 ns/op
+# Warmup Iteration  10: 395.513 ±(99.9%) 78.003 ns/op
+Iteration   1: 428.811 ±(99.9%) 125.228 ns/op
+Iteration   2: 426.754 ±(99.9%) 81.338 ns/op
+Iteration   3: 419.365 ±(99.9%) 97.581 ns/op
+Iteration   4: 412.146 ±(99.9%) 84.256 ns/op
+Iteration   5: 409.742 ±(99.9%) 113.378 ns/op
+Iteration   6: 406.129 ±(99.9%) 111.628 ns/op
+Iteration   7: 407.900 ±(99.9%) 111.752 ns/op
+Iteration   8: 510.936 ±(99.9%) 90.635 ns/op
+Iteration   9: 463.759 ±(99.9%) 145.251 ns/op
+Iteration  10: cRSS-pRSS:[2206, 2210]
+;used-memory:[0]
+ARENATELE blockSize=262144 maxBlocks=8 cap=8192 maxObjects=16384 debug=false arenaHeap=77407 arenaDirect=0 delegateHeap=1689930176 delegateDirect=0 arenaShare=0.00% blocksHeap=256 blocksDirect=32 pinned=0 reusable=0 maxPinnedHeap=0 maxPinnedDirect=0 blockReuses=0 blockGrowths=224 hooks=0 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=0 reallocMoved=0 reallocDelegated=5695 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=71680
+ARENALOOP thread=io.github.neoionet.netty.microbenchmark.ByteBufAllocatorAllocPatternBenchmark.heapAllocation-1-4 arenaHeap=2448 arenaDirect=0 delegateHeap=60804493 delegateDirect=0 arenaShare=0.00% blocksHeap=8 blocksDirect=1 pinned=0 reusable=0 maxPinnedHeap=0 maxPinnedDirect=0 blockReuses=0 blockGrowths=7 hooks=0 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=0 reallocMoved=0 reallocDelegated=207 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=2240
+ARENALOOP thread=io.github.neoionet.netty.microbenchmark.ByteBufAllocatorAllocPatternBenchmark.heapAllocation-1-17 arenaHeap=2432 arenaDirect=0 delegateHeap=56503487 delegateDirect=0 arenaShare=0.00% blocksHeap=8 blocksDirect=1 pinned=0 reusable=0 maxPinnedHeap=0 maxPinnedDirect=0 blockReuses=0 blockGrowths=7 hooks=0 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=0 reallocMoved=0 reallocDelegated=191 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=2240
+ARENALOOP thread=io.github.neoionet.netty.microbenchmark.ByteBufAllocatorAllocPatternBenchmark.heapAllocation-1-13 arenaHeap=2406 arenaDirect=0 delegateHeap=48840460 delegateDirect=0 arenaShare=0.00% blocksHeap=8 blocksDirect=1 pinned=0 reusable=0 maxPinnedHeap=0 maxPinnedDirect=0 blockReuses=0 blockGrowths=7 hooks=0 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=0 reallocMoved=0 reallocDelegated=165 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=2240
+ARENALOOP thread=io.github.neoionet.netty.microbenchmark.ByteBufAllocatorAllocPatternBenchmark.heapAllocation-1-11 arenaHeap=2448 arenaDirect=0 delegateHeap=61435236 delegateDirect=0 arenaShare=0.00% blocksHeap=8 blocksDirect=1 pinned=0 reusable=0 maxPinnedHeap=0 maxPinnedDirect=0 blockReuses=0 blockGrowths=7 hooks=0 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=0 reallocMoved=0 reallocDelegated=207 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=2240
+ARENALOOP thread=io.github.neoionet.netty.microbenchmark.ByteBufAllocatorAllocPatternBenchmark.heapAllocation-1-15 arenaHeap=2426 arenaDirect=0 delegateHeap=54959165 delegateDirect=0 arenaShare=0.00% blocksHeap=8 blocksDirect=1 pinned=0 reusable=0 maxPinnedHeap=0 maxPinnedDirect=0 blockReuses=0 blockGrowths=7 hooks=0 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=0 reallocMoved=0 reallocDelegated=185 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=2240
+ARENALOOP thread=io.github.neoionet.netty.microbenchmark.ByteBufAllocatorAllocPatternBenchmark.heapAllocation-1-12 arenaHeap=2422 arenaDirect=0 delegateHeap=54244811 delegateDirect=0 arenaShare=0.00% blocksHeap=8 blocksDirect=1 pinned=0 reusable=0 maxPinnedHeap=0 maxPinnedDirect=0 blockReuses=0 blockGrowths=7 hooks=0 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=0 reallocMoved=0 reallocDelegated=181 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=2240
+ARENALOOP thread=io.github.neoionet.netty.microbenchmark.ByteBufAllocatorAllocPatternBenchmark.heapAllocation-1-19 arenaHeap=2413 arenaDirect=0 delegateHeap=51373167 delegateDirect=0 arenaShare=0.00% blocksHeap=8 blocksDirect=1 pinned=0 reusable=0 maxPinnedHeap=0 maxPinnedDirect=0 blockReuses=0 blockGrowths=7 hooks=0 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=0 reallocMoved=0 reallocDelegated=172 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=2240
+ARENALOOP thread=io.github.neoionet.netty.microbenchmark.ByteBufAllocatorAllocPatternBenchmark.heapAllocation-1-7 arenaHeap=2392 arenaDirect=0 delegateHeap=44303931 delegateDirect=0 arenaShare=0.01% blocksHeap=8 blocksDirect=1 pinned=0 reusable=0 maxPinnedHeap=0 maxPinnedDirect=0 blockReuses=0 blockGrowths=7 hooks=0 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=0 reallocMoved=0 reallocDelegated=151 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=2240
+ARENALOOP thread=io.github.neoionet.netty.microbenchmark.ByteBufAllocatorAllocPatternBenchmark.heapAllocation-1-10 arenaHeap=2416 arenaDirect=0 delegateHeap=51902710 delegateDirect=0 arenaShare=0.00% blocksHeap=8 blocksDirect=1 pinned=0 reusable=0 maxPinnedHeap=0 maxPinnedDirect=0 blockReuses=0 blockGrowths=7 hooks=0 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=0 reallocMoved=0 reallocDelegated=175 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=2240
+ARENALOOP thread=io.github.neoionet.netty.microbenchmark.ByteBufAllocatorAllocPatternBenchmark.heapAllocation-1-2 arenaHeap=2328 arenaDirect=0 delegateHeap=25646917 delegateDirect=0 arenaShare=0.01% blocksHeap=8 blocksDirect=1 pinned=0 reusable=0 maxPinnedHeap=0 maxPinnedDirect=0 blockReuses=0 blockGrowths=7 hooks=0 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=0 reallocMoved=0 reallocDelegated=87 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=2240
+ARENALOOP thread=io.github.neoionet.netty.microbenchmark.ByteBufAllocatorAllocPatternBenchmark.heapAllocation-1-16 arenaHeap=2430 arenaDirect=0 delegateHeap=56202449 delegateDirect=0 arenaShare=0.00% blocksHeap=8 blocksDirect=1 pinned=0 reusable=0 maxPinnedHeap=0 maxPinnedDirect=0 blockReuses=0 blockGrowths=7 hooks=0 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=0 reallocMoved=0 reallocDelegated=189 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=2240
+ARENALOOP thread=io.github.neoionet.netty.microbenchmark.ByteBufAllocatorAllocPatternBenchmark.heapAllocation-1-21 arenaHeap=2436 arenaDirect=0 delegateHeap=57745125 delegateDirect=0 arenaShare=0.00% blocksHeap=8 blocksDirect=1 pinned=0 reusable=0 maxPinnedHeap=0 maxPinnedDirect=0 blockReuses=0 blockGrowths=7 hooks=0 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=0 reallocMoved=0 reallocDelegated=195 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=2240
+ARENALOOP thread=io.github.neoionet.netty.microbenchmark.ByteBufAllocatorAllocPatternBenchmark.heapAllocation-1-1 arenaHeap=2406 arenaDirect=0 delegateHeap=48356116 delegateDirect=0 arenaShare=0.00% blocksHeap=8 blocksDirect=1 pinned=0 reusable=0 maxPinnedHeap=0 maxPinnedDirect=0 blockReuses=0 blockGrowths=7 hooks=0 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=0 reallocMoved=0 reallocDelegated=165 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=2240
+ARENALOOP thread=io.github.neoionet.netty.microbenchmark.ByteBufAllocatorAllocPatternBenchmark.heapAllocation-1-6 arenaHeap=2408 arenaDirect=0 delegateHeap=49386572 delegateDirect=0 arenaShare=0.00% blocksHeap=8 blocksDirect=1 pinned=0 reusable=0 maxPinnedHeap=0 maxPinnedDirect=0 blockReuses=0 blockGrowths=7 hooks=0 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=0 reallocMoved=0 reallocDelegated=167 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=2240
+ARENALOOP thread=io.github.neoionet.netty.microbenchmark.ByteBufAllocatorAllocPatternBenchmark.heapAllocation-1-28 arenaHeap=2422 arenaDirect=0 delegateHeap=53199101 delegateDirect=0 arenaShare=0.00% blocksHeap=8 blocksDirect=1 pinned=0 reusable=0 maxPinnedHeap=0 maxPinnedDirect=0 blockReuses=0 blockGrowths=7 hooks=0 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=0 reallocMoved=0 reallocDelegated=181 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=2240
+ARENALOOP thread=io.github.neoionet.netty.microbenchmark.ByteBufAllocatorAllocPatternBenchmark.heapAllocation-1-29 arenaHeap=2422 arenaDirect=0 delegateHeap=53788617 delegateDirect=0 arenaShare=0.00% blocksHeap=8 blocksDirect=1 pinned=0 reusable=0 maxPinnedHeap=0 maxPinnedDirect=0 blockReuses=0 blockGrowths=7 hooks=0 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=0 reallocMoved=0 reallocDelegated=181 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=2240
+ARENALOOP thread=io.github.neoionet.netty.microbenchmark.ByteBufAllocatorAllocPatternBenchmark.heapAllocation-1-5 arenaHeap=2436 arenaDirect=0 delegateHeap=58280573 delegateDirect=0 arenaShare=0.00% blocksHeap=8 blocksDirect=1 pinned=0 reusable=0 maxPinnedHeap=0 maxPinnedDirect=0 blockReuses=0 blockGrowths=7 hooks=0 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=0 reallocMoved=0 reallocDelegated=195 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=2240
+ARENALOOP thread=io.github.neoionet.netty.microbenchmark.ByteBufAllocatorAllocPatternBenchmark.heapAllocation-1-18 arenaHeap=2423 arenaDirect=0 delegateHeap=54657609 delegateDirect=0 arenaShare=0.00% blocksHeap=8 blocksDirect=1 pinned=0 reusable=0 maxPinnedHeap=0 maxPinnedDirect=0 blockReuses=0 blockGrowths=7 hooks=0 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=0 reallocMoved=0 reallocDelegated=182 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=2240
+ARENALOOP thread=io.github.neoionet.netty.microbenchmark.ByteBufAllocatorAllocPatternBenchmark.heapAllocation-1-31 arenaHeap=2420 arenaDirect=0 delegateHeap=52576028 delegateDirect=0 arenaShare=0.00% blocksHeap=8 blocksDirect=1 pinned=0 reusable=0 maxPinnedHeap=0 maxPinnedDirect=0 blockReuses=0 blockGrowths=7 hooks=0 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=0 reallocMoved=0 reallocDelegated=179 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=2240
+ARENALOOP thread=io.github.neoionet.netty.microbenchmark.ByteBufAllocatorAllocPatternBenchmark.heapAllocation-1-20 arenaHeap=2406 arenaDirect=0 delegateHeap=48365487 delegateDirect=0 arenaShare=0.00% blocksHeap=8 blocksDirect=1 pinned=0 reusable=0 maxPinnedHeap=0 maxPinnedDirect=0 blockReuses=0 blockGrowths=7 hooks=0 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=0 reallocMoved=0 reallocDelegated=165 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=2240
+ARENALOOP thread=io.github.neoionet.netty.microbenchmark.ByteBufAllocatorAllocPatternBenchmark.heapAllocation-1-26 arenaHeap=2430 arenaDirect=0 delegateHeap=56101943 delegateDirect=0 arenaShare=0.00% blocksHeap=8 blocksDirect=1 pinned=0 reusable=0 maxPinnedHeap=0 maxPinnedDirect=0 blockReuses=0 blockGrowths=7 hooks=0 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=0 reallocMoved=0 reallocDelegated=189 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=2240
+ARENALOOP thread=io.github.neoionet.netty.microbenchmark.ByteBufAllocatorAllocPatternBenchmark.heapAllocation-1-25 arenaHeap=2420 arenaDirect=0 delegateHeap=52783717 delegateDirect=0 arenaShare=0.00% blocksHeap=8 blocksDirect=1 pinned=0 reusable=0 maxPinnedHeap=0 maxPinnedDirect=0 blockReuses=0 blockGrowths=7 hooks=0 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=0 reallocMoved=0 reallocDelegated=179 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=2240
+ARENALOOP thread=io.github.neoionet.netty.microbenchmark.ByteBufAllocatorAllocPatternBenchmark.heapAllocation-1-8 arenaHeap=2422 arenaDirect=0 delegateHeap=53616685 delegateDirect=0 arenaShare=0.00% blocksHeap=8 blocksDirect=1 pinned=0 reusable=0 maxPinnedHeap=0 maxPinnedDirect=0 blockReuses=0 blockGrowths=7 hooks=0 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=0 reallocMoved=0 reallocDelegated=181 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=2240
+ARENALOOP thread=io.github.neoionet.netty.microbenchmark.ByteBufAllocatorAllocPatternBenchmark.heapAllocation-1-27 arenaHeap=2416 arenaDirect=0 delegateHeap=52058534 delegateDirect=0 arenaShare=0.00% blocksHeap=8 blocksDirect=1 pinned=0 reusable=0 maxPinnedHeap=0 maxPinnedDirect=0 blockReuses=0 blockGrowths=7 hooks=0 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=0 reallocMoved=0 reallocDelegated=175 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=2240
+ARENALOOP thread=io.github.neoionet.netty.microbenchmark.ByteBufAllocatorAllocPatternBenchmark.heapAllocation-1-14 arenaHeap=2408 arenaDirect=0 delegateHeap=49997454 delegateDirect=0 arenaShare=0.00% blocksHeap=8 blocksDirect=1 pinned=0 reusable=0 maxPinnedHeap=0 maxPinnedDirect=0 blockReuses=0 blockGrowths=7 hooks=0 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=0 reallocMoved=0 reallocDelegated=167 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=2240
+ARENALOOP thread=io.github.neoionet.netty.microbenchmark.ByteBufAllocatorAllocPatternBenchmark.heapAllocation-1-24 arenaHeap=2412 arenaDirect=0 delegateHeap=51085645 delegateDirect=0 arenaShare=0.00% blocksHeap=8 blocksDirect=1 pinned=0 reusable=0 maxPinnedHeap=0 maxPinnedDirect=0 blockReuses=0 blockGrowths=7 hooks=0 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=0 reallocMoved=0 reallocDelegated=171 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=2240
+ARENALOOP thread=io.github.neoionet.netty.microbenchmark.ByteBufAllocatorAllocPatternBenchmark.heapAllocation-1-32 arenaHeap=2408 arenaDirect=0 delegateHeap=49544742 delegateDirect=0 arenaShare=0.00% blocksHeap=8 blocksDirect=1 pinned=0 reusable=0 maxPinnedHeap=0 maxPinnedDirect=0 blockReuses=0 blockGrowths=7 hooks=0 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=0 reallocMoved=0 reallocDelegated=167 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=2240
+ARENALOOP thread=io.github.neoionet.netty.microbenchmark.ByteBufAllocatorAllocPatternBenchmark.heapAllocation-1-23 arenaHeap=2422 arenaDirect=0 delegateHeap=53975416 delegateDirect=0 arenaShare=0.00% blocksHeap=8 blocksDirect=1 pinned=0 reusable=0 maxPinnedHeap=0 maxPinnedDirect=0 blockReuses=0 blockGrowths=7 hooks=0 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=0 reallocMoved=0 reallocDelegated=181 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=2240
+ARENALOOP thread=io.github.neoionet.netty.microbenchmark.ByteBufAllocatorAllocPatternBenchmark.heapAllocation-1-30 arenaHeap=2427 arenaDirect=0 delegateHeap=55789847 delegateDirect=0 arenaShare=0.00% blocksHeap=8 blocksDirect=1 pinned=0 reusable=0 maxPinnedHeap=0 maxPinnedDirect=0 blockReuses=0 blockGrowths=7 hooks=0 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=0 reallocMoved=0 reallocDelegated=186 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=2240
+ARENALOOP thread=io.github.neoionet.netty.microbenchmark.ByteBufAllocatorAllocPatternBenchmark.heapAllocation-1-22 arenaHeap=2440 arenaDirect=0 delegateHeap=59123065 delegateDirect=0 arenaShare=0.00% blocksHeap=8 blocksDirect=1 pinned=0 reusable=0 maxPinnedHeap=0 maxPinnedDirect=0 blockReuses=0 blockGrowths=7 hooks=0 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=0 reallocMoved=0 reallocDelegated=199 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=2240
+ARENALOOP thread=io.github.neoionet.netty.microbenchmark.ByteBufAllocatorAllocPatternBenchmark.heapAllocation-1-3 arenaHeap=2422 arenaDirect=0 delegateHeap=54006035 delegateDirect=0 arenaShare=0.00% blocksHeap=8 blocksDirect=1 pinned=0 reusable=0 maxPinnedHeap=0 maxPinnedDirect=0 blockReuses=0 blockGrowths=7 hooks=0 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=0 reallocMoved=0 reallocDelegated=181 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=2240
+ARENALOOP thread=io.github.neoionet.netty.microbenchmark.ByteBufAllocatorAllocPatternBenchmark.heapAllocation-1-9 arenaHeap=2440 arenaDirect=0 delegateHeap=59275039 delegateDirect=0 arenaShare=0.00% blocksHeap=8 blocksDirect=1 pinned=0 reusable=0 maxPinnedHeap=0 maxPinnedDirect=0 blockReuses=0 blockGrowths=7 hooks=0 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=0 reallocMoved=0 reallocDelegated=199 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=2240
+433.914 ±(99.9%) 128.608 ns/op
+
+
+Result "io.github.neoionet.netty.microbenchmark.ByteBufAllocatorAllocPatternBenchmark.heapAllocation":
+  397.895 ±(99.9%) 22.102 ns/op [Average]
+  (min, avg, max) = (358.142, 397.895, 510.936), stdev = 33.081
+  CI (99.9%): [375.793, 419.997] (assumes normal distribution)
+
+
+# Run complete. Total time: 00:04:53
+
+REMEMBER: The numbers below are just data. To gain reusable insights, you need to follow up on
+why the numbers are the way they are. Use profilers (see -prof, -lprof), design factorial
+experiments, perform baseline and negative tests that provide experimental control, make sure
+the benchmarking environment is safe on JVM/OS/HW level, ask for reviews from the domain experts.
+Do not assume the numbers tell you what you want them to tell.
+
+NOTE: Current JVM experimentally supports Compiler Blackholes, and they are in use. Please exercise
+extra caution when trusting the results, look into the generated code to check the benchmark still
+works, and factor in a small probability of new VM bugs. Additionally, while comparisons between
+different JVMs are already problematic, the performance difference caused by different Blackhole
+modes can be very significant. Please make sure you use the consistent Blackhole mode for comparisons.
+
+Benchmark                                             (MAX_LIVE_BUFFERS)  (allocatorType)  (enableReadWrite)  (sizePattern)  Mode  Cnt    Score    Error  Units
+ByteBufAllocatorAllocPatternBenchmark.heapAllocation                1024         ADAPTIVE               true     E_COMMERCE  avgt   30  310.276 ± 24.737  ns/op
+ByteBufAllocatorAllocPatternBenchmark.heapAllocation                1024            ARENA               true     E_COMMERCE  avgt   30  429.922 ± 65.356  ns/op
+ByteBufAllocatorAllocPatternBenchmark.heapAllocation                4096         ADAPTIVE               true     E_COMMERCE  avgt   30  387.177 ± 24.488  ns/op
+ByteBufAllocatorAllocPatternBenchmark.heapAllocation                4096            ARENA               true     E_COMMERCE  avgt   30  397.895 ± 22.102  ns/op
+
+Benchmark result is saved to /home/forked_franz/IdeaProjects/netty-bench/results/h2h-merged-x86-2026-09-22/arena-v3/micro/t32-heap.json
