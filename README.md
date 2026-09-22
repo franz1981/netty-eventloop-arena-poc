@@ -335,8 +335,10 @@ a decoder/cumulator or an aggregator; **v** = crosses an iteration, HTTP/2 flow 
   spelled out in `results/ryzen9-7950x-node0/topology/README.md`.
 - The `.jfr` recordings (706 MB) are not in this repository; `topology/run.sh` regenerates them.
 
-A design plan built on these numbers is in [`docs/design.md`](docs/design.md) - **draft 1, under
-review**.
+A design plan built on these numbers is in
+[`docs/design.md`](docs/design.md) - **design (draft 3, final; implementation in progress on the
+netty submodule branch)**. Draft 1 is kept beside it as
+[`docs/design-draft1.md`](docs/design-draft1.md) so the review trail is visible.
 
 ## Reference machine
 
