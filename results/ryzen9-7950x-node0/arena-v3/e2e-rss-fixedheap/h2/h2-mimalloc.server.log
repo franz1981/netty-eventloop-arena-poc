@@ -1,0 +1,17 @@
+READY mimalloc h2 8080 loops=4
+User Event Triggered: io.netty.handler.codec.http2.CleartextHttp2ServerUpgradeHandler$PriorKnowledgeUpgradeEvent@352b198f
+User Event Triggered: io.netty.handler.codec.http2.CleartextHttp2ServerUpgradeHandler$PriorKnowledgeUpgradeEvent@352b198f
+User Event Triggered: io.netty.handler.codec.http2.CleartextHttp2ServerUpgradeHandler$PriorKnowledgeUpgradeEvent@352b198f
+User Event Triggered: io.netty.handler.codec.http2.CleartextHttp2ServerUpgradeHandler$PriorKnowledgeUpgradeEvent@352b198f
+User Event Triggered: io.netty.handler.codec.http2.CleartextHttp2ServerUpgradeHandler$PriorKnowledgeUpgradeEvent@352b198f
+User Event Triggered: io.netty.handler.codec.http2.CleartextHttp2ServerUpgradeHandler$PriorKnowledgeUpgradeEvent@352b198f
+User Event Triggered: io.netty.handler.codec.http2.CleartextHttp2ServerUpgradeHandler$PriorKnowledgeUpgradeEvent@352b198f
+User Event Triggered: io.netty.handler.codec.http2.CleartextHttp2ServerUpgradeHandler$PriorKnowledgeUpgradeEvent@352b198f
+User Event Triggered: io.netty.handler.codec.http2.CleartextHttp2ServerUpgradeHandler$PriorKnowledgeUpgradeEvent@352b198f
+User Event Triggered: io.netty.handler.codec.http2.CleartextHttp2ServerUpgradeHandler$PriorKnowledgeUpgradeEvent@352b198f
+User Event Triggered: io.netty.handler.codec.http2.CleartextHttp2ServerUpgradeHandler$PriorKnowledgeUpgradeEvent@352b198f
+User Event Triggered: io.netty.handler.codec.http2.CleartextHttp2ServerUpgradeHandler$PriorKnowledgeUpgradeEvent@352b198f
+User Event Triggered: io.netty.handler.codec.http2.CleartextHttp2ServerUpgradeHandler$PriorKnowledgeUpgradeEvent@352b198f
+User Event Triggered: io.netty.handler.codec.http2.CleartextHttp2ServerUpgradeHandler$PriorKnowledgeUpgradeEvent@352b198f
+User Event Triggered: io.netty.handler.codec.http2.CleartextHttp2ServerUpgradeHandler$PriorKnowledgeUpgradeEvent@352b198f
+User Event Triggered: io.netty.handler.codec.http2.CleartextHttp2ServerUpgradeHandler$PriorKnowledgeUpgradeEvent@352b198f

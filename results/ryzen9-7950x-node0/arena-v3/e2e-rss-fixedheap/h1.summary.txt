@@ -1,0 +1,15 @@
+==> h1-adaptive: server, 4 event loops, port 8080
+   READY pid=762556
+   h2load --h1 -c 64 -t 4 -D 20 -d /home/forked_franz/IdeaProjects/netty-bench/results/h2h-merged-x86-2026-09-22/arena-v3/e2e-rss-fixedheap/h1/body-4096.bin http://127.0.0.1:8080/
+==> h1-mimalloc: server, 4 event loops, port 8080
+   READY pid=763065
+   h2load --h1 -c 64 -t 4 -D 20 -d /home/forked_franz/IdeaProjects/netty-bench/results/h2h-merged-x86-2026-09-22/arena-v3/e2e-rss-fixedheap/h1/body-4096.bin http://127.0.0.1:8080/
+==> h1-arena: server, 4 event loops, port 8080
+   READY pid=763591
+   h2load --h1 -c 64 -t 4 -D 20 -d /home/forked_franz/IdeaProjects/netty-bench/results/h2h-merged-x86-2026-09-22/arena-v3/e2e-rss-fixedheap/h1/body-4096.bin http://127.0.0.1:8080/
+
+== end to end, h1, 20s, 64 connections, 4 event loops ==
+adaptive       147804.30 req/s | 70us    130.77ms       440us       774us    99.32% | RSS 1237->1268 MB (mean 1267, 38 samples) | 93 young GCs
+mimalloc       148478.85 req/s | 60us     78.78ms       437us       483us    98.78% | RSS 1231->1285 MB (mean 1269, 38 samples) | 93 young GCs
+arena          149552.85 req/s | 53us    135.02ms       434us       784us    99.41% | RSS 1231->1264 MB (mean 1251, 38 samples) | 94 young GCs | ARENATELE blockSize=262144 maxBlocks=8 cap=8192 maxObjects=16384 debug=false arenaHeap=0 arenaDirect=11964144 delegateHeap=0 delegateDirect=256 arenaShare=100.00% blocksHeap=4 blocksDirect=8 pinned=0 reusable=4 maxPinnedHeap=0 maxPinnedDirect=0 blockReuses=173212 blockGrowths=4 hooks=252390 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=0 reallocMoved=0 reallocDelegated=0 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=12 bytesHeap=0 bytesDirect=62690403456 liveHeap=0 liveDirect=0
+raw logs in /home/forked_franz/IdeaProjects/netty-bench/results/h2h-merged-x86-2026-09-22/arena-v3/e2e-rss-fixedheap/h1

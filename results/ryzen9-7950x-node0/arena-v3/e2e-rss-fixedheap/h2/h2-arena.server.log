@@ -1,0 +1,22 @@
+READY arena h2 8080 loops=4
+User Event Triggered: io.netty.handler.codec.http2.CleartextHttp2ServerUpgradeHandler$PriorKnowledgeUpgradeEvent@6b1934cf
+User Event Triggered: io.netty.handler.codec.http2.CleartextHttp2ServerUpgradeHandler$PriorKnowledgeUpgradeEvent@6b1934cf
+User Event Triggered: io.netty.handler.codec.http2.CleartextHttp2ServerUpgradeHandler$PriorKnowledgeUpgradeEvent@6b1934cf
+User Event Triggered: io.netty.handler.codec.http2.CleartextHttp2ServerUpgradeHandler$PriorKnowledgeUpgradeEvent@6b1934cf
+User Event Triggered: io.netty.handler.codec.http2.CleartextHttp2ServerUpgradeHandler$PriorKnowledgeUpgradeEvent@6b1934cf
+User Event Triggered: io.netty.handler.codec.http2.CleartextHttp2ServerUpgradeHandler$PriorKnowledgeUpgradeEvent@6b1934cf
+User Event Triggered: io.netty.handler.codec.http2.CleartextHttp2ServerUpgradeHandler$PriorKnowledgeUpgradeEvent@6b1934cf
+User Event Triggered: io.netty.handler.codec.http2.CleartextHttp2ServerUpgradeHandler$PriorKnowledgeUpgradeEvent@6b1934cf
+User Event Triggered: io.netty.handler.codec.http2.CleartextHttp2ServerUpgradeHandler$PriorKnowledgeUpgradeEvent@6b1934cf
+User Event Triggered: io.netty.handler.codec.http2.CleartextHttp2ServerUpgradeHandler$PriorKnowledgeUpgradeEvent@6b1934cf
+User Event Triggered: io.netty.handler.codec.http2.CleartextHttp2ServerUpgradeHandler$PriorKnowledgeUpgradeEvent@6b1934cf
+User Event Triggered: io.netty.handler.codec.http2.CleartextHttp2ServerUpgradeHandler$PriorKnowledgeUpgradeEvent@6b1934cf
+User Event Triggered: io.netty.handler.codec.http2.CleartextHttp2ServerUpgradeHandler$PriorKnowledgeUpgradeEvent@6b1934cf
+User Event Triggered: io.netty.handler.codec.http2.CleartextHttp2ServerUpgradeHandler$PriorKnowledgeUpgradeEvent@6b1934cf
+User Event Triggered: io.netty.handler.codec.http2.CleartextHttp2ServerUpgradeHandler$PriorKnowledgeUpgradeEvent@6b1934cf
+User Event Triggered: io.netty.handler.codec.http2.CleartextHttp2ServerUpgradeHandler$PriorKnowledgeUpgradeEvent@6b1934cf
+ARENATELE blockSize=262144 maxBlocks=8 cap=8192 maxObjects=16384 debug=false arenaHeap=0 arenaDirect=46658995 delegateHeap=0 delegateDirect=1207309 arenaShare=97.48% blocksHeap=4 blocksDirect=4 pinned=0 reusable=0 maxPinnedHeap=0 maxPinnedDirect=0 blockReuses=0 blockGrowths=0 hooks=627653 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=0 reallocMoved=0 reallocDelegated=16 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=356 bytesHeap=0 bytesDirect=3015912144 liveHeap=0 liveDirect=0
+ARENALOOP thread=multiThreadIoEventLoopGroup-3-3 arenaHeap=0 arenaDirect=11651449 delegateHeap=0 delegateDirect=307656 arenaShare=97.43% blocksHeap=1 blocksDirect=1 pinned=0 reusable=0 maxPinnedHeap=0 maxPinnedDirect=0 blockReuses=0 blockGrowths=0 hooks=170960 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=0 reallocMoved=0 reallocDelegated=4 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=89 bytesHeap=0 bytesDirect=763274544 liveHeap=0 liveDirect=0
+ARENALOOP thread=multiThreadIoEventLoopGroup-3-4 arenaHeap=0 arenaDirect=11882385 delegateHeap=0 delegateDirect=286792 arenaShare=97.64% blocksHeap=1 blocksDirect=1 pinned=0 reusable=0 maxPinnedHeap=0 maxPinnedDirect=0 blockReuses=0 blockGrowths=0 hooks=127996 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=0 reallocMoved=0 reallocDelegated=4 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=89 bytesHeap=0 bytesDirect=730243168 liveHeap=0 liveDirect=0
+ARENALOOP thread=multiThreadIoEventLoopGroup-3-2 arenaHeap=0 arenaDirect=11536631 delegateHeap=0 delegateDirect=303468 arenaShare=97.44% blocksHeap=1 blocksDirect=1 pinned=0 reusable=0 maxPinnedHeap=0 maxPinnedDirect=0 blockReuses=0 blockGrowths=0 hooks=163813 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=0 reallocMoved=0 reallocDelegated=4 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=89 bytesHeap=0 bytesDirect=755747936 liveHeap=0 liveDirect=0
+ARENALOOP thread=multiThreadIoEventLoopGroup-3-1 arenaHeap=0 arenaDirect=11588530 delegateHeap=0 delegateDirect=309393 arenaShare=97.40% blocksHeap=1 blocksDirect=1 pinned=0 reusable=0 maxPinnedHeap=0 maxPinnedDirect=0 blockReuses=0 blockGrowths=0 hooks=164884 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=0 reallocMoved=0 reallocDelegated=4 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=89 bytesHeap=0 bytesDirect=766646496 liveHeap=0 liveDirect=0

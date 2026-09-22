@@ -397,3 +397,29 @@ against the mimalloc port, which itself is −9% (heap) / −11% (direct) agains
 v3 is −52% against adaptive on both spaces where the arena applies, level with or better than the first PoC on heap,
 and twice as fast as it on direct. The gap to v2 seen on `sizes=MIXED` (section 6.2) is the cap: 16 and 32 KiB requests
 delegate in v3 and were served by v2's arena. v3's fork spread is wider than adaptive's.
+
+### 6.9 Server RSS and glibc: adaptive vs mimalloc vs arena (measured 2026-09-22, 2300 MHz, SUT node 0, h2load node 1)
+
+`run-e2e.sh`, 4 event loops, 20 s per run, one run per cell, `JVM_OPTS="-Xms1g -Xmx1g -XX:+AlwaysPreTouch
+-XX:MaxDirectMemorySize=2g"` so that RSS differences are native memory, not heap sizing. Files:
+`arena-v3/e2e-rss-fixedheap/` (`*.rss` = RSS sampled every 0.5 s, `*-smaps_rollup-*.txt` = one `/proc/<pid>/smaps_rollup`
+at 12 s, `arena-maps-*.txt` = the arena server's `/proc/<pid>/maps`). The default-heap run in `arena-v3/e2e-rss/` is kept
+but is not an RSS measurement: its heaps grew differently per run (67-97 young GCs).
+
+| proto | allocator | req/s | RSS at 12 s (smaps Rss, MB) | RSS last sample (MB) | arena counters |
+|---|---|---|---|---|---|
+| h1 | adaptive | 147,804 | 1298 | 1268 | |
+| h1 | mimalloc | 148,479 | 1297 | 1267 | |
+| h1 | arena | 149,553 | 1281 | 1251 | share 100%, 8 direct + 4 heap blocks, 0 pinned |
+| h2 | adaptive | 420,400 | 1307 | 1276 | |
+| h2 | mimalloc | 426,628 | 1300 | 1269 | |
+| h2 | arena | 435,282 | 1301 | 1270 | share 97.5%, 0 pinned |
+
+Allocator footprint differences are within 17 MB (about 1%) on a 1.3 GB process, arena lowest; the arena's own
+native footprint is 3 MiB of blocks. Throughput: single runs, same direction as `e2e-rss/` (h2 arena +3.5% here,
++8% there) but the three-run 2M-request comparison in 6.5 showed no change - not established without repeats.
+
+glibc: the arena's `/proc/<pid>/maps` contains no 256 KiB anonymous mapping (anonymous rw sizes: 132K x25, 1008K x24,
+4K x4), so the 256 KiB blocks obtained through `Unsafe.allocateMemory` are carved from glibc's heap segments, not
+mmapped one by one; they are never freed (trim is explicit only), so they stay in the loop threads' glibc arenas for
+the life of the process. Which segments hold them was not established.
