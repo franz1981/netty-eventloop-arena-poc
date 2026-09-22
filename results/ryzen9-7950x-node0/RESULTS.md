@@ -423,3 +423,37 @@ glibc: the arena's `/proc/<pid>/maps` contains no 256 KiB anonymous mapping (ano
 4K x4), so the 256 KiB blocks obtained through `Unsafe.allocateMemory` are carved from glibc's heap segments, not
 mmapped one by one; they are never freed (trim is explicit only), so they stay in the loop threads' glibc arenas for
 the life of the process. Which segments hold them was not established.
+
+### 6.10 The harness's E_COMMERCE "eventloop" ladder with a driven hook (measured 2026-09-22, 2300 MHz, node 0, 3 forks)
+
+`ByteBufAllocatorAllocPatternBenchmark`, 32 threads on the FastThreadLocal harness executor (not event loops: the arena's
+hook is driven every 64 operations with `-Dexpt.hookEvery=64`), `enableReadWrite=true`, seven live-buffer counts.
+ADAPTIVE and MIMALLOC rows are the merged 84-cell matrix of the same day (same harness, same machine); ARENA is
+`arena-v3/ecommerce-eventloop/arena-hook64.*`. Peak RSS in MB (max over forks). Share = arena share of allocations;
+pinned = max simultaneously pinned blocks per loop (8 = all).
+
+| memory | live | ADAPTIVE ns | MIMALLOC ns | ARENA ns | arena/adaptive | arena/mimalloc | RSS ad / mi / ar | share, pinned |
+|---|---|---|---|---|---|---|---|---|
+| heap | 128 | 244 | 316 | 205 | 0.84 | 0.65 | 2024 / 1995 / 2075 | 88%, 2 |
+| heap | 1024 | 426 | 269 | 309 | 0.72 | 1.15 | 2154 / 1907 / 2242 | 88%, 7 |
+| heap | 4096 | 374 | 372 | 451 | 1.21 | 1.21 | 2157 / 2794 / 2886 | 49%, 8 |
+| heap | 8192 | 565 | 519 | 588 | 1.04 | 1.13 | 3163 / 3596 / 3618 | 26%, 8 |
+| heap | 16384 | 732 | 734 | 741 | 1.01 | 1.01 | 4234 / 4375 / 4910 | 14%, 8 |
+| heap | 32768 | 694 | 1014 | 843 | 1.22 | 0.83 | 7316 / 6813 / 7411 | 7%, 8 |
+| heap | 65536 | 1146 | 1819 | 1181 | 1.03 | 0.65 | 11544 / 12057 / 12534 | 4%, 8 |
+| direct | 128 | 221 | 240 | 195 | 0.88 | 0.81 | 1804 / 1962 / 1820 | 88%, 2 |
+| direct | 1024 | 345 | 263 | 263 | 0.76 | 1.00 | 2285 / 2088 / 2241 | 88%, 7 |
+| direct | 4096 | 316 | 338 | 434 | 1.37 | 1.28 | 2642 / 2628 / 2835 | 49%, 8 |
+| direct | 8192 | 448 | 490 | 610 | 1.36 | 1.24 | 3292 / 3269 / 3575 | 26%, 8 |
+| direct | 16384 | 614 | 717 | 730 | 1.19 | 1.02 | 4566 / 4578 / 4848 | 14%, 8 |
+| direct | 32768 | 692 | 849 | 776 | 1.12 | 0.91 | 7326 / 7066 / 7408 | 7%, 8 |
+| direct | 65536 | 758 | 991 | 877 | 1.16 | 0.88 | 12351 / 12135 / 12426 | 4%, 8 |
+
+Reading: at 128 live the arena beats both; at 1024 it beats adaptive by 24-28% and ties or loses to the mimalloc port;
+from 4096 live up the live set exceeds the 8-block bound, share falls from 49% to 4% with all eight blocks pinned in
+every fork, and the arena is 1-37% slower than adaptive while still ahead of the port at 32 K and 64 K live, where the
+port is slow. RSS is above adaptive by 50-700 MB from 4096 live up, far more than the 128 MiB the blocks can account
+for; that excess is not explained. A partial same-session re-run of adaptive and mimalloc (`adaptive-mimalloc.log`,
+20 cells, stopped) agrees with the matrix except adaptive heap 4096 (430 vs 374) and direct 1024 (277 vs 345), so the
+ratios at those two live counts carry a 15-20% run-to-run uncertainty. This is the geometric-lifetime regime the
+design declares out of scope: the driven hook is a fixed cadence, not a lifetime boundary.
