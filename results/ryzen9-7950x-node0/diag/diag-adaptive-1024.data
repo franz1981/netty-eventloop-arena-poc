@@ -1,0 +1,119 @@
+# JMH version: 1.37
+# VM version: JDK 21, Java HotSpot(TM) 64-Bit Server VM, 21+35-LTS-2513
+# VM invoker: /home/forked_franz/.sdkman/candidates/java/21-oracle/bin/java
+# VM options: -server -dsa -da -XX:InitialRAMPercentage=40.0 -XX:MaxRAMPercentage=40.0 -Dio.netty.leakDetection.level=disabled -Djmh.executor=CUSTOM -Djmh.executor.class=io.github.neoionet.netty.microbenchmark.executor.FastThreadLocalThreadHarnessExecutor -XX:MaxRAM=60g
+# Blackhole mode: compiler (auto-detected, use -Djmh.blackhole.autoDetect=false to disable)
+# Warmup: 10 iterations, 1 s each
+# Measurement: 10 iterations, 1 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Average time, time/op
+# Benchmark: io.github.neoionet.netty.microbenchmark.ByteBufAllocatorAllocPatternBenchmark.heapAllocation
+# Parameters: (MAX_LIVE_BUFFERS = 1024, allocatorType = ADAPTIVE, enableReadWrite = true, sizePattern = E_COMMERCE)
+
+# Run progress: 0.00% complete, ETA 00:00:20
+# Fork: 1 of 1
+# Warmup Iteration   1: 87.021 ns/op
+# Warmup Iteration   2: 83.268 ns/op
+# Warmup Iteration   3: 83.527 ns/op
+# Warmup Iteration   4: 83.638 ns/op
+# Warmup Iteration   5: 83.626 ns/op
+# Warmup Iteration   6: 83.490 ns/op
+# Warmup Iteration   7: 83.509 ns/op
+# Warmup Iteration   8: 83.511 ns/op
+# Warmup Iteration   9: 83.482 ns/op
+# Warmup Iteration  10: 83.534 ns/op
+Iteration   1: 83.521 ns/op
+                 gc.alloc.rate:      1.560 MB/sec
+                 gc.alloc.rate.norm: 0.137 B/op
+                 gc.count:           ≈ 0 counts
+
+Iteration   2: 83.416 ns/op
+                 gc.alloc.rate:      1.564 MB/sec
+                 gc.alloc.rate.norm: 0.137 B/op
+                 gc.count:           ≈ 0 counts
+
+Iteration   3: 83.616 ns/op
+                 gc.alloc.rate:      1.557 MB/sec
+                 gc.alloc.rate.norm: 0.137 B/op
+                 gc.count:           ≈ 0 counts
+
+Iteration   4: 83.716 ns/op
+                 gc.alloc.rate:      1.554 MB/sec
+                 gc.alloc.rate.norm: 0.136 B/op
+                 gc.count:           ≈ 0 counts
+
+Iteration   5: 83.569 ns/op
+                 gc.alloc.rate:      1.557 MB/sec
+                 gc.alloc.rate.norm: 0.136 B/op
+                 gc.count:           ≈ 0 counts
+
+Iteration   6: 83.507 ns/op
+                 gc.alloc.rate:      1.561 MB/sec
+                 gc.alloc.rate.norm: 0.137 B/op
+                 gc.count:           ≈ 0 counts
+
+Iteration   7: 83.490 ns/op
+                 gc.alloc.rate:      1.558 MB/sec
+                 gc.alloc.rate.norm: 0.136 B/op
+                 gc.count:           ≈ 0 counts
+
+Iteration   8: 83.495 ns/op
+                 gc.alloc.rate:      1.561 MB/sec
+                 gc.alloc.rate.norm: 0.137 B/op
+                 gc.count:           ≈ 0 counts
+
+Iteration   9: 83.556 ns/op
+                 gc.alloc.rate:      1.562 MB/sec
+                 gc.alloc.rate.norm: 0.137 B/op
+                 gc.count:           ≈ 0 counts
+
+Iteration  10: cRSS-pRSS:[1095, 1096]
+;used-memory:[11]
+83.507 ns/op
+                 gc.alloc.rate:      2.004 MB/sec
+                 gc.alloc.rate.norm: 0.178 B/op
+                 gc.count:           ≈ 0 counts
+
+
+
+Result "io.github.neoionet.netty.microbenchmark.ByteBufAllocatorAllocPatternBenchmark.heapAllocation":
+  83.539 ±(99.9%) 0.124 ns/op [Average]
+  (min, avg, max) = (83.416, 83.539, 83.716), stdev = 0.082
+  CI (99.9%): [83.416, 83.663] (assumes normal distribution)
+
+Secondary result "io.github.neoionet.netty.microbenchmark.ByteBufAllocatorAllocPatternBenchmark.heapAllocation:gc.alloc.rate":
+  1.604 ±(99.9%) 0.213 MB/sec [Average]
+  (min, avg, max) = (1.554, 1.604, 2.004), stdev = 0.141
+  CI (99.9%): [1.391, 1.817] (assumes normal distribution)
+
+Secondary result "io.github.neoionet.netty.microbenchmark.ByteBufAllocatorAllocPatternBenchmark.heapAllocation:gc.alloc.rate.norm":
+  0.141 ±(99.9%) 0.020 B/op [Average]
+  (min, avg, max) = (0.136, 0.141, 0.178), stdev = 0.013
+  CI (99.9%): [0.121, 0.161] (assumes normal distribution)
+
+Secondary result "io.github.neoionet.netty.microbenchmark.ByteBufAllocatorAllocPatternBenchmark.heapAllocation:gc.count":
+  ≈ 0 counts
+
+
+# Run complete. Total time: 00:00:22
+
+REMEMBER: The numbers below are just data. To gain reusable insights, you need to follow up on
+why the numbers are the way they are. Use profilers (see -prof, -lprof), design factorial
+experiments, perform baseline and negative tests that provide experimental control, make sure
+the benchmarking environment is safe on JVM/OS/HW level, ask for reviews from the domain experts.
+Do not assume the numbers tell you what you want them to tell.
+
+NOTE: Current JVM experimentally supports Compiler Blackholes, and they are in use. Please exercise
+extra caution when trusting the results, look into the generated code to check the benchmark still
+works, and factor in a small probability of new VM bugs. Additionally, while comparisons between
+different JVMs are already problematic, the performance difference caused by different Blackhole
+modes can be very significant. Please make sure you use the consistent Blackhole mode for comparisons.
+
+Benchmark                                                                (MAX_LIVE_BUFFERS)  (allocatorType)  (enableReadWrite)  (sizePattern)  Mode  Cnt   Score   Error   Units
+ByteBufAllocatorAllocPatternBenchmark.heapAllocation                                   1024         ADAPTIVE               true     E_COMMERCE  avgt   10  83.539 ± 0.124   ns/op
+ByteBufAllocatorAllocPatternBenchmark.heapAllocation:gc.alloc.rate                     1024         ADAPTIVE               true     E_COMMERCE  avgt   10   1.604 ± 0.213  MB/sec
+ByteBufAllocatorAllocPatternBenchmark.heapAllocation:gc.alloc.rate.norm                1024         ADAPTIVE               true     E_COMMERCE  avgt   10   0.141 ± 0.020    B/op
+ByteBufAllocatorAllocPatternBenchmark.heapAllocation:gc.count                          1024         ADAPTIVE               true     E_COMMERCE  avgt   10     ≈ 0          counts
+
+Benchmark result is saved to cycle/diag-adaptive-1024.json

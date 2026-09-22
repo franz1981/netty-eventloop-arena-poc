@@ -1,0 +1,119 @@
+# JMH version: 1.37
+# VM version: JDK 21, Java HotSpot(TM) 64-Bit Server VM, 21+35-LTS-2513
+# VM invoker: /home/forked_franz/.sdkman/candidates/java/21-oracle/bin/java
+# VM options: -server -dsa -da -XX:InitialRAMPercentage=40.0 -XX:MaxRAMPercentage=40.0 -Dio.netty.leakDetection.level=disabled -Djmh.executor=CUSTOM -Djmh.executor.class=io.github.neoionet.netty.microbenchmark.executor.FastThreadLocalThreadHarnessExecutor -XX:MaxRAM=60g -Xlog:gc
+# Blackhole mode: compiler (auto-detected, use -Djmh.blackhole.autoDetect=false to disable)
+# Warmup: 10 iterations, 1 s each
+# Measurement: 10 iterations, 1 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Average time, time/op
+# Benchmark: io.github.neoionet.netty.microbenchmark.ByteBufAllocatorAllocPatternBenchmark.heapAllocation
+# Parameters: (MAX_LIVE_BUFFERS = 1024, allocatorType = ARENA, enableReadWrite = true, sizePattern = E_COMMERCE)
+
+# Run progress: 0.00% complete, ETA 00:01:00
+# Fork: 1 of 3
+[0.002s][info][gc] Using G1
+# Warmup Iteration   1: 82.928 ns/op
+# Warmup Iteration   2: 78.383 ns/op
+# Warmup Iteration   3: 77.232 ns/op
+# Warmup Iteration   4: 77.290 ns/op
+# Warmup Iteration   5: 77.195 ns/op
+# Warmup Iteration   6: 77.050 ns/op
+# Warmup Iteration   7: 76.942 ns/op
+# Warmup Iteration   8: 77.189 ns/op
+# Warmup Iteration   9: 76.795 ns/op
+# Warmup Iteration  10: 76.904 ns/op
+Iteration   1: 77.028 ns/op
+Iteration   2: 76.931 ns/op
+Iteration   3: 76.820 ns/op
+Iteration   4: 77.014 ns/op
+Iteration   5: 77.044 ns/op
+Iteration   6: [18.588s][info][gc] GC(0) Pause Young (Normal) (G1 Evacuation Pause) 1297M->127M(24576M) 17.190ms
+78.331 ns/op
+Iteration   7: 77.269 ns/op
+Iteration   8: 76.983 ns/op
+Iteration   9: 76.373 ns/op
+Iteration  10: cRSS-pRSS:[1427, 1427]
+;used-memory:[0]
+76.129 ns/op
+
+# Run progress: 33.33% complete, ETA 00:00:45
+# Fork: 2 of 3
+[0.002s][info][gc] Using G1
+# Warmup Iteration   1: 82.549 ns/op
+# Warmup Iteration   2: 77.734 ns/op
+# Warmup Iteration   3: 76.954 ns/op
+# Warmup Iteration   4: 76.758 ns/op
+# Warmup Iteration   5: 76.748 ns/op
+# Warmup Iteration   6: 76.818 ns/op
+# Warmup Iteration   7: 76.778 ns/op
+# Warmup Iteration   8: 76.952 ns/op
+# Warmup Iteration   9: 76.805 ns/op
+# Warmup Iteration  10: 76.895 ns/op
+Iteration   1: 76.949 ns/op
+Iteration   2: 76.882 ns/op
+Iteration   3: 76.807 ns/op
+Iteration   4: 76.875 ns/op
+Iteration   5: 76.820 ns/op
+Iteration   6: 76.782 ns/op
+Iteration   7: [19.418s][info][gc] GC(0) Pause Young (Normal) (G1 Evacuation Pause) 1297M->127M(24576M) 16.722ms
+78.345 ns/op
+Iteration   8: 78.562 ns/op
+Iteration   9: 77.323 ns/op
+Iteration  10: cRSS-pRSS:[1441, 1441]
+;used-memory:[0]
+77.190 ns/op
+
+# Run progress: 66.67% complete, ETA 00:00:22
+# Fork: 3 of 3
+[0.002s][info][gc] Using G1
+# Warmup Iteration   1: 82.323 ns/op
+# Warmup Iteration   2: 77.980 ns/op
+# Warmup Iteration   3: 76.603 ns/op
+# Warmup Iteration   4: 76.799 ns/op
+# Warmup Iteration   5: 76.674 ns/op
+# Warmup Iteration   6: 76.603 ns/op
+# Warmup Iteration   7: 76.628 ns/op
+# Warmup Iteration   8: 76.605 ns/op
+# Warmup Iteration   9: 76.540 ns/op
+# Warmup Iteration  10: 76.765 ns/op
+Iteration   1: 76.560 ns/op
+Iteration   2: 76.579 ns/op
+Iteration   3: 76.655 ns/op
+Iteration   4: 76.547 ns/op
+Iteration   5: 76.600 ns/op
+Iteration   6: [18.505s][info][gc] GC(0) Pause Young (Normal) (G1 Evacuation Pause) 1297M->126M(24576M) 18.857ms
+78.109 ns/op
+Iteration   7: 76.038 ns/op
+Iteration   8: 75.073 ns/op
+Iteration   9: 74.899 ns/op
+Iteration  10: cRSS-pRSS:[1423, 1423]
+;used-memory:[0]
+75.044 ns/op
+
+
+Result "io.github.neoionet.netty.microbenchmark.ByteBufAllocatorAllocPatternBenchmark.heapAllocation":
+  76.819 ±(99.9%) 0.576 ns/op [Average]
+  (min, avg, max) = (74.899, 76.819, 78.562), stdev = 0.862
+  CI (99.9%): [76.243, 77.395] (assumes normal distribution)
+
+
+# Run complete. Total time: 00:01:08
+
+REMEMBER: The numbers below are just data. To gain reusable insights, you need to follow up on
+why the numbers are the way they are. Use profilers (see -prof, -lprof), design factorial
+experiments, perform baseline and negative tests that provide experimental control, make sure
+the benchmarking environment is safe on JVM/OS/HW level, ask for reviews from the domain experts.
+Do not assume the numbers tell you what you want them to tell.
+
+NOTE: Current JVM experimentally supports Compiler Blackholes, and they are in use. Please exercise
+extra caution when trusting the results, look into the generated code to check the benchmark still
+works, and factor in a small probability of new VM bugs. Additionally, while comparisons between
+different JVMs are already problematic, the performance difference caused by different Blackhole
+modes can be very significant. Please make sure you use the consistent Blackhole mode for comparisons.
+
+Benchmark                                             (MAX_LIVE_BUFFERS)  (allocatorType)  (enableReadWrite)  (sizePattern)  Mode  Cnt   Score   Error  Units
+ByteBufAllocatorAllocPatternBenchmark.heapAllocation                1024            ARENA               true     E_COMMERCE  avgt   30  76.819 ± 0.576  ns/op
+
+Benchmark result is saved to cycle/harness-t1-1024-ARENA.json

@@ -1,0 +1,11 @@
+Http2Server h2load 16conn x 32 streams: allocs=3003065 paired=3003049 unpaired=0 live at end=16 threads=16
+released on the allocating thread: 100.0000% (other thread: 0)
+allocations-in-between: p50=14 p90=37 p99=45 p99.9=45 p99.99=71 max=90
+histogram: 0:4.50% 1:4.50% 2:6.77% 4:13.53% 8:27.06% 16:27.43% 32:16.20% 64:0.02%
+sizes: 9=55.8% 15=18.2% 256=18.2% 64000=3.4% 13=2.3% 32000=1.1% 8000=1.1% 33=0.0%
+   size      9: in-between p50=8 p90=21 p99=25 p99.9=29 max=56
+   size     15: in-between p50=28 p90=40 p99=43 p99.9=57 max=88
+   size    256: in-between p50=29 p90=41 p99=44 p99.9=58 max=89
+   size  64000: in-between p50=15 p90=25 p99=43 p99.9=63 max=90
+   size     13: in-between p50=40 p90=42 p99=42 p99.9=54 max=73
+   size  32000: in-between p50=45 p90=45 p99=45 p99.9=65 max=65
