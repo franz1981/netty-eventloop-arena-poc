@@ -12,8 +12,10 @@ else: buffers that escape the cycle, cross threads, or arrive when the arena is 
 
 The PoC is `io.netty.buffer.CycleArenaAllocator`, in the `netty` submodule (branch
 `expt/event-loop-arena`). Sections 1-6 of the results were measured at `3dad84f578`; the submodule
-now points at `2b961262d6` ("Use a block as a ring with variable-sized slots"), which is what
-[RESULTS.md section 7](results/ryzen9-7950x-node0/RESULTS.md) (transports) was measured on.
+now points at `11adeba602` ("Use a block as a ring with variable-sized slots", ring reuse behind
+`-Darena.ring`, off by default). [RESULTS.md section 7](results/ryzen9-7950x-node0/RESULTS.md)
+(transports) was measured on `2b961262d6`, the same commit before its final amend: the amend changed
+only javadoc and the ring's default, and every section-7 run set `-Darena.ring` explicitly.
 `3dad84f578` is **v3**, a rewrite against
 [`docs/design.md`](docs/design.md); the two earlier builds are described, and measured, under
 [the earlier builds (v2)](#the-earlier-builds-v2) - nothing in this section describes them.
@@ -242,12 +244,14 @@ git clone --recurse-submodules https://github.com/franz1981/netty-eventloop-aren
 
 | submodule | repository | branch | pinned commit |
 |---|---|---|---|
-| `netty` | `https://github.com/franz1981/netty.git` | `expt/event-loop-arena` | `2b961262d6` |
+| `netty` | `https://github.com/franz1981/netty.git` | `expt/event-loop-arena` | `11adeba602` |
 | `netty-allocator` | `https://github.com/franz1981/netty-allocator.git` | `cycle-arena-bench` | `e9fa807` |
 
-Both branches are on GitHub, but `netty` is pinned at `2b961262d6` while the GitHub branch still
-ends at `3dad84f578` at the time of writing: until those two commits are pushed, a fresh clone
-cannot resolve the `netty` submodule and has to be pointed at a local checkout of the branch.
+Both branches are on GitHub at the pinned commits, so a fresh clone resolves them:
+
+```
+git clone --recurse-submodules https://github.com/franz1981/netty-eventloop-arena-poc.git
+```
 
 `netty-allocator` is lao's harness (`neoionet/netty-allocator`) with four commits on top of its
 `1.2` head: the cycle benchmark, the harness additions, the `-Dexpt.hookEvery` hook driver, and

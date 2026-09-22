@@ -486,7 +486,7 @@ design declares out of scope: the driven hook is a fixed cadence, not a lifetime
 
 ## 7. Transports: io_uring and epoll (measured 2026-09-23, 2300 MHz, node 0)
 
-Code: netty `2b961262d6` (`expt/event-loop-arena`, the ring-reuse commit), PoC `run-e2e.sh` /
+Code: netty `2b961262d6` (`expt/event-loop-arena`, the ring-reuse commit before its final amend; the pushed commit is `11adeba602`, differing only in javadoc and the ring's default, which every run here set explicitly), PoC `run-e2e.sh` /
 `topology/run-matrix.sh` with `TRANSPORT=nio|epoll|io_uring`. Server pinned with
 `numactl --cpunodebind=0 --membind=0`, h2load with `--cpunodebind=1 --membind=1`, logging off, one
 run per cell. Raw output: `arena-v3/{io_uring,epoll,nio}/`.
