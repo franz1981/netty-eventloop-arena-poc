@@ -1,0 +1,384 @@
+[
+    {
+        "jmhVersion" : "1.37",
+        "benchmark" : "io.github.neoionet.netty.microbenchmark.CycleScopedAllocBenchmark.cycleDirect",
+        "mode" : "avgt",
+        "threads" : 1,
+        "forks" : 3,
+        "jvm" : "/home/forked_franz/.sdkman/candidates/java/21-oracle/bin/java",
+        "jvmArgs" : [
+            "-server",
+            "-dsa",
+            "-da",
+            "-XX:InitialRAMPercentage=40.0",
+            "-XX:MaxRAMPercentage=40.0",
+            "-Dio.netty.leakDetection.level=disabled",
+            "-Djmh.executor=CUSTOM",
+            "-Djmh.executor.class=io.github.neoionet.netty.microbenchmark.executor.FastThreadLocalThreadHarnessExecutor",
+            "-XX:MaxRAM=60g"
+        ],
+        "jdkVersion" : "21",
+        "vmName" : "Java HotSpot(TM) 64-Bit Server VM",
+        "vmVersion" : "21+35-LTS-2513",
+        "warmupIterations" : 10,
+        "warmupTime" : "1 s",
+        "warmupBatchSize" : 1,
+        "measurementIterations" : 10,
+        "measurementTime" : "1 s",
+        "measurementBatchSize" : 1,
+        "params" : {
+            "allocatorType" : "ADAPTIVE",
+            "k" : "64",
+            "releaseOrder" : "FIFO",
+            "sizes" : "SMALL"
+        },
+        "primaryMetric" : {
+            "score" : 3091.1893682832647,
+            "scoreError" : 9.887687592814013,
+            "scoreConfidence" : [
+                3081.3016806904507,
+                3101.0770558760787
+            ],
+            "scorePercentiles" : {
+                "0.0" : 3068.937399501651,
+                "50.0" : 3098.377797460006,
+                "90.0" : 3102.4163612306797,
+                "95.0" : 3115.691071107168,
+                "99.0" : 3120.215661376322,
+                "99.9" : 3120.215661376322,
+                "99.99" : 3120.215661376322,
+                "99.999" : 3120.215661376322,
+                "99.9999" : 3120.215661376322,
+                "100.0" : 3120.215661376322
+            },
+            "scoreUnit" : "ns/op",
+            "rawData" : [
+                [
+                    3111.9891336142246,
+                    3120.215661376322,
+                    3101.6578194877775,
+                    3101.8421894966687,
+                    3098.5239184047787,
+                    3096.8166076786592,
+                    3097.4444317118946,
+                    3098.505436146579,
+                    3098.833739763083,
+                    3096.5025899837447
+                ],
+                [
+                    3102.4801580900144,
+                    3099.238654675724,
+                    3098.2501587734328,
+                    3101.3295088423265,
+                    3099.6597921528883,
+                    3099.176975162305,
+                    3099.221763572017,
+                    3099.6762769650386,
+                    3100.0841111355653,
+                    3097.967882931302
+                ],
+                [
+                    3071.0034485829487,
+                    3070.6550136017245,
+                    3071.7662340853594,
+                    3074.2610838044125,
+                    3071.4175363164522,
+                    3071.9826014302216,
+                    3073.5180003810906,
+                    3071.204124876395,
+                    3071.518795953342,
+                    3068.937399501651
+                ]
+            ]
+        },
+        "secondaryMetrics" : {
+        }
+    },
+    {
+        "jmhVersion" : "1.37",
+        "benchmark" : "io.github.neoionet.netty.microbenchmark.CycleScopedAllocBenchmark.cycleDirect",
+        "mode" : "avgt",
+        "threads" : 1,
+        "forks" : 3,
+        "jvm" : "/home/forked_franz/.sdkman/candidates/java/21-oracle/bin/java",
+        "jvmArgs" : [
+            "-server",
+            "-dsa",
+            "-da",
+            "-XX:InitialRAMPercentage=40.0",
+            "-XX:MaxRAMPercentage=40.0",
+            "-Dio.netty.leakDetection.level=disabled",
+            "-Djmh.executor=CUSTOM",
+            "-Djmh.executor.class=io.github.neoionet.netty.microbenchmark.executor.FastThreadLocalThreadHarnessExecutor",
+            "-XX:MaxRAM=60g"
+        ],
+        "jdkVersion" : "21",
+        "vmName" : "Java HotSpot(TM) 64-Bit Server VM",
+        "vmVersion" : "21+35-LTS-2513",
+        "warmupIterations" : 10,
+        "warmupTime" : "1 s",
+        "warmupBatchSize" : 1,
+        "measurementIterations" : 10,
+        "measurementTime" : "1 s",
+        "measurementBatchSize" : 1,
+        "params" : {
+            "allocatorType" : "ARENA",
+            "k" : "64",
+            "releaseOrder" : "FIFO",
+            "sizes" : "SMALL"
+        },
+        "primaryMetric" : {
+            "score" : 1520.268137861323,
+            "scoreError" : 61.851438712769905,
+            "scoreConfidence" : [
+                1458.416699148553,
+                1582.1195765740931
+            ],
+            "scorePercentiles" : {
+                "0.0" : 1399.9277048393214,
+                "50.0" : 1538.4614556857512,
+                "90.0" : 1621.7923486794734,
+                "95.0" : 1622.1878565583738,
+                "99.0" : 1622.2894920401125,
+                "99.9" : 1622.2894920401125,
+                "99.99" : 1622.2894920401125,
+                "99.999" : 1622.2894920401125,
+                "99.9999" : 1622.2894920401125,
+                "100.0" : 1622.2894920401125
+            },
+            "scoreUnit" : "ns/op",
+            "rawData" : [
+                [
+                    1538.4601680470605,
+                    1538.4627433244418,
+                    1539.0208997302318,
+                    1537.6620734403684,
+                    1538.6628767306647,
+                    1537.806550520505,
+                    1538.8544259096554,
+                    1538.2223890239025,
+                    1538.3406407471898,
+                    1538.7807270069623
+                ],
+                [
+                    1400.278105025868,
+                    1401.551087504905,
+                    1400.5057954798478,
+                    1401.8198361981601,
+                    1400.2398462658564,
+                    1401.382287122761,
+                    1399.9277048393214,
+                    1400.5854761841406,
+                    1400.2767954656197,
+                    1401.7191060055616
+                ],
+                [
+                    1621.2781175021075,
+                    1621.268353732674,
+                    1621.7483333846844,
+                    1620.965361082071,
+                    1621.7972392677832,
+                    1622.1047002551331,
+                    1621.5904022363218,
+                    1621.6424345118896,
+                    1622.2894920401125,
+                    1620.8001672538921
+                ]
+            ]
+        },
+        "secondaryMetrics" : {
+        }
+    },
+    {
+        "jmhVersion" : "1.37",
+        "benchmark" : "io.github.neoionet.netty.microbenchmark.CycleScopedAllocBenchmark.cycleHeap",
+        "mode" : "avgt",
+        "threads" : 1,
+        "forks" : 3,
+        "jvm" : "/home/forked_franz/.sdkman/candidates/java/21-oracle/bin/java",
+        "jvmArgs" : [
+            "-server",
+            "-dsa",
+            "-da",
+            "-XX:InitialRAMPercentage=40.0",
+            "-XX:MaxRAMPercentage=40.0",
+            "-Dio.netty.leakDetection.level=disabled",
+            "-Djmh.executor=CUSTOM",
+            "-Djmh.executor.class=io.github.neoionet.netty.microbenchmark.executor.FastThreadLocalThreadHarnessExecutor",
+            "-XX:MaxRAM=60g"
+        ],
+        "jdkVersion" : "21",
+        "vmName" : "Java HotSpot(TM) 64-Bit Server VM",
+        "vmVersion" : "21+35-LTS-2513",
+        "warmupIterations" : 10,
+        "warmupTime" : "1 s",
+        "warmupBatchSize" : 1,
+        "measurementIterations" : 10,
+        "measurementTime" : "1 s",
+        "measurementBatchSize" : 1,
+        "params" : {
+            "allocatorType" : "ADAPTIVE",
+            "k" : "64",
+            "releaseOrder" : "FIFO",
+            "sizes" : "SMALL"
+        },
+        "primaryMetric" : {
+            "score" : 3157.0765016664463,
+            "scoreError" : 25.204555589112967,
+            "scoreConfidence" : [
+                3131.871946077333,
+                3182.2810572555595
+            ],
+            "scorePercentiles" : {
+                "0.0" : 3116.5901941780853,
+                "50.0" : 3144.57242994276,
+                "90.0" : 3208.1683842081334,
+                "95.0" : 3208.795043123658,
+                "99.0" : 3208.888962330745,
+                "99.9" : 3208.888962330745,
+                "99.99" : 3208.888962330745,
+                "99.999" : 3208.888962330745,
+                "99.9999" : 3208.888962330745,
+                "100.0" : 3208.888962330745
+            },
+            "scoreUnit" : "ns/op",
+            "rawData" : [
+                [
+                    3207.3076454345155,
+                    3208.888962330745,
+                    3205.875955250673,
+                    3206.8657103098008,
+                    3208.0714837923238,
+                    3208.179150921001,
+                    3208.718200136042,
+                    3207.3027256371524,
+                    3207.7855172502277,
+                    3206.4597220218343
+                ],
+                [
+                    3129.85407577569,
+                    3121.534577099675,
+                    3120.4052517612995,
+                    3120.895971290373,
+                    3119.388255183234,
+                    3118.0583472336975,
+                    3118.75743088366,
+                    3119.1935347032477,
+                    3123.7263484706036,
+                    3116.5901941780853
+                ],
+                [
+                    3133.3241867212246,
+                    3134.1362653479496,
+                    3133.16748749953,
+                    3143.421281089797,
+                    3151.9459295912256,
+                    3150.2092325138206,
+                    3149.661765122717,
+                    3148.8055729601233,
+                    3145.7235787957234,
+                    3138.0406906873927
+                ]
+            ]
+        },
+        "secondaryMetrics" : {
+        }
+    },
+    {
+        "jmhVersion" : "1.37",
+        "benchmark" : "io.github.neoionet.netty.microbenchmark.CycleScopedAllocBenchmark.cycleHeap",
+        "mode" : "avgt",
+        "threads" : 1,
+        "forks" : 3,
+        "jvm" : "/home/forked_franz/.sdkman/candidates/java/21-oracle/bin/java",
+        "jvmArgs" : [
+            "-server",
+            "-dsa",
+            "-da",
+            "-XX:InitialRAMPercentage=40.0",
+            "-XX:MaxRAMPercentage=40.0",
+            "-Dio.netty.leakDetection.level=disabled",
+            "-Djmh.executor=CUSTOM",
+            "-Djmh.executor.class=io.github.neoionet.netty.microbenchmark.executor.FastThreadLocalThreadHarnessExecutor",
+            "-XX:MaxRAM=60g"
+        ],
+        "jdkVersion" : "21",
+        "vmName" : "Java HotSpot(TM) 64-Bit Server VM",
+        "vmVersion" : "21+35-LTS-2513",
+        "warmupIterations" : 10,
+        "warmupTime" : "1 s",
+        "warmupBatchSize" : 1,
+        "measurementIterations" : 10,
+        "measurementTime" : "1 s",
+        "measurementBatchSize" : 1,
+        "params" : {
+            "allocatorType" : "ARENA",
+            "k" : "64",
+            "releaseOrder" : "FIFO",
+            "sizes" : "SMALL"
+        },
+        "primaryMetric" : {
+            "score" : 1502.1435300771907,
+            "scoreError" : 32.12204211877945,
+            "scoreConfidence" : [
+                1470.0214879584112,
+                1534.2655721959702
+            ],
+            "scorePercentiles" : {
+                "0.0" : 1459.803958603979,
+                "50.0" : 1477.4474343475551,
+                "90.0" : 1568.8443009460013,
+                "95.0" : 1568.983276806648,
+                "99.0" : 1568.9879162136424,
+                "99.9" : 1568.9879162136424,
+                "99.99" : 1568.9879162136424,
+                "99.999" : 1568.9879162136424,
+                "99.9999" : 1568.9879162136424,
+                "100.0" : 1568.9879162136424
+            },
+            "scoreUnit" : "ns/op",
+            "rawData" : [
+                [
+                    1568.9794809281982,
+                    1568.895700247242,
+                    1568.9879162136424,
+                    1567.7343846997962,
+                    1567.6580802420272,
+                    1568.1340585902649,
+                    1567.9903072607742,
+                    1568.2737966421714,
+                    1568.3817072348354,
+                    1567.7666204725595
+                ],
+                [
+                    1461.4572651071442,
+                    1461.4770145345183,
+                    1460.2440329224116,
+                    1461.1842606634932,
+                    1460.8562509677438,
+                    1461.047860171163,
+                    1460.2236070552506,
+                    1460.426257038716,
+                    1459.803958603979,
+                    1460.0278171142263
+                ],
+                [
+                    1477.0461599810953,
+                    1477.918155324884,
+                    1478.1302678254701,
+                    1477.0185734920115,
+                    1479.194590421197,
+                    1475.7209718926704,
+                    1477.2036927894594,
+                    1477.8120251976788,
+                    1477.6911759056509,
+                    1477.0199127754565
+                ]
+            ]
+        },
+        "secondaryMetrics" : {
+        }
+    }
+]
+
+

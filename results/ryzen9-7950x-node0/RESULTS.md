@@ -378,3 +378,19 @@ One profile is one sample; this is not a distribution.
 - Topology and end-to-end are single windows per workload.
 - 6.1 and 6.2 are the arena's best case with the hook driven artificially, exactly as sections 1
   and 2 were for the earlier build.
+
+### 6.8 Like-for-like against the first PoC: sizes under the cap (measured 2026-09-22, 2300 MHz, node 0, 3 forks)
+
+`CycleScopedAllocBenchmark`, k=64, FIFO, `sizes=SMALL` (64/128/256/512 B: every request under the 8 KiB cap, so both
+arenas run at 100% share, `maxPinned=0`). Files: `arena-v3/cycle/small-v3.*` (final jar + adaptive), `small-v2.*` (first PoC jar).
+
+| cell | ADAPTIVE | ARENA v2 (first PoC) | ARENA v3 (final) |
+|---|---|---|---|
+| heap, ns per 64 pairs | 3157.1 (3207/3121/3143) | 1610.8 (1613/1606/1614) | 1502.1 (1568/1461/1478) |
+| direct, ns per 64 pairs | 3091.2 (3102/3100/3072) | 3060.1 (3070/3059/3052) | 1520.3 (1538/1401/1622) |
+| heap, ns per pair | 49.3 | 25.2 | 23.5 |
+| direct, ns per pair | 48.3 | 47.8 | 23.8 |
+
+v3 is −52% against adaptive on both spaces where the arena applies, level with or better than the first PoC on heap,
+and twice as fast as it on direct. The gap to v2 seen on `sizes=MIXED` (section 6.2) is the cap: 16 and 32 KiB requests
+delegate in v3 and were served by v2's arena. v3's fork spread is wider than adaptive's.
