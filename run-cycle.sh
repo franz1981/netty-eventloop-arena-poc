@@ -27,11 +27,13 @@ trap 'freq_hook restore' EXIT
 
 echo "==> $BENCH  f=$FORKS wi=$WI i=$I t=$THREADS  -> $JSON"
 set -x
+rc=0
 $SUT_PIN_CMD java -jar "$JAR" "$BENCH" \
     -t "$THREADS" -f "$FORKS" -wi "$WI" -i "$I" -w "$W" -r "$R" \
     "${JVM_ARGS[@]}" \
-    -rf json -rff "$JSON" "$@" > "$DATA" 2>&1
-rc=$?
+    -rf json -rff "$JSON" "$@" > "$DATA" 2>&1 || rc=$?
 set +x
+[ "$rc" = 0 ] || echo "==> JMH failed (rc=$rc) - the whole console is in $DATA; its last lines:" >&2
+[ "$rc" = 0 ] || tail -15 "$DATA" >&2
 echo "==> rc=$rc  data=$DATA  json=$JSON"
 exit $rc

@@ -19,6 +19,11 @@ set -u
 source "$(dirname "$0")/common.sh"
 require_tools java javac h2load python3 jcmd || exit 1
 
+[ $# -ge 8 ] && [ "$7" = "--" ] || {
+    echo "usage: topology/run.sh <name> <pipeline> <port> <loops> <window_start_s> <window_len_s> -- <load cmd...>" >&2
+    echo "       pipeline: h1snoop | h2hello | h2echo | h1echo | h1agg   (proxy/proxy2 -> run6.sh)" >&2
+    exit 1
+}
 NAME=$1; PIPE=$2; PORT=$3; LOOPS=$4; WSTART=$5; WLEN=$6; shift 7   # shift past the --
 
 mkdir -p "$RESULTS_DIR"

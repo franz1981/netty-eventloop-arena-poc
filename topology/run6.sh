@@ -7,6 +7,7 @@ set -u
 source "$(dirname "$0")/common.sh"
 require_tools java javac h2load jcmd || exit 1
 
+[ $# -eq 4 ] || { echo "usage: topology/run6.sh <name> <proxy|proxy2> <window_start_s> <window_len_s>" >&2; exit 1; }
 NAME=$1; PIPE=$2; WSTART=$3; WLEN=$4
 mkdir -p "$RESULTS_DIR"
 topo_bodies "$RESULTS_DIR" || exit 1

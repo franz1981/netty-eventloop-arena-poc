@@ -26,8 +26,9 @@ topo_compile() {
     mkdir -p "$CLASSES"
     if [ "$TOPO/TopoServer.java" -nt "$CLASSES/TopoServer.class" ] \
        || [ "$TOPO/Dump.java" -nt "$CLASSES/Dump.class" ]; then
-        local version; version="$(netty_version)"
-        local cp="$ROOT/netty/example/target/netty-example-$version.jar:$(cat "$ROOT/target/e2e-classpath.txt")"
+        # topo_cp resolves the dependency classpath the first time it is called; calling it here is
+        # what makes a fresh clone work, where target/e2e-classpath.txt does not exist yet.
+        local cp; cp="$(topo_cp)" || return 1
         javac -nowarn -d "$CLASSES" -cp "$cp" "$TOPO/TopoServer.java" "$TOPO/Dump.java" || return 1
     fi
 }
