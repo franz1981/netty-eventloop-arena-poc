@@ -12,16 +12,14 @@
 #   CONNS (h1 64, h2 16)  STREAMS (h2 32)  LOAD_THREADS=4  BODY_SIZE=4096
 #   ARENA_MAX_BLOCKS (passed as -Darena.maxBlocks when set)  JVM_OPTS  SUT_PIN_CMD  LOADGEN_PIN_CMD
 #   LOGBACK_CONFIG (default e2e/logback-off.xml; set empty to keep the examples' own logging)
-#   ARENA_PROPS: extra -D flags for the arena.  The variants in RESULTS.md section 5 are
-#     heap:        JVM_OPTS=-Dio.netty.noPreferDirect=true
-#     direct:      (nothing)
-#     hook/iter:   ARENA_PROPS="-Darena.release=hook -Darena.hook=iteration"
-#   (v3: the readCompleteHook variant no longer exists; the arena is closed by the event loop's tail-task hook.)
-#   The former handler line is kept in the v2 results only:
-#   channel pipeline - it needs the example module of the pinned netty submodule.
+#   ARENA_PROPS: extra -D flags for the arena, e.g. ARENA_PROPS="-Darena.cap=16384 -Darena.debug=true".
+#     The pinned build's knobs are arena.blockSize / maxBlocks / cap / maxObjects / debug / jfr.period.
+#     Its two memory variants are:  heap  JVM_OPTS=-Dio.netty.noPreferDirect=true      direct  (nothing)
+#   The -Darena.release / -Darena.hook / readCompleteHook variants of RESULTS.md section 5 belonged to the
+#   v2 build and do NOT exist at the pinned commit: the arena is closed by the event loop's tail-task hook.
 #
 # The example pipelines log every HTTP/2 frame at INFO.  That logging, not the allocator, is the
-# bottleneck of these servers - adaptive on h2 measured 23,507 req/s with it and 671,887 without -
+# bottleneck of these servers - adaptive on h2 measured 23,507 req/s with it and 670,768 without -
 # so run-e2e.sh turns logging OFF by default.  Set LOGBACK_CONFIG= to measure the servers as the
 # examples ship them.
 #
