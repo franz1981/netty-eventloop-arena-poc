@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Arena Mechanics</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{--bg:#f6f5f2;--panel:#fff;--ink:#1d2430;--muted:#5b6473;--line:#d9d6ce;--live:#0b6e7a;--live2:#5fc4cf;--rel:#c9c5ba;--pin:#b2401f;--ok:#2f7d3a;--bump:#e2a84a;
+--sans:"IBM Plex Sans",system-ui,sans-serif;--mono:"IBM Plex Mono",ui-monospace,monospace}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#15181d;--panel:#1d2128;--ink:#e6e4de;--muted:#a3a89f;--line:#343a44;--rel:#3a3f48;--pin:#f0855f;--ok:#7dcb86;--bump:#f0c060}}
+:root[data-theme="dark"]{--bg:#15181d;--panel:#1d2128;--ink:#e6e4de;--muted:#a3a89f;--line:#343a44;--rel:#3a3f48;--pin:#f0855f;--ok:#7dcb86;--bump:#f0c060}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:15px;line-height:1.45}
+.wrap{max-width:960px;margin:0 auto;padding:24px 16px 48px}
+h1{font-size:26px;margin:0 0 4px;font-weight:600}
+.sub{color:var(--muted);margin:0 0 16px;max-width:70ch}
+.ctl{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:12px 0}
+button{font:inherit;padding:7px 14px;border:1px solid var(--line);background:var(--panel);color:var(--ink);border-radius:5px;cursor:pointer}
+button:disabled{opacity:.4;cursor:default}
+button.primary{background:var(--live);color:#fff;border-color:var(--live)}
+.step{font-family:var(--mono);font-size:13px;color:var(--muted);margin-left:auto}
+.stage{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:16px;overflow-x:auto}
+.event{font-size:17px;font-weight:600;min-height:26px;margin:0 0 4px}
+.event .tag{display:inline-block;font-size:11px;letter-spacing:.06em;text-transform:uppercase;padding:2px 7px;border-radius:3px;margin-right:8px;vertical-align:middle;color:#fff}
+.t-alloc{background:var(--live)} .t-rel{background:#6b7280} .t-hook{background:var(--pin)} .t-switch{background:var(--bump);color:#1d2430!important} .t-grow{background:var(--ok)} .t-del{background:#7a4a0b}
+.why{color:var(--muted);min-height:44px;margin:0 0 14px;max-width:80ch}
+.blocks{display:grid;gap:10px}
+.block{display:grid;grid-template-columns:96px 1fr 210px;gap:12px;align-items:center;padding:8px 10px;border:1px solid var(--line);border-radius:6px}
+.block.current{border-color:var(--bump);box-shadow:inset 3px 0 0 var(--bump)}
+.block.pinned{border-color:var(--pin)}
+.block.reusable{border-color:var(--ok)}
+.block.absent{opacity:.35;border-style:dashed}
+.name{font-weight:600;font-size:14px}
+.name small{display:block;font-weight:400;color:var(--muted);font-size:12px}
+.slots{display:flex;gap:3px;position:relative;height:38px;align-items:end}
+.slot{width:5.5%;min-width:14px;height:28px;border-radius:3px;background:transparent;border:1px solid var(--line);position:relative;transition:background .25s,border-color .25s}
+.slot.live{background:var(--live);border-color:var(--live)}
+.slot.rel{background:repeating-linear-gradient(135deg,var(--rel) 0 3px,transparent 3px 6px);border-color:var(--rel)}
+.slot .l{position:absolute;left:0;right:0;top:6px;text-align:center;font-family:var(--mono);font-size:11px;color:#fff}
+.slot.rel .l{color:var(--muted)}
+.bump{position:absolute;top:-4px;bottom:-2px;width:2px;background:var(--bump);transition:left .25s}
+.bump::after{content:"bump";position:absolute;top:-14px;left:-14px;font:11px var(--mono);color:var(--bump)}
+.meta{font-family:var(--mono);font-size:12px;color:var(--muted);line-height:1.5}
+.meta b{color:var(--ink);font-weight:500}
+.badge{display:inline-block;padding:1px 6px;border-radius:3px;font-size:11px;font-weight:600;letter-spacing:.04em}
+.b-cur{background:var(--bump);color:#1d2430} .b-pin{background:var(--pin);color:#fff} .b-reu{background:var(--ok);color:#fff}
+.state{display:flex;gap:18px;flex-wrap:wrap;margin:14px 0 0;font-family:var(--mono);font-size:13px}
+.state span b{font-weight:500;color:var(--live)}
+.legend{display:flex;gap:16px;flex-wrap:wrap;margin:14px 0 0;font-size:13px;color:var(--muted);align-items:center}
+.legend i{display:inline-block;width:14px;height:14px;border-radius:3px;vertical-align:-2px;margin-right:5px;border:1px solid var(--line)}
+.rules{margin:18px 0 0;padding:0 0 0 18px;color:var(--muted);font-size:14px;max-width:80ch}
+.rules li{margin:3px 0}
+@media (max-width:640px){.block{grid-template-columns:70px 1fr;}.block .meta{grid-column:1/-1}.slot{min-width:10px}}
+</style>
+<div class="wrap">
+<h1>Arena Mechanics</h1>
+<p class="sub">One space of the per-event-loop arena, blocks drawn with 16 slots. Step through allocations, releases and end-of-iteration hooks and watch the bump, the counters, the mask and the pinned state.</p>
+<div class="ctl">
+  <button id="prev">◀ Back</button>
+  <button id="next" class="primary">Next ▶</button>
+  <button id="play">Auto-play</button>
+  <button id="reset">Restart</button>
+  <span class="step" id="stepno"></span>
+</div>
+<div class="stage">
+  <p class="event" id="event"></p>
+  <p class="why" id="why"></p>
+  <div class="blocks" id="blocks"></div>
+  <div class="state" id="state"></div>
+  <div class="legend">
+    <span><i style="background:var(--live);border-color:var(--live)"></i>live buffer</span>
+    <span><i style="background:repeating-linear-gradient(135deg,var(--rel) 0 3px,transparent 3px 6px)"></i>released, behind the bump: not reusable until a hook</span>
+    <span><i></i>never used</span>
+    <span><i style="background:var(--bump);border-color:var(--bump);width:3px"></i>bump pointer</span>
+  </div>
+</div>
+<ol class="rules">
+  <li>The bump only advances. A release only increments <code>frees</code>.</li>
+  <li>A block is reset only at a hook, and only when <code>allocs == frees</code>. The current block resets in place; any other empty block gets its bit in <code>reusableMask</code>.</li>
+  <li>A block with a live buffer at the hook is <b>pinned</b>: not reset, its released bytes stay unavailable. If it is the current block, its free tail is still bumped.</li>
+  <li>When the current block is full: take the lowest set bit of the mask, else grow (up to 8 blocks), else delegate to adaptive until the next hook.</li>
+  <li>Requests above the cap (8 KiB, a block is 256 KiB) never enter; a request never spans two blocks.</li>
+</ol>
+</div>
+<script>
+const N=16, MAX=4; // slots per block, blocks drawn
+const S={blocks:[],cur:0,mask:0,iter:1,exhausted:false};
+function newBlock(){return {slots:Array(N).fill(null),bump:0,allocs:0,frees:0,exists:true};}
+function init(){S.blocks=[newBlock()];S.cur=0;S.mask=0;S.iter=1;S.exhausted=false;}
+// script of steps: each step mutates state and sets event/why
+const steps=[];
+function alloc(names,why){steps.push({kind:'alloc',label:'allocate '+names.join(', '),why,run(){
+  for(const n of names){let b=S.blocks[S.cur];
+    if(b.bump>=N){ // full -> switch
+      if(S.mask){const id=31-Math.clz32(S.mask&-S.mask);S.mask&=S.mask-1;S.cur=id;b=S.blocks[id];}
+      else if(S.blocks.length<MAX){S.blocks.push(newBlock());S.cur=S.blocks.length-1;b=S.blocks[S.cur];}
+      else {S.exhausted=true;return;}
+    }
+    b.slots[b.bump]={n,live:true};b.bump++;b.allocs++;}
+}});}
+function release(names,why){steps.push({kind:'rel',label:'release '+names.join(', '),why,run(){
+  for(const b of S.blocks)for(const s of b.slots)if(s&&names.includes(s.n)&&s.live){s.live=false;b.frees++;}
+}});}
+function hook(why){steps.push({kind:'hook',label:'HOOK',why,run(){
+  this.label='HOOK: end of iteration '+S.iter;
+  S.mask=0;S.exhausted=false;
+  S.blocks.forEach((b,i)=>{ if(b.allocs===b.frees){b.resetNow=b.allocs>0;b.slots=Array(N).fill(null);b.bump=0;b.allocs=b.frees=0; if(i!==S.cur)S.mask|=1<<i; } else b.resetNow=false;});
+  S.iter++;
+}});}
+function note(kind,label,why){steps.push({kind,label,why,run(){}});}
+// --- the story ---
+alloc(['a','b','c'],'Iteration 1 starts. Three buffers are bumped into block 0.');
+release(['a','b'],'a and b are released: frees goes to 2, the bump does not move. Their slots are behind the bump and stay unavailable.');
+alloc(['d'],'d takes the next slot ahead of the bump, not the released ones.');
+hook('Block 0 has allocs 4, frees 2: c and d are live, so it is pinned. Nothing resets. The mask stays empty.');
+alloc(['e','f','g','h','i','j','k','l','m','n','o','p'],'Iteration 2 bumps the tail of the pinned block: pinned does not stop the bump. Block 0 is now full.');
+alloc(['q','r'],'The next allocation finds block 0 full. The mask is empty and only 1 of 8 blocks exists, so the space grows: block 1 becomes current.');
+release(['c','d','e','f','g','h','i','j','k','l','m','n','o','p'],'Everything in block 0 is released during the iteration: allocs 16, frees 16. Still no reuse before the hook.');
+hook('Block 0: 16 == 16, empty, so it resets and gets mask bit 0. Block 1 is current with q, r live: pinned, but it keeps bumping.');
+alloc(['s','t','u'],'Iteration 3 continues in block 1\'s tail.');
+release(['q','r','s','t','u'],'All of block 1 released: 5 == 5.');
+hook('The current block is empty at the hook: it resets in place, bump back to 0. Block 0 keeps its mask bit. On a request/response loop this is the only thing that ever happens: no switch, no growth.');
+alloc(['v1','v2','v3','v4','v5','v6','v7','v8','v9','v10','v11','v12','v13','v14','v15','v16'],'Iteration 4 fills block 1 to the last slot.');
+release(['v1','v2','v3','v4','v5','v6','v7','v8','v9','v10','v11','v12','v13','v14','v15'],'Fifteen of the sixteen are released. v16 is still live, a parked write for instance.');
+alloc(['w'],'Block 1 is full. The mask has bit 0 set: numberOfTrailingZeros gives block 0, which becomes current. No search, no fit check: a flagged block is always entirely empty.');
+hook('Block 1: 16 allocs, 15 frees, one survivor pins it, and all the released bytes below it wait with it. Block 0 is current with w live: pinned too. Mask empty.');
+alloc(['x1','x2','x3','x4','x5','x6','x7','x8','x9','x10','x11','x12','x13','x14','x15'],'Iteration 5 fills block 0.');
+alloc(['y'],'Block 0 is full, the mask is empty, 2 of 8 blocks exist: grow block 2. With 8 blocks and an empty mask the space would be exhausted and every allocation would go to adaptive until the next hook.');
+release(['v16'],'The survivor in block 1 is finally released: 16 == 16.');
+hook('Block 1 is empty now and gets mask bit 1: it is the next block taken when block 2 fills. Block 0 and 2 have live buffers: pinned. This is the whole reuse story: reset when empty, at a hook, never before.');
+// --- rendering ---
+let pos=-1;const snaps=[];
+function snapshot(){return JSON.parse(JSON.stringify(S));}
+function render(){
+  const st=pos<0?(init(),snapshot()):snaps[pos];
+  const ev=document.getElementById('event'),why=document.getElementById('why');
+  if(pos<0){ev.innerHTML='<span class="tag t-alloc">start</span>empty space, one block';why.textContent='Press Next to step through five iterations.';}
+  else{const s=steps[pos];const cls={alloc:'t-alloc',rel:'t-rel',hook:'t-hook'}[s.kind]||'t-switch';ev.innerHTML=`<span class="tag ${cls}">${s.kind}</span>${s.label}`;why.textContent=s.why;}
+  const bl=document.getElementById('blocks');bl.innerHTML='';
+  for(let i=0;i<MAX;i++){
+    const b=st.blocks[i];const div=document.createElement('div');
+    if(!b){div.className='block absent';div.innerHTML=`<div class="name">block ${i}<small>not grown</small></div><div class="slots">${'<div class="slot"></div>'.repeat(N)}</div><div class="meta">grows on demand, up to 8</div>`;bl.appendChild(div);continue;}
+    const isCur=i===st.cur,inMask=(st.mask>>i)&1,pinned=!isCur&&!inMask&&b.allocs!==b.frees;
+    div.className='block'+(isCur?' current':'')+(inMask?' reusable':'')+(pinned||(isCur&&b.allocs!==b.frees&&b.allocs>0)?' pinned':'');
+    let slots='';for(let k=0;k<N;k++){const s=b.slots[k];slots+=`<div class="slot ${s?(s.live?'live':'rel'):''}"><span class="l">${s?s.n.replace(/[0-9]+$/,''):''}</span></div>`;}
+    const bumpLeft=(b.bump/N*100)+'%';
+    const badge=isCur?'<span class="badge b-cur">current</span>':inMask?'<span class="badge b-reu">reusable</span>':pinned?'<span class="badge b-pin">pinned</span>':'';
+    const live=b.allocs-b.frees;
+    div.innerHTML=`<div class="name">block ${i}<small>${badge}</small></div><div class="slots">${slots}<div class="bump" style="left:calc(${bumpLeft} - 1px)"></div></div><div class="meta">allocs <b>${b.allocs}</b> frees <b>${b.frees}</b> live <b>${live}</b><br>bump <b>${b.bump}</b>/${N}${b.resetNow?' <span style="color:var(--ok)">reset at this hook</span>':''}</div>`;
+    bl.appendChild(div);
+  }
+  document.getElementById('state').innerHTML=`<span>iteration <b>${st.iter}</b></span><span>current block <b>${st.cur}</b></span><span>reusableMask <b>0b${st.mask.toString(2).padStart(4,'0')}</b></span><span>blocks <b>${st.blocks.length}</b>/8</span>${st.exhausted?'<span style="color:var(--pin)">exhausted: delegating</span>':''}`;
+  document.getElementById('stepno').textContent=`step ${pos+1} / ${steps.length}`;
+  document.getElementById('prev').disabled=pos<0;document.getElementById('next').disabled=pos>=steps.length-1;
+}
+function build(){init();snaps.length=0;for(const s of steps){s.run();snaps.push(snapshot());for(const b of S.blocks)b.resetNow=false;}}
+build();render();
+document.getElementById('next').onclick=()=>{if(pos<steps.length-1){pos++;render();}};
+document.getElementById('prev').onclick=()=>{if(pos>=0){pos--;render();}};
+document.getElementById('reset').onclick=()=>{pos=-1;render();};
+let timer=null;document.getElementById('play').onclick=function(){if(timer){clearInterval(timer);timer=null;this.textContent='Auto-play';return;}this.textContent='Pause';timer=setInterval(()=>{if(pos<steps.length-1){pos++;render();}else{clearInterval(timer);timer=null;document.getElementById('play').textContent='Auto-play';}},1800);};
+document.addEventListener('keydown',e=>{if(e.key==='ArrowRight')document.getElementById('next').click();if(e.key==='ArrowLeft')document.getElementById('prev').click();});
+</script>
