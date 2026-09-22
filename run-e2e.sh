@@ -12,15 +12,23 @@
 #   CONNS (h1 64, h2 16)  STREAMS (h2 32)  LOAD_THREADS=4  BODY_SIZE=4096
 #   ARENA_MAX_BLOCKS (passed as -Darena.maxBlocks when set)  JVM_OPTS  SUT_PIN_CMD  LOADGEN_PIN_CMD
 #   LOGBACK_CONFIG (default e2e/logback-off.xml; set empty to keep the examples' own logging)
+#   ARENA_PROPS: extra -D flags for the arena.  The variants in RESULTS.md section 5 are
+#     heap:        JVM_OPTS=-Dio.netty.noPreferDirect=true
+#     direct:      (nothing)
+#     hook/iter:   ARENA_PROPS="-Darena.release=hook -Darena.hook=iteration"
+#     hook/readCompl: ARENA_PROPS="-Darena.release=hook -Darena.hook=off -Darena.e2e.readCompleteHook=true"
+#   The last one makes E2EServer append io.netty.example.arena.CycleArenaEndOfCycleHandler to every
+#   channel pipeline - it needs the example module of the pinned netty submodule.
 #
 # The example pipelines log every HTTP/2 frame at INFO.  That logging, not the allocator, is the
 # bottleneck of these servers - adaptive on h2 measured 23,507 req/s with it and 671,887 without -
 # so run-e2e.sh turns logging OFF by default.  Set LOGBACK_CONFIG= to measure the servers as the
 # examples ship them.
 #
-# The PoC arena serves HEAP buffers only, so the server runs with -Dio.netty.noPreferDirect=true.
-# Even then ioBuffer() still hands out direct buffers, and CycleArenaAllocator forwards every direct
-# allocation to its fallback WITHOUT counting it - the counters below describe the heap path only.
+# The arena now serves heap AND direct buffers, so nothing is forced here: pass
+# JVM_OPTS=-Dio.netty.noPreferDirect=true to exercise the heap path.  Note that
+# AbstractByteBufAllocator.ioBuffer(), which the receive-buffer allocator calls, returns a direct
+# buffer whenever direct buffers can be reliably freed and never consults that property.
 set -euo pipefail
 source "$(dirname "$0")/lib/env.sh"
 require_tools java mvn h2load
@@ -34,6 +42,7 @@ require_tools java mvn h2load
 : "${BODY_SIZE:=4096}"
 : "${STREAMS:=32}"
 : "${LOGBACK_CONFIG:=$ROOT/e2e/logback-off.xml}"
+: "${ARENA_PROPS:=}"
 case "$PROTO" in
     h1) : "${CONNS:=64}" ;;
     h2) : "${CONNS:=16}" ;;
@@ -89,8 +98,10 @@ for A in $ALLOCATORS; do
     ARENA_OPT=()
     [ -n "${ARENA_MAX_BLOCKS:-}" ] && ARENA_OPT=("-Darena.maxBlocks=$ARENA_MAX_BLOCKS")
     [ -n "$LOGBACK_CONFIG" ] && ARENA_OPT+=("-Dlogback.configurationFile=$LOGBACK_CONFIG")
+    # shellcheck disable=SC2206
+    [ -n "$ARENA_PROPS" ] && ARENA_OPT+=($ARENA_PROPS)
     # shellcheck disable=SC2086
-    $SUT_PIN_CMD java -cp "$CP" $JVM_OPTS -Dio.netty.noPreferDirect=true "${ARENA_OPT[@]}" \
+    $SUT_PIN_CMD java -cp "$CP" $JVM_OPTS "${ARENA_OPT[@]}" \
         "-Xlog:gc:file=$GC" "$ROOT/e2e/E2EServer.java" "$A" "$PROTO" "$PORT" "$LOOPS" \
         > "$SRV" 2>&1 &
 

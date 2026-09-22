@@ -1,0 +1,18 @@
+READY arena h2 8080 loops=8
+User Event Triggered: io.netty.handler.codec.http2.CleartextHttp2ServerUpgradeHandler$PriorKnowledgeUpgradeEvent@70ebbcf5
+User Event Triggered: io.netty.handler.codec.http2.CleartextHttp2ServerUpgradeHandler$PriorKnowledgeUpgradeEvent@70ebbcf5
+User Event Triggered: io.netty.handler.codec.http2.CleartextHttp2ServerUpgradeHandler$PriorKnowledgeUpgradeEvent@70ebbcf5
+User Event Triggered: io.netty.handler.codec.http2.CleartextHttp2ServerUpgradeHandler$PriorKnowledgeUpgradeEvent@70ebbcf5
+User Event Triggered: io.netty.handler.codec.http2.CleartextHttp2ServerUpgradeHandler$PriorKnowledgeUpgradeEvent@70ebbcf5
+User Event Triggered: io.netty.handler.codec.http2.CleartextHttp2ServerUpgradeHandler$PriorKnowledgeUpgradeEvent@70ebbcf5
+User Event Triggered: io.netty.handler.codec.http2.CleartextHttp2ServerUpgradeHandler$PriorKnowledgeUpgradeEvent@70ebbcf5
+User Event Triggered: io.netty.handler.codec.http2.CleartextHttp2ServerUpgradeHandler$PriorKnowledgeUpgradeEvent@70ebbcf5
+User Event Triggered: io.netty.handler.codec.http2.CleartextHttp2ServerUpgradeHandler$PriorKnowledgeUpgradeEvent@70ebbcf5
+User Event Triggered: io.netty.handler.codec.http2.CleartextHttp2ServerUpgradeHandler$PriorKnowledgeUpgradeEvent@70ebbcf5
+User Event Triggered: io.netty.handler.codec.http2.CleartextHttp2ServerUpgradeHandler$PriorKnowledgeUpgradeEvent@70ebbcf5
+User Event Triggered: io.netty.handler.codec.http2.CleartextHttp2ServerUpgradeHandler$PriorKnowledgeUpgradeEvent@70ebbcf5
+User Event Triggered: io.netty.handler.codec.http2.CleartextHttp2ServerUpgradeHandler$PriorKnowledgeUpgradeEvent@70ebbcf5
+User Event Triggered: io.netty.handler.codec.http2.CleartextHttp2ServerUpgradeHandler$PriorKnowledgeUpgradeEvent@70ebbcf5
+User Event Triggered: io.netty.handler.codec.http2.CleartextHttp2ServerUpgradeHandler$PriorKnowledgeUpgradeEvent@70ebbcf5
+User Event Triggered: io.netty.handler.codec.http2.CleartextHttp2ServerUpgradeHandler$PriorKnowledgeUpgradeEvent@70ebbcf5
+ARENATELE release=lifo arenaHeap=71709155 arenaDirect=111432953 fallbackHeap=0 fallbackDirect=0 blockReuse=0 grow=0 resetOnZero=9355896 lifoPop=68687070 hookIteration=0 hookReadComplete=0 hookRegistered=0 hookReset=0 hookDrop=0 trimDrop=0 capInPlace=16 capMove=0 capSolo=0 unpooledObjects=0

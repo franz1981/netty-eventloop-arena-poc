@@ -91,7 +91,16 @@ The +3.4 ns of the current build over the heap-only control is **not attributed*
 G1 card marks on two hot reference stores were found with perfasm and removed, and a klass-guard
 hypothesis was tested and refuted. Neither accounts for the remaining 3.4 ns.
 
-The raw json for this table is not in this repository.
+Evidence: **`micro-v2/`**. Read `micro-v2/INDEX.md` first - it states the gap itself. **There is no
+JMH json or .data for these five cells:** the runs were made without `-rf json`, so
+`micro-v2/quoted-scores.txt` is a *transcription of the console summary lines*, not a
+machine-written artifact. Treat it as such. The perfasm captures behind the card-mark finding are
+real files: `perfasm-new-v1-cardmarks.txt` (47.2 ns/op, G1 barriers on `putfield reserved` in
+`Space::reserve` and `putfield root` in `ArenaBuf::moveTo`, hottest region 24.69%),
+`perfasm-new-v2-after-barrier-fix.txt` (45.6 ns/op, barriers gone), `perfasm-old-control.txt`
+(40.5 ns/op, the heap-only PoC). All three with `-prof perfasm:event=cycles`, never `cycles:P` on
+this AMD box. The refuted klass-guard hypothesis is the `monomorphic root` line of
+`quoted-scores.txt`: 48.341 +- 2.861, no recovery.
 
 ## 3. Geometric lifetimes (`-Dexpt.randomRelease=true`)
 
@@ -146,32 +155,35 @@ h2load was used for every number above.
 `run-e2e.sh`: the same netty example pipelines behind `E2EServer`, one allocator per run, 8 event
 loops, `-Xms2g`, driven by h2load for 20 s.
 
-**Two things make this section different from sections 1-4, and both limit it:**
+Evidence: **`e2e-v2/`** - `INDEX.md` maps every table row to a `runs/<tag>/` directory holding
+`h2load.txt`, `server.log` (the READY line and the `ARENATELE` counters from the shutdown hook),
+`rss.txt` (VmRSS in KiB every 0.5 s) and `gc.log`. `e2e-v2/harness/` has the exact `E2EServer.java`
+that was run, `logback-quiet.xml`, the driver `run.sh` and `cp.txt` (the exact classpath).
+
+**What limits this section:**
 
 1. **The frequency was NOT fixed** - these runs were at 4300 MHz, not the 2300 MHz of the other
    sections. Do not compare their absolute levels with anything above.
-2. The server ran on node 0 and h2load on node 1 (`SUT_PIN_CMD` / `LOADGEN_PIN_CMD`).
-3. The raw h2load/RSS/GC files for *these* runs are not in this repository - only the superseded
-   ones described at the end of this section are. The numbers below are reported as measured
-   elsewhere; `e2e/` holds the older, logging-bound run.
+2. The server ran on node 0 (`numactl --cpunodebind=0 --membind=0`, `-Xms2g -Xmx2g`) and h2load on
+   node 1.
 
 ### HTTP/2 (h2c), `-c 16 -m 32`
 
-| build | req/s | mean request time | RSS | GC pauses |
-|---|---|---|---|---|
-| ADAPTIVE | 671,887 | 720 us | 92 -> 1471 MiB | 34 |
-| ARENA heap+direct (`noPreferDirect`) | 676,928 | 709 us | 93 -> 1457 MiB | 30 |
-| ARENA direct | 672,233 | 711 us | 93 -> 1448 MiB | 32 |
-| ARENA `release=hook`, `hook=iteration` | 671,800 | 711 us | 93 -> 1458 MiB | 32 |
-| ARENA `release=hook`, `hook=readComplete` | 666,754 | 716 us | 93 -> 1413 MiB | 32 |
+| build | req/s | mean request time | RSS | GC pauses | run |
+|---|---|---|---|---|---|
+| ADAPTIVE | 671,887 | 720 us | 92 -> 1471 MiB | 34 | `runs/f-h2-adaptive` |
+| ARENA heap (`-Dio.netty.noPreferDirect=true`) | 676,928 | 709 us | 93 -> 1457 MiB | 30 | `runs/f-h2-arena-heap` |
+| ARENA direct | 672,233 | 711 us | 93 -> 1448 MiB | 32 | `runs/f-h2-arena-direct` |
+| ARENA `-Darena.release=hook -Darena.hook=iteration` | 671,800 | 711 us | 93 -> 1458 MiB | 32 | `runs/f-h2-arena-hookiter` |
+| ARENA `-Darena.release=hook -Darena.hook=off -Darena.e2e.readCompleteHook=true` | 666,754 | 716 us | 93 -> 1413 MiB | 32 | `runs/f-h2-arena-hookrc` |
 
 ### HTTP/1.1, `--h1 -c 64`
 
-| build | req/s | mean request time | RSS | GC pauses |
-|---|---|---|---|---|
-| ADAPTIVE | 298,586 | 218 us | 93 -> 1437 MiB | 92 |
-| ARENA direct | 300,662 | 216 us | 92 -> 1447 MiB | 92 |
-| ARENA heap | 302,460 | 214 us | 92 -> 1436 MiB | 73 |
+| build | req/s | mean request time | RSS | GC pauses | run |
+|---|---|---|---|---|---|
+| ADAPTIVE | 298,586 | 218 us | 93 -> 1437 MiB | 92 | `runs/f-h1-adaptive` |
+| ARENA direct | 300,662 | 216 us | 92 -> 1447 MiB | 92 | `runs/f-h1-arena-direct` |
+| ARENA heap | 302,460 | 214 us | 92 -> 1436 MiB | 73 | `runs/f-h1-arena-heap` |
 
 ### Counters
 
@@ -183,8 +195,9 @@ grow=0  resetOnZero=9.4M  lifoPop=68.7M
 ```
 
 `release=hook`, `hook=iteration`: `hookRegistered=8 hookIteration=3.03M hookReset=3.03M`.
-`hook=readComplete`: `hookReadComplete=3.16M hookReset=604k`. On HTTP/1.1 the snoop handler's
-`channelReadComplete` does not propagate, so the `readComplete` variant never fires there.
+The `readCompleteHook` variant: `hookReadComplete=3.16M hookReset=604k`. On HTTP/1.1 the snoop
+handler's `channelReadComplete` does not propagate, so that variant never fires there - a 3 s smoke
+of `run-e2e.sh` on h1 with those flags gives `hookReadComplete=0`.
 
 ### What these runs actually say
 
@@ -193,9 +206,10 @@ lands between 666.8k and 676.9k req/s and every HTTP/1.1 build between 298.6k an
 request-time means differ by 11 us out of 709-720 (h2) and 4 us out of 214-218 (h1). Nothing here
 separates the arena from adaptive, in either direction.
 
-The earlier **"713 req/s" HTTP/2 arena result does not reproduce** at the pinned commit (52k vs 53k
-in the logging-bound harness). It is attributed to a stale build. That attribution is not
-established.
+The earlier **"713 req/s" HTTP/2 arena result does not reproduce** at the pinned commit:
+`runs/repro-h2-arena` gives 52,257 req/s against `runs/ref-h2-adaptive` 53,402 in the same
+logging-bound harness, while `runs/repro-old-h2-arena` - the pre-fix `dec589d0eb` classes overlaid -
+still gives 0.00 req/s. It is attributed to a stale build. **That attribution is not established.**
 
 The RSS climb to ~1.5 GiB is the 2 GB Java heap filling between GCs under `-Xms2g`, the same for
 every build. It is not native allocator retention.
@@ -204,7 +218,8 @@ every build. It is not native allocator retention.
 
 The files under `e2e/` are an earlier round that **measured the example servers' logging, not their
 allocators**: the example pipelines log every HTTP/2 frame at INFO. Adaptive on HTTP/2 measured
-23,507 req/s with that logging and 671,887 req/s without it - a factor of 28. `run-e2e.sh` now
+23,507 req/s with that logging and 671,887 req/s without it - a factor of 28 (the quiet side of
+that comparison is `e2e-v2/runs/q-h2-adaptive-heap`). `run-e2e.sh` now
 passes `-Dlogback.configurationFile=e2e/logback-off.xml` by default; set `LOGBACK_CONFIG=` to
 measure the servers as the examples ship them.
 

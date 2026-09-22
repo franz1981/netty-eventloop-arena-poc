@@ -1,0 +1,23 @@
+TRANSCRIBED FROM CONSOLE, NOT A MACHINE-WRITTEN ARTIFACT. See INDEX.md.
+2300 MHz, -f 3 -wi 10 -i 10, E_COMMERCE, MAX_LIVE_BUFFERS=1024, enableReadWrite=true.
+
+final build (26bd14b195), -jvmArgsAppend "-XX:MaxRAM=60g -Darena.maxBlocks=8 -Darena.release=lifo"
+  heapAllocation    ARENA     avgt 30  44.280 +- 0.729 ns/op
+  directAllocation  ARENA     avgt 30  43.296 +- 0.456 ns/op
+  heapAllocation    ADAPTIVE  avgt 30  83.990 +- 0.293 ns/op
+  directAllocation  ADAPTIVE  avgt 30  79.740 +- 0.377 ns/op
+
+control: pre-change heap-only PoC (dec589d0eb classes overlaid on the same benchmarks.jar)
+  heapAllocation    ARENA     avgt 30  40.869 +- 0.168 ns/op
+
+regression walk (heapAllocation, ARENA, lifo)
+  first direct-capable build            47.231 +- 0.285
+  after removing the two ref stores     45.554 +- 0.346
+  after per-Space FastThreadLocal       43.782 +- 0.776 (overlay) / 44.280 +- 0.729 (final build)
+  refuted hypothesis: monomorphic root  48.341 +- 2.861 (no recovery -> klass guard is not the cause)
+
+perfnorm rows (-f 1, same params)
+  v1 new : 367.905 insn/op  109.073 cyc/op  71.188 br/op  142.397 L1-ld/op  3.342 L1-miss/op
+  v1 old : 339.328 insn/op   94.636 cyc/op  65.558 br/op  133.042 L1-ld/op  3.552 L1-miss/op
+  v2 new : 346.817 insn/op  107.389 cyc/op  68.649 br/op  138.201 L1-ld/op
+  v2 old : 339.286 insn/op   91.874 cyc/op  65.560 br/op  132.548 L1-ld/op

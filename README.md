@@ -26,10 +26,11 @@ The PoC is `io.netty.buffer.CycleArenaAllocator` (in the `netty` submodule, bran
   returns to zero resets its bump pointer), `lifo` (the default: `zero` plus a LIFO pop of the
   topmost buffer of a block), or `hook` (nothing is reset automatically; `endOfCycle()` resets every
   wholly-free block and keeps at most `arena.retainBytes` worth of blocks);
-- with `hook`, `-Darena.hook` says what closes the cycle: `iteration` (the default, netty's own
-  end-of-iteration hook) or `readComplete` (a `channelReadComplete` handler -
-  `io.netty.example.arena.CycleArenaEndOfCycleHandler` in the example module). `trim()` is explicit
-  only;
+- with `hook`, `-Darena.hook=iteration` (the default) makes the first allocation on an event loop
+  register a tail task with netty's own `executeAfterEventLoopIteration`; `-Darena.hook=off` leaves
+  closing a cycle to whoever calls `endOfCycle()` - for instance
+  `io.netty.example.arena.CycleArenaEndOfCycleHandler`, which `E2EServer` appends to every pipeline
+  under `-Darena.e2e.readCompleteHook=true`. `trim()` is explicit only;
 - buffer objects come from a lazily filled per-arena array with an `int` free stack; past that array
   they are ordinary garbage (`arena.objects`).
 
@@ -85,7 +86,8 @@ Headline, on the reference machine described below, 3 forks:
 - **End to end (`run-e2e.sh`, 20 s, 8 event loops, `-Xms2g`, logging off, server on node 0 and
   h2load on node 1, **4300 MHz - not a fixed-frequency run**):** HTTP/2 `-c 16 -m 32`: ADAPTIVE
   671,887 req/s / 720 us mean; ARENA heap+direct 676,928 / 709 us; ARENA direct 672,233 / 711 us;
-  ARENA `release=hook hook=iteration` 671,800 / 711 us; `hook=readComplete` 666,754 / 716 us.
+  ARENA `-Darena.release=hook -Darena.hook=iteration` 671,800 / 711 us; the same with
+  `-Darena.hook=off -Darena.e2e.readCompleteHook=true` 666,754 / 716 us.
   HTTP/1.1 `--h1 -c 64`: ADAPTIVE 298,586 / 218 us; ARENA direct 300,662 / 216 us; ARENA heap
   302,460 / 214 us. **End to end the allocators stay within run-to-run spread on these servers.**
   RSS rises to ~1.5 GiB everywhere: the 2 GB Java heap filling between GCs, not native retention.
@@ -94,7 +96,9 @@ Headline, on the reference machine described below, 3 forks:
   heap 83.99 +- 0.29, ADAPTIVE direct 79.74 +- 0.38, heap-only PoC control 40.87 +- 0.17. The
   +3.4 ns of the current build over the heap-only control is **not attributed** (G1 card marks on
   two hot reference stores were found with perfasm and removed; a klass-guard hypothesis was tested
-  and refuted).
+  and refuted). These five cells were run without `-rf json`, so the only record of them is a
+  transcription of the console lines - see `results/ryzen9-7950x-node0/micro-v2/INDEX.md`, which
+  says so itself. The perfasm captures are real files.
 
 The conclusion these numbers support, and nothing more: **a bump path pays when lifetimes are
 scope-aligned and the bound is above the live set, and loses otherwise.** Whether Netty can supply
@@ -215,10 +219,16 @@ configurable; raw logs stay in `RESULTS_DIR`.
 > raw logs are kept in `results/ryzen9-7950x-node0/e2e/` because that round found a real bug (see
 > RESULTS.md section 5).
 >
-> The arena now serves heap *and* direct buffers. `-Dio.netty.noPreferDirect=true` is still useful
-> to force the heap path, but note that `AbstractByteBufAllocator.ioBuffer()` - which the
-> receive-buffer allocator calls - returns a direct buffer whenever direct buffers can be reliably
-> freed and never consults that property.
+> The arena now serves heap *and* direct buffers, so nothing forces a path any more. Pass
+> `JVM_OPTS=-Dio.netty.noPreferDirect=true` for the heap variant, and note that
+> `AbstractByteBufAllocator.ioBuffer()` - which the receive-buffer allocator calls - returns a direct
+> buffer whenever direct buffers can be reliably freed and never consults that property.
+> `ARENA_PROPS` passes the release/hook flags, e.g.
+> `ARENA_PROPS="-Darena.release=hook -Darena.hook=off -Darena.e2e.readCompleteHook=true"`, which
+> makes `E2EServer` append `CycleArenaEndOfCycleHandler` to every pipeline.
+>
+> Raw evidence for the tables in RESULTS.md sections 2b and 5 is in
+> `results/ryzen9-7950x-node0/e2e-v2/` and `.../micro-v2/`; start from their `INDEX.md`.
 
 ### The lifetime study
 

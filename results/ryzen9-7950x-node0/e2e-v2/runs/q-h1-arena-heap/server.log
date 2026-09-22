@@ -1,0 +1,2 @@
+READY arena h1 8080 loops=8
+ARENATELE release=lifo arenaHeap=12077376 arenaDirect=18116096 fallbackHeap=0 fallbackDirect=0 blockReuse=0 grow=0 resetOnZero=18116160 lifoPop=6038656 endOfCycle=0 hookReset=0 hookDrop=0 trimDrop=0 capInPlace=0 capMove=0 capSolo=0 unpooledObjects=0
