@@ -121,6 +121,7 @@ for A in $ALLOCATORS; do
     # shellcheck disable=SC2206
     [ -n "$ARENA_PROPS" ] && ARENA_OPT+=($ARENA_PROPS)
     ARENA_OPT+=("-Dtransport=$TRANSPORT")
+    [ -n "${BUFFER_RING_ALLOC:-}" ] && ARENA_OPT+=("-DbufferRingAlloc=$BUFFER_RING_ALLOC")
     # shellcheck disable=SC2086
     $SUT_PIN_CMD java -cp "$CP" $JVM_OPTS "${ARENA_OPT[@]}" \
         "-Xlog:gc:file=$GC" E2EServer "$A" "$PROTO" "$PORT" "$LOOPS" \

@@ -59,6 +59,16 @@ final class Transports {
     static final short BUFFER_GROUP_ID = (short) Integer.getInteger("iouring.bufferGroupId", 1).intValue();
     static final int ZERO_COPY_THRESHOLD = Integer.getInteger("iouring.zeroCopyThreshold", 4096);
     static final boolean SINGLE_ISSUER = Boolean.parseBoolean(System.getProperty("iouring.singleIssuer", "true"));
+    /**
+     * {@code BUFFER_RING_ALLOC=same|adaptive} (or {@code -DbufferRingAlloc=}).  {@code same} - the
+     * default and what every earlier run used - fills the provided buffer ring from the allocator under
+     * test, the same instance the channels use.  {@code adaptive} gives the ring its OWN
+     * {@link io.netty.buffer.AdaptiveByteBufAllocator} and leaves the channel allocator alone, so a run
+     * can separate "the allocator is wrong for registered buffers" from "the allocator is wrong".
+     * A ring buffer is kernel-owned for an unbounded number of iterations (lifetime class D), which is
+     * exactly what an iteration-scoped allocator has no answer for.
+     */
+    static final String BUFFER_RING_ALLOC = bufferRingAlloc();
 
     /** Buffers allocated into a provided buffer ring, and buffers taken back out of one. */
     static final AtomicLong RING_ALLOCS = new AtomicLong();
@@ -67,7 +77,40 @@ final class Transports {
 
     private static volatile String ringDescription = "(no buffer ring)";
 
+    /** The ring's own allocator when {@link #BUFFER_RING_ALLOC} is {@code adaptive}; one for the JVM. */
+    private static ByteBufAllocator ringSideAllocator;
+
     private Transports() { }
+
+    private static String bufferRingAlloc() {
+        String property = System.getProperty("bufferRingAlloc");
+        if (property == null) {
+            property = System.getenv("BUFFER_RING_ALLOC");
+        }
+        if (property == null || property.isEmpty()) {
+            return "same";
+        }
+        property = property.toLowerCase(Locale.ROOT);
+        if (!"same".equals(property) && !"adaptive".equals(property)) {
+            throw new IllegalArgumentException("BUFFER_RING_ALLOC=" + property + " (want same|adaptive)");
+        }
+        return property;
+    }
+
+    /**
+     * The allocator that fills the provided buffer ring: the one under test, or - with
+     * {@code BUFFER_RING_ALLOC=adaptive} - a separate adaptive allocator shared by every loop, so that
+     * the channel allocator stays the one under test.
+     */
+    private static synchronized ByteBufAllocator bufferRingAllocator(ByteBufAllocator underTest) {
+        if (!"adaptive".equals(BUFFER_RING_ALLOC)) {
+            return underTest;
+        }
+        if (ringSideAllocator == null) {
+            ringSideAllocator = new io.netty.buffer.AdaptiveByteBufAllocator();
+        }
+        return ringSideAllocator;
+    }
 
     static boolean isIoUring() { return "io_uring".equals(NAME) || "iouring".equals(NAME); }
     static boolean isEpoll() { return "epoll".equals(NAME); }
@@ -87,8 +130,10 @@ final class Transports {
     }
 
     /**
-     * Worker loops.  For io_uring every loop registers its own provided buffer ring, filled from
-     * {@code allocator} - the allocator under test - on the loop's own thread.
+     * Worker loops.  For io_uring every loop registers its own provided buffer ring, filled on the
+     * loop's own thread from {@code allocator} - the allocator under test - or, with
+     * {@code BUFFER_RING_ALLOC=adaptive}, from a separate adaptive allocator while the channels keep
+     * using {@code allocator}.
      */
     static IoHandlerFactory workerFactory(ByteBufAllocator allocator) {
         if (isIoUring()) {
@@ -103,12 +148,14 @@ final class Transports {
                         .batchSize(Math.max(1, BUFFER_RING_SIZE / 2))
                         .incremental(incremental)
                         .batchAllocation(false)
-                        .allocator(new CountingRingAllocator(allocator, BUFFER_CHUNK))
+                        .allocator(new CountingRingAllocator(bufferRingAllocator(allocator), BUFFER_CHUNK))
                         .build();
                 config.setBufferRingConfig(ring);
                 ringDescription = "bgId=" + BUFFER_GROUP_ID + " entries=" + BUFFER_RING_SIZE
                         + " chunk=" + BUFFER_CHUNK + " incremental=" + incremental
-                        + " batchSize=" + Math.max(1, BUFFER_RING_SIZE / 2) + " batchAllocation=false";
+                        + " batchSize=" + Math.max(1, BUFFER_RING_SIZE / 2) + " batchAllocation=false"
+                        + " alloc=" + BUFFER_RING_ALLOC
+                        + " allocClass=" + bufferRingAllocator(allocator).getClass().getSimpleName();
             } else {
                 ringDescription = "(buffer ring unsupported or disabled)";
             }

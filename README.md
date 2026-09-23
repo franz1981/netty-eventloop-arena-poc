@@ -386,6 +386,16 @@ until the completion notification arrives, which is a later iteration. For an it
 allocator both are **lifetime class D (kernel-owned)**: blocks holding them cannot be recycled at
 the end-of-iteration hook, and the `maxPinned` counter is where that shows up.
 
+**Splitting the ring off the channels: `BUFFER_RING_ALLOC=same|adaptive`.** The provided buffer ring
+does not have to be filled by the channel allocator: `IoUringBufferRingConfig` takes its own
+`IoUringBufferRingAllocator`, and `IoUringBufferRing` calls it (`allocator.allocate()`,
+`allocateBatch`) independently of `ChannelOption.ALLOCATOR`. `BUFFER_RING_ALLOC=adaptive` (the
+scripts pass it as `-DbufferRingAlloc`; `same` is the default and is what every earlier run used)
+gives the ring its own `AdaptiveByteBufAllocator` shared by every loop, while the channels keep the
+allocator under test. That separates two questions that were measured together before: *is this
+allocator wrong for kernel-owned registered buffers* and *is this allocator wrong*. The
+`RINGTELE`/`TRANSPORT` lines carry `alloc=` and `allocClass=` so a run says which one it used.
+
 The servers print what they got: a `TRANSPORT` line with `IoUring.featureString()` (the kernel's own
 probe), a `CHILDOPTS` line reading the two io_uring channel options back off the first accepted
 channel, and a `RINGTELE` line at shutdown counting buffers put into the ring

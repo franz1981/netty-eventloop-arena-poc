@@ -35,6 +35,7 @@ CP="$(topo_cp)" || exit 1
 JVM="${EXTRA_JVM:-} $JVM_OPTS -Xms2g -Xmx4g -XX:+UseParallelGC -Dio.netty.allocator.type=adaptive"
 JVM="$JVM -Dtopo.alloc=${ALLOC:-adaptive} -Dtransport=${TRANSPORT:-nio}"
 JVM="$JVM -XX:FlightRecorderOptions:stackdepth=${STACKDEPTH:-12}"
+[ -n "${BUFFER_RING_ALLOC:-}" ] && JVM="$JVM -DbufferRingAlloc=$BUFFER_RING_ALLOC"
 
 [ -n "$(topo_pids)" ] && topo_stop_all
 trap 'topo_stop_all' EXIT
