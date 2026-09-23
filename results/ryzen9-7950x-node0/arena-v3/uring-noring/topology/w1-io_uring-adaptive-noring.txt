@@ -1,0 +1,67 @@
+================================================================================================
+WORKLOAD w1-io_uring-adaptive-noring   (w1-io_uring-adaptive-noring.tsv)
+================================================================================================
+events: AllocateBuffer=391437 FreeBuffer=391445 ReallocateBuffer=0 IterationEnd=57898
+pairs=391372  unpaired releases (alloc before window)=73  still live at window end=65  truncated stacks=391372  address reused with no release event=0
+BALANCE CHECK: allocs(391437) - pairs(391372) - live-at-end(65) - reuse(0) = 0  (must be 0)
+event-loop threads with markers: 4  iterations total=57898  with reads>0=629 (1.1%)
+
+(a) lifetime in event-loop ITERATIONS of the allocating thread
+     iters : 0=97.64%  1=2.09%  2-3=0.00%  4-7=0.01%  8+=0.26%
+  read-its : 0=97.64%  1=2.25%  2-3=0.07%  4-7=0.03%  8+=0.00%   (only iterations that saw >=1 channelRead)
+  iters p50=0 p90=0 p99=1 p99.9=472 max=4048
+  wall-clock lifetime us: p50=196.6 p90=533.7 p99=1208.2 p99.9=1680.8 max=3932.5
+
+(b) released on the allocating thread: 100.000%  (cross-thread: 0)
+
+(c) nesting class at release: only=0.01%  youngest=0.00%  oldest=19.83%  middle=80.17%
+     within same-iteration releases (382141, 97.64% of all): only=0.00%  youngest=0.00%  oldest=19.59%  middle=80.41%
+
+(d) size bucket (power-of-two ceiling of the requested capacity)
+     8192=66.66%  256=33.34%
+     exact sizes: 208=33.34%  8192=33.33%  4370=33.33%
+
+(e) release cause (first non-allocator frame of the FreeBuffer stack)
+     write-completion        33.337%  top site: io.netty.channel.ChannelOutboundBuffer.remove
+     handler                 33.334%  top site: io.netty.channel.SimpleChannelInboundHandler.channelRead
+     other:io.netty.channel.uring.IoUringSocketChannel$IoUringSocketUnsafe.handleWriteCompleteZeroCopy  33.329%  top site: io.netty.channel.uring.IoUringSocketChannel$IoUringSocketUnsafe.handleWriteCompleteZeroCopy
+
+    cause x lifetime-in-iterations (row %% of all pairs)
+    cause                         0        1      2-3      4-7       8+     share
+    write-completion        32.851%   0.485%   0.000%   0.000%   0.000%   33.337%
+    handler                 32.841%   0.493%   0.000%   0.000%   0.000%   33.334%
+    other:io.netty.channel.uring.IoUringSocketChannel$IoUringSocketUnsafe.handleWriteCompleteZeroCopy  31.949%   1.115%   0.002%   0.005%   0.258%   33.329%
+
+    cause x size bucket (row %% of all pairs)
+    cause                       8192       256
+    write-completion          0.000%   33.337%
+    handler                  33.334%    0.000%
+    other:io.netty.channel.uring.IoUringSocketChannel$IoUringSocketUnsafe.handleWriteCompleteZeroCopy   33.329%    0.000%
+
+    max lifetime: 4048 iterations (1762.5 us), size=4370, cause=other:io.netty.channel.uring.IoUringSocketChannel$IoUringSocketUnsafe.handleWriteCompleteZeroCopy, site=io.netty.channel.uring.IoUringSocketChannel$IoUringSocketUnsafe.handleWriteCompleteZeroCopy
+    max wall-clock: 3932.5 us (0 iterations), size=4370, cause=other:io.netty.channel.uring.IoUringSocketChannel$IoUringSocketUnsafe.handleWriteCompleteZeroCopy
+
+(f) live buffers at end of iteration, per event-loop thread
+    thread                          iters  avgLive  maxLive   avgAlloc maxAlloc
+    multiThreadIoEventLoopGroup-3-1    18020    10.52       23       5.24     1014
+    multiThreadIoEventLoopGroup-3-2    21909    11.01       22       4.50      991
+    multiThreadIoEventLoopGroup-3-3    14419    10.69       22       6.89     1010
+    multiThreadIoEventLoopGroup-3-4     3550     8.35       24      27.70     1017
+    live-at-marker over all markers: mean=10.616 p50=13 p90=16 p99=16 p99.9=21 max=24 ; markers with >0 live=56024 (96.76%)
+    allocations per iteration (all EL threads): mean=6.75 p50=0 p90=0 p99=3 max=1017  zero-alloc iterations=98.9%
+    channelReads per iteration: mean=2.26 p50=0 p90=0 p99=1 max=339
+
+(g) the buffers that DO cross an iteration boundary (9231, 2.359% of pairs)
+     io.netty.channel.uring.IoUringSocketChannel$IoUringSocketU  1.381% of all  iters p50=1 p99=2405 max=4048  bytes=22.5 MiB
+     io.netty.channel.SimpleChannelInboundHandler.channelRead    0.493% of all  iters p50=1 p99=1 max=1  bytes=15.1 MiB
+     io.netty.channel.ChannelOutboundBuffer.remove               0.485% of all  iters p50=1 p99=1 max=1  bytes=0.4 MiB
+     sizes of the crossing buffers: 8192=79.42%  256=20.58%
+     bytes held across a boundary: 38.0 MiB of 1588.7 MiB allocated in the window (2.39%)
+
+    diagnostics: pairs whose stack had no non-plumbing frame=0 (0.000%); pairs crossing >=1 marker=9231 (2.359%)
+
+HEADLINE CLASSIFICATION
+    ii-same-iter-out-of-order                 97.641%  (382141)
+    vi-cross-iter-other:other:io.netty.channel.uring.IoUringSocketChannel$IoUringSocketUnsafe.handleWriteCompleteZeroCopy   1.381%  (5403)
+    vi-cross-iter-other:handler                0.493%  (1928)
+    iii-cross-iter-write-completion            0.485%  (1900)

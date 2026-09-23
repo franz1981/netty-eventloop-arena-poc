@@ -1,0 +1,6 @@
+================================================================================================
+WORKLOAD w1-io_uring-arena-noring-ringtrue   (w1-io_uring-arena-noring-ringtrue.tsv)
+================================================================================================
+events: AllocateBuffer=0 FreeBuffer=0 ReallocateBuffer=0 IterationEnd=13281
+pairs=0  unpaired releases (alloc before window)=0  still live at window end=0  truncated stacks=0  address reused with no release event=0
+BALANCE CHECK: allocs(0) - pairs(0) - live-at-end(0) - reuse(0) = 0  (must be 0)
