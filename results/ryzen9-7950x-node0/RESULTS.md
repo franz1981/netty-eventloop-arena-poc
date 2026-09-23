@@ -814,3 +814,293 @@ loops. Cross-loop is out of scope for the arena by design and is **not** fixed h
   12 blocks, 3,764 block switches, 1,524 re-entries, 0 violations). Unexplained.
 * Nothing here says the arena is the right tool for the channel buffers either - only that the
   registered ring buffers are what it cannot hold.
+
+### 8.6 What the ring and the re-entry cost, on the microbenchmarks
+
+Raw data: `arena-v3/ring/` (copied from the `netty-bench` harness run of 2026-09-22; the two
+`bench-*.jar` files are not in the repo). The `.sh` files next to the JSON are the exact commands.
+`k=64`, so an `#/op` figure covers 64 alloc/release pairs.
+
+**Cost of `-Darena.ring=true`**, instructions per *pair*, computed here from the `#/op` rows of the
+`perfnorm` logs (`cycleDirect`/`cycleHeap`, `ARENA k=64 FIFO SMALL`):
+
+| layout | direct | heap | files |
+|---|---|---|---|
+| `long[][]` metadata (the shipped one) | **+29.3** | **+8.5** | `prof/perfnorm-ring-{false,true}.log` |
+| flat metadata | **+36.0** | **+17.7** | `flat/pn-flat-{false,true}.log` |
+| flat + `Unsafe` | **+29.1** | **+17.5** | `flat/pn-unsafe-{false,true}.log` |
+
+`CycleScopedAllocBenchmark` SMALL, 3 forks, ns per 64 pairs, straight out of the JSON:
+
+| build | cycleDirect | cycleHeap | file |
+|---|---|---|---|
+| ring=false | 1439.2 | 1657.1 | `cycle-ring-false.json` |
+| ring=true | 1622.9 | 1782.1 | `cycle-ring-true.json` |
+| re-entry, ring=false | 1489.1 | 1516.9 | `reentry/cycle-reentry-false.json` |
+| re-entry, ring=true | 1674.6 | 2137.1 | `reentry/cycle-reentry-true.json` |
+
+A summary handed to me for this table quoted "1428/1674 vs 1622/1817"; three of those four numbers
+are not in these files (1674 is the *re-entry* ring=true direct score). The table above is what the
+JSON says and is the one to use.
+
+**The re-entry ladder**, `ByteBufAllocatorAllocPatternBenchmark` E_COMMERCE, `enableReadWrite=true`,
+3 forks, ns/op, `ecommerce-ring-hook0.json` vs `reentry/ecommerce-reentry-hook0.json`:
+
+| live buffers | direct: ring -> +re-entry | heap: ring -> +re-entry |
+|---|---|---|
+| 1024 | 284.9 -> **270.1** | 332.4 -> **292.1** |
+| 4096 | 392.1 -> **404.4** | 416.7 -> **468.2** |
+
+Re-entry helps at 1024 and hurts at 4096, on both spaces. The last `ARENATELE` line of each log
+shows `arenaShare=47.91% blockSwitches=8,451,058` (ring) against `arenaShare=70.00%
+blockSwitches=4,352,011` (re-entry): the share goes up and the switches halve. The same summary
+quoted "blockSwitches 260M -> 8.6M"; no such pair is in these two files, and I did not find the run
+it came from, so it is not reported here.
+
+**The zero-slot bug.** `14dbbe384b` ("Never hand out a buffer that occupies no slot") changed
+`slotBytes` to `max(8, align8(size))`. Before it, a zero-length request took no slot, so the ring
+bitmap could mark a slot free while a live buffer still pointed into it. Every number in this
+subsection is from builds at or after that commit.
+
+## 9. io_uring with no registered buffers (`BUFFER_RING=off`, measured 2026-09-23, 2300 MHz, node 0)
+
+Sections 7 and 8 always had a provided buffer ring. This one removes it. `BUFFER_RING=off`
+(PoC `lib/java/Transports.java`) installs **no** `IoUringBufferRingConfig` and sets **no**
+`IO_URING_BUFFER_GROUP_ID`, so `AbstractIoUringStreamChannel.scheduleRead0()` falls through to its
+plain branch: the receive buffer comes from the **channel allocator** via `allocHandle.allocate(alloc())`
+and an `IORING_OP_RECV` carries that buffer's address and length. Unchanged: the zero-copy write
+threshold (4096), `setSingleIssuer(true)`/`DEFER_TASKRUN`, ring size 128, CQ size 4096, multishot
+accept and multishot poll. **One thing does change that is not a knob:** `IoUring.isRecvMultishotEnabled()`
+is read only inside `scheduleReadProviderBuffer()`, so with no buffer ring the recv is also one-shot -
+`IORING_RECV_MULTISHOT` has nowhere to put data it was not given an address for. `RINGTELE` reads
+`bufferRing=off ringAllocs=0 ringReads=0` in every off cell, which is how the knob was checked.
+
+Code: netty `52b19c8ebf`, PoC `run-e2e.sh` / `topology/run-matrix.sh`. Server
+`numactl --cpunodebind=0 --membind=0`, h2load on node 1, logging off, one run per cell. Raw output:
+`arena-v3/uring-noring/`.
+
+### 9.1 End to end, 20 s per cell, one run per cell
+
+`maxPin` is `maxPinnedDirect`, the **sum over the 8 arenas** of each arena's own maximum; `blk` is
+`blocksDirect`. `share B` is `tools/asprof-alloc-share.py` filter B on a separate 14 s profiled run
+of the same cell (`uring-noring/prof/`).
+
+| proto | channel allocator | BUFFER_RING | req/s | RSS max | share B | arena share | blk | maxPin | viol | wraps | reent |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| h1 | adaptive | **off** | 128,011 | 783 MB | 1.39% | - | - | - | - | - | - |
+| h1 | arena ring=false | **off** | 127,571 | 804 MB | 2.56% | 99.77% | 64 | 24 | 0 | 0 | 0 |
+| h1 | arena ring=true | **off** | 128,045 | 805 MB | 1.18% | 100.00% | 16 | 16 | 0 | 207,321 | 1 |
+| h1 | adaptive | on (ring=adaptive) | 127,525 | 786 MB | 2.04% | - | - | - | - | - | - |
+| h1 | arena ring=false | on (ring=adaptive) | 126,333 | 824 MB | 1.86% | 100.00% | 40 | 16 | 0 | 0 | 0 |
+| h1 | arena ring=true | on (ring=adaptive) | 127,046 | 833 MB | 1.95% | 100.00% | 16 | 14 | 0 | 45,538 | 0 |
+| h2 | adaptive | **off** | 373,036 | 811 MB | 8.17% | - | - | - | - | - | - |
+| h2 | arena ring=false | **off** | 373,484 | 804 MB | 3.37% | 95.45% | 16 | 9 | 0 | 0 | 0 |
+| h2 | arena ring=true | **off** | 375,054 | 805 MB | 3.32% | 95.43% | 8 | 8 | 0 | 23 | 0 |
+| h2 | adaptive | on (ring=adaptive) | 375,820 | 817 MB | 8.87% | - | - | - | - | - | - |
+| h2 | arena ring=false | on (ring=adaptive) | 374,754 | 805 MB | 6.84% | 92.88% | 16 | 10 | 0 | 0 | 0 |
+| h2 | arena ring=true | on (ring=adaptive) | 373,657 | 805 MB | 7.00% | 92.89% | 8 | 8 | 0 | 95 | 0 |
+
+Readings, all within this one session:
+
+* **Removing the buffer ring costs io_uring nothing measurable here.** The adaptive control moves
+  128,011 -> 127,525 on h1 (-0.4%) and 373,036 -> 375,820 on h2 (+0.7%) between off and on. All
+  twelve cells sit inside a 1.3% band per protocol. One run per cell; this is not a distribution.
+* **The arena's share does go back to nio levels without the ring.** h1 99.77% / 100.00% against
+  nio's 100.00% (§7.2); h2 95.45% / 95.43% against nio's 95.54%. On h2 the share is *higher* without
+  the ring than with it (95.45% vs 92.88%).
+* **Pinned blocks do not.** nio pins 0 in these cells; with `BUFFER_RING=off` the sum over 8 loops is
+  24 (h1, ring=false) and 9 (h2). So the answer to "does the arena behave on io_uring as it does on
+  nio" is **share yes, pinning no** - see §9.3 for what half of the h1 pinning is.
+* **Zero confinement violations in every e2e cell**, with or without the ring.
+* Allocator CPU: on h2 the arena's filter-B share halves when the ring goes away (6.84% -> 3.37%)
+  and is less than half adaptive's 8.17%. On h1 the three-way spread (1.18-2.56%) is smaller than the
+  difference between the two arena builds, and I would not read a ranking out of one profile each.
+
+### 9.2 Lifecycle topology with `BUFFER_RING=off`, seven cells x three builds
+
+One 1.5 s JFR window inside an 8 s load, 4 event loops. These are **not** throughput measurements.
+
+| workload | build | arena share | blk | maxPin | viol | wraps | reent | req/s |
+|---|---|---|---|---|---|---|---|---|
+| W1 h1 snoop | adaptive | - | - | - | - | - | - | 95,532 |
+| W1 | arena ring=false | 45.39% | 32 | 17 | 0 | 0 | 0 | 93,624 |
+| W1 | arena ring=true | 99.99% | 14 | 14 | 0 | 48,211 | 44,532 | 99,341 |
+| W2 h2 hello | adaptive | - | - | - | - | - | - | 257,262 |
+| W2 | arena ring=false | 95.63% | 8 | 8 | 0 | 0 | 0 | 308,677 |
+| W2 | arena ring=true | 95.46% | 5 | 4 | 0 | 2,114 | 0 | 297,614 |
+| W3 h2 echo 64 KiB | adaptive | - | - | - | - | - | - | 16,785 |
+| W3 | arena ring=false | 95.80% | 8 | 8 | 0 | 0 | 0 | 20,769 |
+| W3 | arena ring=true | 95.70% | 6 | 5 | 0 | 146 | 0 | 20,710 |
+| W4 h1 chunked, slow readers | adaptive | - | - | - | - | - | - | 384 reqs |
+| W4 | arena ring=false | 86.92% | 4 | 4 | 0 | 0 | 0 | 384 reqs |
+| W4 | arena ring=true | 86.92% | 4 | 4 | 0 | 0 | 0 | 384 reqs |
+| W5 aggregator 256 KiB | adaptive | - | - | - | - | - | - | 12,519 |
+| W5 | arena ring=false | 13.17% | 4 | 4 | 0 | 0 | 0 | 12,612 |
+| W5 | arena ring=true | 12.14% | 4 | 4 | 0 | 0 | 0 | 12,425 |
+| W6a proxy, same loop | adaptive | - | - | - | - | - | - | 55,592 |
+| W6a | arena ring=false | 61.76% | 32 | 12 | 0 | 0 | 0 | 53,721 |
+| W6a | arena ring=true | 61.81% | 8 | 8 | 0 | 26,200 | 84 | 55,992 |
+| W6b proxy, separate loop | adaptive | - | - | - | - | - | - | 48,090 |
+| W6b | arena ring=false | 51.52% | 13 | 9 | **470** | 0 | 0 | **24.25** |
+| W6b | arena ring=true | 52.36% | 15 | 11 | **486** | 0 | 0 | **24.0** |
+
+Readings:
+
+* **W6b is not fixed by removing the ring.** 470 / 486 violations and ~24 req/s against adaptive's
+  48,090. §8.4 made W6b pass by moving the ring's buffers to adaptive (0 violations, 40,678 req/s);
+  with **no** ring at all the read buffers come from the arena instead and those cross the loops.
+  Cross-loop is out of scope for the arena by design, and §8.4's result was about *which* buffers
+  crossed, not about the ring being the only thing that can cross.
+* **W1 at `ring=false` measures 45.39%**, against §7.3's 45.45% for the same build knob with the ring
+  on - the two agree to 0.06 points across two sessions and two transports configurations, which is
+  the best cross-check in this file that the harness is measuring what it claims. `ring=true` is
+  99.99%.
+* **W5's share collapses to 13.17%** where §7.3 had 83.66% / 91.55% with the ring on. With no ring
+  the 256 KiB body arrives in large receive buffers rather than 8 KiB ring slices; `-Darena.cap=8192`
+  sends anything bigger straight to adaptive. That is the documented behaviour of the knob - I read
+  the code, I did not instrument this cell to confirm the size distribution.
+* Every non-W6b cell has 0 violations, and `maxPin` is between 4 and 17 - never 0, and never the
+  32 (= 4 loops x 8 blocks) that §7.3 hit with the ring on.
+
+### 9.3 What is still pinned: the zero-copy writes (separate 4-cell run)
+
+`maxPin` above is not 0, and the other class-D path the harness enables is
+`IO_URING_WRITE_ZERO_COPY_THRESHOLD=4096`, which netty leaves **disabled** by default
+(`IoUringSocketChannelConfig:39`). Four extra cells, `BUFFER_RING=off`, `arena ring=false`, 20 s,
+one run each, all in one session (`arena-v3/uring-noring/zerocopy/`); the `CHILDOPTS` line was read
+back to confirm `-1` vs `4096`:
+
+| proto | zero-copy writes | req/s | arena share | maxPinnedDirect | viol |
+|---|---|---|---|---|---|
+| h1 | on (threshold 4096) | 127,533 | 99.77% | **25** | 0 |
+| h1 | off (netty default) | **174,648** | 99.58% | **11** | 0 |
+| h2 | on (threshold 4096) | 371,285 | 95.32% | **9** | 0 |
+| h2 | off (netty default) | 366,928 | 95.32% | **8** | 0 |
+
+* On h1, turning the zero-copy writes off takes `maxPinnedDirect` from 25 to 11 and req/s from
+  127,533 to **174,648 (+37%)**. On h2 it moves neither (9 -> 8, -1.2% req/s).
+* 11 blocks across 8 loops are still pinned at a hook with no buffer ring and no zero-copy writes.
+  **I do not know what holds them** and did not instrument it.
+* The +37% on h1 is one run per cell and is a property of *this harness's* choice of a 4096-byte
+  threshold against a 4096-byte body, not a statement about `SEND_ZC`. It is also the first number
+  in this file that dents §7.2's unexplained "io_uring is 27% below nio/epoll on HTTP/1.1"
+  (218.5 k vs 300.9 k there); 174,648 is still below nio, and the sessions differ, so this is a lead,
+  not an explanation.
+
+### 9.4 What section 9 does not establish
+
+* One run per e2e cell, one 1.5 s window per topology cell, no repetitions, no error bars.
+* Nothing here separates "no buffer ring" from "no multishot recv": `BUFFER_RING=off` is both.
+* W1/W2/W3 topology req/s again come out far above the adaptive control while the e2e cells tie, as
+  in §7.3 and §8.5. Still not investigated.
+* The zero-copy cells are a different session from §9.1 and are only compared among themselves.
+
+## 10. Who should serve the registered buffers (measured 2026-09-23, 2300 MHz, node 0)
+
+Four candidates fill the provided buffer ring while the channel allocator is held at
+`arena -Darena.ring=false`, plus adaptive everywhere as the control. The lifecycle they have to
+satisfy, the requirement ("as local as possible, not elastic, sort of perm gen") and what every other
+io_uring project does are in [`docs/uring-registered-buffers.md`](../../docs/uring-registered-buffers.md).
+
+| id | `BUFFER_RING_ALLOC` | what |
+|---|---|---|
+| control | `same` + adaptive channels | one `AdaptiveByteBufAllocator` for channels and ring |
+| (i) | `adaptive` | the ring gets its own `AdaptiveByteBufAllocator` (this is §8's split) |
+| (ii) | `builtin` | netty's `IoUringFixedBufferRingAllocator` over `ByteBufAllocator.DEFAULT` (= adaptive here) |
+| (ii-a) | `builtinadaptive` | netty's `IoUringAdaptiveBufferRingAllocator`, the only one that varies the buffer **size** (1 KiB..64 KiB) |
+| (iii) | `slab` | `RegisteredSlabBufferRingAllocator`: one preallocated direct region **per loop**, 64x4 chunks of 8 KiB, free list by slot, nothing allocated after start-up |
+
+**Expectation stated before the run:** (i) and (ii) are the same code path
+(`AbstractIoUringBufferRingAllocator.allocate()` is `allocator.directBuffer(size)`) over two
+different adaptive instances, so they should be indistinguishable. Candidate (iv), the FFM mimalloc
+allocator, was **not run**: it needs JDK 25 and these scripts run on `PATH`'s `java`, which is 21.
+
+### 10.1 End to end, 20 s per cell, one run per cell
+
+`ringAllocs` is `allocate()` calls, i.e. buffers handed to the kernel; `ringReads` is buffers the
+kernel filled and gave back. Over the 20 s load that is ~65 k `allocate()`/s (h1) and ~188 k/s (h2).
+
+| proto | ring served by | req/s | RSS max | share B | ring-alloc frames | arena share | blk | maxPin | ringAllocs | ringReads |
+|---|---|---|---|---|---|---|---|---|---|---|
+| h1 | control (adaptive everywhere) | 127,487 | 788 MB | 2.05% | 0.75% | - | - | - | 1,305,646 | 3,854,561 |
+| h1 | (i) adaptive | 126,840 | 828 MB | 1.49% | 1.30% | 100.00% | 40 | 16 | 1,299,022 | 3,834,994 |
+| h1 | (ii) builtin | 127,062 | 815 MB | 1.69% | 1.18% | 100.00% | 40 | 16 | 1,301,289 | 3,841,686 |
+| h1 | (ii-a) builtinadaptive | 127,198 | 834 MB | 1.35% | 0.73% | 100.00% | 40 | 16 | **890,137** | 3,433,470 |
+| h1 | **(iii) slab** | **127,572** | 807 MB | **0.93%** | 1.61% | 100.00% | 40 | 16 | 1,306,518 | 3,857,134 |
+| h2 | control (adaptive everywhere) | 374,335 | 819 MB | 9.35% | 1.22% | - | - | - | 3,771,185 | 5,461,231 |
+| h2 | (i) adaptive | 375,775 | 791 MB | 6.31% | 1.28% | 92.88% | 16 | 8 | 3,785,687 | 5,477,870 |
+| h2 | (ii) builtin | 370,529 | 821 MB | 6.79% | 1.40% | 92.89% | 16 | 10 | 3,732,841 | 5,427,696 |
+| h2 | (ii-a) builtinadaptive | 374,120 | 859 MB | 5.59% | 0.70% | **98.03%** | 16 | 10 | **1,026,844** | 2,773,440 |
+| h2 | **(iii) slab** | 372,590 | 823 MB | **5.54%** | **0.46%** | 92.91% | 16 | 10 | 3,753,605 | 5,489,059 |
+
+"ring-alloc frames" is **not** part of filter B - filter B's allocator regex names only
+`AdaptivePoolingAllocator|AdaptiveByteBufAllocator|CycleArenaAllocator|ArenaBuf` and so cannot see a
+slab or a `IoUringFixedBufferRingAllocator` frame at all. It is a second count I added over the same
+collapsed files, same loop filter, matching the ring-allocator classes; it is reported beside filter
+B, never folded into it.
+
+`SLABTELE` for the slab cells (process-wide, 8 loops):
+
+```
+h1  instances=8 regionBytes=16777216 slabAcquires=1306518 slabReleases=1306262 slabFallbacks=0 slabForeignReleases=0
+h2  instances=8 regionBytes=16777216 slabAcquires=3753605 slabReleases=3753349 slabFallbacks=0 slabForeignReleases=0
+```
+
+8 instances = one per worker loop; 16 MiB total (8 x 256 x 8 KiB); `slabAcquires == ringAllocs`, so
+**every** buffer the ring received came from a preallocated slot; `acquires - releases = 256` = the
+32 buffers per loop still parked in the ring at shutdown; **`slabFallbacks=0`**, so zero allocations
+after start-up is measured, not assumed; `slabForeignReleases=0`, so in these two workloads nothing
+released a ring buffer off its own loop and the Treiber stack's CAS was never contended.
+
+### 10.2 Lifecycle topology, W1 / W3 / W5
+
+| workload | ring served by | req/s | arena share | blk | maxPin | viol | ringAllocs | ringReads |
+|---|---|---|---|---|---|---|---|---|
+| W1 | control | 92,746 | - | - | - | - | 380,098 | 1,121,892 |
+| W1 | (i) adaptive | 94,082 | 99.22% | 32 | 9 | 0 | 385,579 | 1,138,076 |
+| W1 | (ii) builtin | 94,594 | 99.13% | 32 | 8 | 0 | 387,678 | 1,144,274 |
+| W1 | (ii-a) builtinadaptive | 94,590 | 99.26% | 32 | 9 | 0 | 271,564 | 1,028,154 |
+| W1 | **(iii) slab** | **96,021** | 99.25% | 32 | 8 | 0 | 393,522 | 1,161,529 |
+| W3 | control | 12,439 | - | - | - | - | 802,626 | 1,072,042 |
+| W3 | (i) adaptive | 17,621 | 94.72% | 8 | 8 | 0 | 1,136,514 | 1,528,921 |
+| W3 | (ii) builtin | 17,773 | 94.82% | 8 | 8 | 0 | 1,146,232 | 1,511,527 |
+| W3 | (ii-a) builtinadaptive | **19,009** | **98.14%** | 8 | 7 | 0 | 217,237 | 648,903 |
+| W3 | (iii) slab | 17,715 | 94.74% | 8 | 8 | 0 | 1,142,550 | 1,535,981 |
+| W5 | control | 11,925 | - | - | - | - | 3,055,255 | 4,131,185 |
+| W5 | (i) adaptive | 11,888 | 99.47% | 4 | 4 | 0 | 3,046,169 | 4,118,260 |
+| W5 | (ii) builtin | 11,954 | 99.47% | 4 | 4 | 0 | 3,062,863 | 4,166,676 |
+| W5 | (ii-a) builtinadaptive | 12,237 | **99.93%** | 4 | **0** | 0 | 843,622 | 2,186,825 |
+| W5 | (iii) slab | 11,975 | 99.45% | 4 | 4 | 0 | 3,068,667 | 4,341,107 |
+
+`SLABTELE`: W1 `acq=393,522 fallbacks=0`, W3 `acq=1,142,550 fallbacks=0`, W5
+`acq=3,064,590 **fallbacks=4,077**` out of 3,068,667 `allocate()` calls (0.13%). **W5 is the one cell
+where the fixed slab ran dry** - 256 chunks per loop were not enough headroom for the 256 KiB
+aggregator, and 4,077 buffers came from the fallback `UnpooledByteBufAllocator` instead. That is the
+failure mode of "not elastic", and the counter is there precisely so it cannot pass unnoticed.
+
+### 10.3 Five lines: what the data favours
+
+1. **On throughput, nothing separates the candidates.** The five configurations span 0.7% on h1
+   (126,840-127,572), 1.4% on h2 (370,529-375,775) and 3.5% on W1; one run per cell.
+2. **The slab has the lowest allocator CPU in three of the four e2e columns** - filter B 0.93% (h1)
+   and 5.54% (h2) against the control's 2.05% / 9.35% - and on h2 the lowest ring-allocator frame
+   count too (0.46%). It is also the only candidate that allocates nothing after start-up
+   (`slabFallbacks=0` on h1, h2, W1, W3).
+3. **(i) and (ii) are indistinguishable, as predicted** (h1 1.49% vs 1.69%, h2 6.31% vs 6.79%, and
+   the same arena counters), which is what reading the code said would happen and is not a finding.
+4. **(ii-a) wins where the buffer size matters**: on W3 (64 KiB echo) it reaches 98.14% arena share
+   and 19,009 req/s on a quarter of the `allocate()` calls, because `AdaptiveCalculator` grows the
+   ring buffers towards 64 KiB. Fixed 8 KiB chunks - slab included - cannot do that.
+5. **What the data does NOT show:** it does not show the slab is faster (the req/s spread is inside
+   the noise of one run), it does not show *why* its filter-B share is lower, it says nothing about
+   locality or NUMA (nothing here measured a remote access), and W5's 4,077 fallbacks show the fixed
+   sizing is a real constraint that a 20 s h1/h2 run never exercised.
+
+### 10.4 What section 10 does not establish
+
+* One run per cell, one session, no repetitions. Absolute req/s is not comparable with §7, §8 or §9.
+* `slabForeignReleases=0` everywhere means the cross-loop path was never taken in W1/W3/W5 or the
+  e2e cells - it does **not** mean the slab handles the W6b topology, which was not run here.
+* No candidate was run with `IORING_REGISTER_BUFFERS`; netty exposes no binding for it (§4 of the doc).
+* `depth=4` was picked before the runs, not tuned; W5 says it is too small for that workload and
+  nothing here says what the right value is.

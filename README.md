@@ -402,7 +402,17 @@ until the completion notification arrives, which is a later iteration. For an it
 allocator both are **lifetime class D (kernel-owned)**: blocks holding them cannot be recycled at
 the end-of-iteration hook, and the `maxPinned` counter is where that shows up.
 
-**Splitting the ring off the channels: `BUFFER_RING_ALLOC=same|adaptive`.** The provided buffer ring
+**Turning the registered buffers off entirely: `BUFFER_RING=on|off`.** `off` (the scripts pass it as
+`-DbufferRing`) installs no `IoUringBufferRingConfig` and sets no `IO_URING_BUFFER_GROUP_ID`, so
+`AbstractIoUringStreamChannel.scheduleRead0()` takes its plain branch: the receive buffer comes from
+the **channel allocator** and `IORING_OP_RECV` carries its address and length. The zero-copy write
+threshold, single issuer, ring size, CQ size and multishot accept/poll are unchanged. Multishot RECV
+is only reachable from the provided-buffer branch, so `off` also means one-shot recv - that is
+io_uring, not a second knob. `RINGTELE` prints `bufferRing=off ringAllocs=0 ringReads=0`.
+[RESULTS.md section 9](results/ryzen9-7950x-node0/RESULTS.md#9-io_uring-with-no-registered-buffers-buffer_ringoff-measured-2026-09-23-2300-mhz-node-0)
+measures it.
+
+**Splitting the ring off the channels: `BUFFER_RING_ALLOC=same|adaptive|builtin|builtinadaptive|slab`.** The provided buffer ring
 does not have to be filled by the channel allocator: `IoUringBufferRingConfig` takes its own
 `IoUringBufferRingAllocator`, and `IoUringBufferRing` calls it (`allocator.allocate()`,
 `allocateBatch`) independently of `ChannelOption.ALLOCATOR`. `BUFFER_RING_ALLOC=adaptive` (the
@@ -411,6 +421,14 @@ gives the ring its own `AdaptiveByteBufAllocator` shared by every loop, while th
 allocator under test. That separates two questions that were measured together before: *is this
 allocator wrong for kernel-owned registered buffers* and *is this allocator wrong*. The
 `RINGTELE`/`TRANSPORT` lines carry `alloc=` and `allocClass=` so a run says which one it used.
+`builtin` and `builtinadaptive` are netty's own `IoUringFixedBufferRingAllocator` /
+`IoUringAdaptiveBufferRingAllocator`; `slab` is `lib/java/RegisteredSlabBufferRingAllocator`, one
+preallocated direct region **per loop** with a free list by slot and nothing allocated after
+start-up (`SLABTELE ... slabFallbacks=0` is how that is checked). What the ring's lifecycle demands
+of an allocator, and how liburing, folly, Zig, glommio and tokio-uring do it, is in
+[`docs/uring-registered-buffers.md`](docs/uring-registered-buffers.md);
+[RESULTS.md section 10](results/ryzen9-7950x-node0/RESULTS.md#10-who-should-serve-the-registered-buffers-measured-2026-09-23-2300-mhz-node-0)
+measures the four candidates.
 
 The servers print what they got: a `TRANSPORT` line with `IoUring.featureString()` (the kernel's own
 probe), a `CHILDOPTS` line reading the two io_uring channel options back off the first accepted
@@ -550,12 +568,19 @@ served by adaptive (`BUFFER_RING_ALLOC=adaptive`) the counters return to the nio
 no pinned blocks in the proxies, 0 confinement violations on W6b, and an allocator CPU share below
 adaptive's on h2. See
 [RESULTS.md section 8](results/ryzen9-7950x-node0/RESULTS.md#8-io_uring-is-the-arena-wrong-for-the-registered-buffers-or-wrong-measured-2026-09-23-2300-mhz-node-0).
+Take the ring away altogether (`BUFFER_RING=off`) and the share goes back to nio's - 99.8-100% on
+h1, 95.4% on h2 - but the pinned count does **not** (24 and 9 against nio's 0), and W6b still fails
+with 470 violations, because then it is the channel buffers that cross the loops: section 9.
+Section 10 then asks who *should* fill the ring, and measures four candidates against
+[`docs/uring-registered-buffers.md`](docs/uring-registered-buffers.md).
 
 **The ring and re-entry** (`results/ryzen9-7950x-node0/arena-v3/ring/`): the ring costs +29
 instructions per allocate/release pair on the direct path and +8.6 on the cycle cell's heap column,
 which is why it stays off by default; re-entry lifts the hook-less E_COMMERCE arena share at 1024
 live from 73% to 88% - the share of requests under the 8 KiB cap - and cuts block switches from 260M
-to 9M.
+to 9M. The numbers recomputed here from the files in that directory are in
+[RESULTS.md section 8.6](results/ryzen9-7950x-node0/RESULTS.md#86-what-the-ring-and-the-re-entry-cost-on-the-microbenchmarks),
+which also records where they disagree with this summary.
 
 ### The lifecycle-topology study (adaptive allocator, seven pipelines)
 
