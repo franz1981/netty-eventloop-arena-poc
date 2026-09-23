@@ -1,0 +1,64 @@
+================================================================================================
+WORKLOAD w1-io_uring-arena-ringadaptive   (w1-io_uring-arena-ringadaptive.tsv)
+================================================================================================
+events: AllocateBuffer=78376 FreeBuffer=78377 ReallocateBuffer=0 IterationEnd=19538
+pairs=78248  unpaired releases (alloc before window)=129  still live at window end=128  truncated stacks=78248  address reused with no release event=0
+BALANCE CHECK: allocs(78376) - pairs(78248) - live-at-end(128) - reuse(0) = 0  (must be 0)
+event-loop threads with markers: 4  iterations total=19538  with reads>0=610 (3.1%)
+
+(a) lifetime in event-loop ITERATIONS of the allocating thread
+     iters : 0=82.14%  1=15.05%  2-3=0.10%  4-7=0.09%  8+=2.61%
+  read-its : 0=82.14%  1=15.89%  2-3=0.93%  4-7=0.76%  8+=0.27%   (only iterations that saw >=1 channelRead)
+  iters p50=0 p90=1 p99=295 p99.9=1045 max=1608
+  wall-clock lifetime us: p50=2411.8 p90=3711.9 p99=5674.1 p99.9=6983.0 max=8795.7
+
+(b) released on the allocating thread: 100.000%  (cross-thread: 0)
+
+(c) nesting class at release: only=0.00%  youngest=0.00%  oldest=99.95%  middle=0.05%
+     within same-iteration releases (64276, 82.14% of all): only=0.00%  youngest=0.00%  oldest=99.94%  middle=0.06%
+
+(d) size bucket (power-of-two ceiling of the requested capacity)
+     8192=100.00%
+     exact sizes: 8192=100.00%
+
+(e) release cause (first non-allocator frame of the FreeBuffer stack)
+     handler                 97.711%  top site: io.netty.channel.SimpleChannelInboundHandler.channelRead
+     decoder/cumulation       2.289%  top site: io.netty.handler.codec.ByteToMessageDecoder.expandCumulation
+
+    cause x lifetime-in-iterations (row %% of all pairs)
+    cause                         0        1      2-3      4-7       8+     share
+    handler                 80.268%  14.697%   0.101%   0.092%   2.553%   97.711%
+    decoder/cumulation       1.876%   0.353%   0.001%   0.001%   0.058%    2.289%
+
+    cause x size bucket (row %% of all pairs)
+    cause                       8192
+    handler                  97.711%
+    decoder/cumulation        2.289%
+
+    max lifetime: 1608 iterations (3435.2 us), size=8192, cause=handler, site=io.netty.channel.SimpleChannelInboundHandler.channelRead
+    max wall-clock: 8795.7 us (0 iterations), size=8192, cause=handler
+
+(f) live buffers at end of iteration, per event-loop thread
+    thread                          iters  avgLive  maxLive   avgAlloc maxAlloc
+    multiThreadIoEventLoopGroup-3-1     3996    32.00       32       5.07      255
+    multiThreadIoEventLoopGroup-3-2     8837    32.00       32       2.18      260
+    multiThreadIoEventLoopGroup-3-3     5519    32.00       32       3.54      262
+    multiThreadIoEventLoopGroup-3-4     1186    32.00       32      16.01      260
+    live-at-marker over all markers: mean=32.000 p50=32 p90=32 p99=32 p99.9=32 max=32 ; markers with >0 live=19538 (100.00%)
+    allocations per iteration (all EL threads): mean=4.00 p50=0 p90=0 p99=195 max=262  zero-alloc iterations=97.1%
+    channelReads per iteration: mean=11.89 p50=0 p90=0 p99=576 max=774
+
+(g) the buffers that DO cross an iteration boundary (13972, 17.856% of pairs)
+     io.netty.channel.SimpleChannelInboundHandler.channelRead   17.443% of all  iters p50=1 p99=904 max=1608  bytes=106.6 MiB
+     io.netty.handler.codec.ByteToMessageDecoder.expandCumulati  0.386% of all  iters p50=1 p99=661 max=951  bytes=2.4 MiB
+     io.netty.handler.codec.ByteToMessageDecoder.channelRead     0.024% of all  iters p50=1 p99=119 max=119  bytes=0.1 MiB
+     io.netty.handler.codec.ByteToMessageDecoder$1.cumulate      0.003% of all  iters p50=1 p99=1 max=1  bytes=0.0 MiB
+     sizes of the crossing buffers: 8192=100.00%
+     bytes held across a boundary: 109.2 MiB of 611.3 MiB allocated in the window (17.86%)
+
+    diagnostics: pairs whose stack had no non-plumbing frame=0 (0.000%); pairs crossing >=1 marker=13972 (17.856%)
+
+HEADLINE CLASSIFICATION
+    ii-same-iter-out-of-order                 82.144%  (64276)
+    vi-cross-iter-other:handler               17.443%  (13649)
+    iv-cross-iter-cumulation/aggregation       0.413%  (323)

@@ -412,6 +412,12 @@ its one hard failure is W6b, the deliberately cross-loop proxy, where the arena'
 now fires inside the io_uring zero-copy write completion (406 violations, 10.25 req/s against
 adaptive's 71,919).
 
+Section 7 could not tell "the arena is wrong for io_uring" from "the arena is wrong for the
+kernel-owned buffers the ring registers", because one allocator was doing both jobs.
+[RESULTS.md section 8](results/ryzen9-7950x-node0/RESULTS.md) splits the two with
+`BUFFER_RING_ALLOC=adaptive`: the same seven topology cells and the h1/h2 e2e cells, run three ways -
+adaptive everywhere, arena everywhere, and arena with the buffer ring on its own adaptive allocator.
+
 ### The lifetime study
 
 ```

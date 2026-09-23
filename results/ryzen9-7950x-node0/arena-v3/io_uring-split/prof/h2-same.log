@@ -1,0 +1,11 @@
+==> io_uring-h2-adaptive-prof: server, 8 event loops, port 8080, transport io_uring
+   READY pid=1346360
+   h2load -c 16 -m 32 -t 4 -D 20 -d /home/forked_franz/IdeaProjects/netty-eventloop-arena-poc/results/ryzen9-7950x-node0/arena-v3/io_uring-split/prof/body-4096.bin http://127.0.0.1:8080/
+==> io_uring-h2-arena-prof: server, 8 event loops, port 8080, transport io_uring
+   READY pid=1346874
+   h2load -c 16 -m 32 -t 4 -D 20 -d /home/forked_franz/IdeaProjects/netty-eventloop-arena-poc/results/ryzen9-7950x-node0/arena-v3/io_uring-split/prof/body-4096.bin http://127.0.0.1:8080/
+
+== end to end, h2, io_uring, 20s, 16 connections x 32 streams, 8 event loops ==
+adaptive       370260.80 req/s | 583us    228.08ms      1.34ms      2.97ms    99.56% | RSS 106->854 MB (mean 808, 38 samples) | 35 young GCs | RINGTELE transport=io_uring ringAllocs=3730141 ringReads=5446145 ringReadBytes=30555252432 bgId=1 entries=64 chunk=8192 incremental=true batchSize=32 batchAllocation=false alloc=same allocClass=AdaptiveByteBufAllocator
+arena          372222.40 req/s | 504us    225.31ms      1.33ms      3.00ms    99.50% | RSS 110->867 MB (mean 819, 38 samples) | 35 young GCs | RINGTELE transport=io_uring ringAllocs=3749905 ringReads=5458875 ringReadBytes=30717161577 bgId=1 entries=64 chunk=8192 incremental=true batchSize=32 batchAllocation=false alloc=same allocClass=CycleArenaAllocator | ARENATELE blockSize=262144 maxBlocks=8 cap=8192 maxObjects=16384 debug=false ring=false ringStats=false arenaHeap=0 arenaDirect=43366736 delegateHeap=0 delegateDirect=3092039 arenaShare=93.34% blocksHeap=8 blocksDirect=64 pinned=17 reusable=47 maxPinnedHeap=0 maxPinnedDirect=24 blockReuses=163045 blockGrowths=56 blockSwitches=163395 ringWraps=0 ringResets=0 ringScans=0 ringReentries=0 ringStalls=0 stallBytes=0 strandedBytes=0 strandedShare=n/a holes<=256=0 holes<=1k=0 holes<=4k=0 holes<=8k=0 holes>8k=0 hooks=726709 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=0 reallocMoved=38 reallocDelegated=404658 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=1664 bytesHeap=0 bytesDirect=42353422704 liveHeap=0 liveDirect=256
+raw logs in /home/forked_franz/IdeaProjects/netty-eventloop-arena-poc/results/ryzen9-7950x-node0/arena-v3/io_uring-split/prof

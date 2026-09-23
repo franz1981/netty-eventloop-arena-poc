@@ -683,3 +683,196 @@ recv inline, so what is left in "io_uring enter" is ring machinery):
   investigated, and the topology cells are not throughput measurements.
 - `RECVSEND_BUNDLE` and `ENTER_NO_IOWAIT` are supported by the kernel but were left at netty's
   defaults (off), so nothing here measures them.
+
+## 8. io_uring: is the arena wrong for the registered buffers, or wrong? (measured 2026-09-23, 2300 MHz, node 0)
+
+Section 7 measured the arena on io_uring with ONE allocator doing two jobs: serving the channels and
+filling the provided buffer ring. A ring buffer is handed to the kernel and comes back only when the
+kernel has filled it - lifetime class D, alive across an unbounded number of iterations - so that run
+could not separate "the arena is wrong for io_uring" from "the arena is wrong for the buffers the
+ring registers". `BUFFER_RING_ALLOC=adaptive` (PoC `lib/java/Transports.java`) gives the buffer ring
+its own `AdaptiveByteBufAllocator` and leaves `ChannelOption.ALLOCATOR` on the allocator under test,
+so the two can be measured apart. Code: netty `52b19c8ebf`, PoC `topology/run-matrix.sh` and `run-e2e.sh`
+with `TRANSPORT=io_uring`; the arena cells set `-Darena.ring=true` explicitly, as section 7's did.
+Server pinned with `numactl --cpunodebind=0 --membind=0`, h2load on node 1. Raw output:
+`arena-v3/io_uring-split/`.
+
+### 8.1 Lifecycle topology on io_uring, seven cells x three configurations
+
+| workload | configuration | arena share | maxPinned | violations | ringReads | reentries | req/s |
+|---|---|---|---|---|---|---|---|
+| W1 h1 snoop | adaptive | - | - | - | 1,112,000 | - | 91,926 |
+| W1 h1 snoop | arena everywhere | 100.00% | 21 | 0 | 1,191,403 | 43282 | 98,490 |
+| W1 h1 snoop | arena + adaptive ring | 100.00% | 6 | 0 | 1,165,043 | 0 | 96,311 |
+| W2 h2 hello | adaptive | - | - | - | 1,134,485 | - | 219,602 |
+| W2 h2 hello | arena everywhere | 96.63% | 18 | 0 | 1,442,633 | 41554 | 280,825 |
+| W2 h2 hello | arena + adaptive ring | 95.91% | 4 | 0 | 1,338,532 | 0 | 261,452 |
+| W3 h2 echo 64 KiB | adaptive | - | - | - | 1,116,171 | - | 13,112 |
+| W3 h2 echo 64 KiB | arena everywhere | 93.72% | 32 | 0 | 1,470,263 | 98317 | 17,265 |
+| W3 h2 echo 64 KiB | arena + adaptive ring | 94.76% | 5 | 0 | 1,504,931 | 0 | 17,483 |
+| W4 h1 chunked, slow readers | adaptive | - | - | - | 12,867 | - | 384 reqs |
+| W4 h1 chunked, slow readers | arena everywhere | 74.63% | 32 | 0 | 12,963 | 649 | 385 reqs |
+| W4 h1 chunked, slow readers | arena + adaptive ring | 99.97% | 4 | 0 | 12,858 | 0 | 384 reqs |
+| W5 aggregator 256 KiB | adaptive | - | - | - | 4,128,214 | - | 12,121 |
+| W5 aggregator 256 KiB | arena everywhere | 99.33% | 32 | 0 | 4,159,708 | 54192 | 12,105 |
+| W5 aggregator 256 KiB | arena + adaptive ring | 99.47% | 4 | 0 | 4,148,462 | 0 | 11,990 |
+| W6a proxy, same loop | adaptive | - | - | - | 1,744,296 | - | 46,048 |
+| W6a proxy, same loop | arena everywhere | 100.00% | 12 | 0 | 499,321 | 1524 | 14,094 |
+| W6a proxy, same loop | arena + adaptive ring | n/a | 0 | 0 | 1,758,231 | 0 | 46,461 |
+| W6b proxy, separate loop | adaptive | - | - | - | 1,487,402 | - | 38,893 |
+| W6b proxy, separate loop | arena everywhere | 100.00% | 16 | 398 | 371 | 0 | 10 |
+| W6b proxy, separate loop | arena + adaptive ring | n/a | 0 | 0 | 1,555,149 | 0 | 40,678 |
+
+### 8.2 End to end on io_uring, 20 s per cell, one run per cell
+
+`summary-h1-ringadaptive.txt`:
+```
+arena          126902.00 req/s | 70us    164.75ms       510us      1.03ms    99.68% | RSS 105->821 MB (mean 774, 38 samples) | 82 young GCs | RINGTELE transport=io_uring ringAllocs=1299657 ringReads=3836872 ringReadBytes=10644720102 bgId=1 entries=64 chunk=8192 incremental=true batchSize=32 batchAllocation=false alloc=adaptive allocClass=AdaptiveByteBufAllocator | ARENATELE blockSize=262144 maxBlocks=8 cap=8192 maxObjects=16384 debug=false ring=false ringStats=false arenaHeap=0 arenaDirect=5104566 delegateHeap=0 delegateDirect=0 arenaShare=100.00% blocksHeap=8 blocksDirect=40 pinned=4 reusable=31 maxPinnedHeap=0 maxPinnedDirect=16 blockReuses=45499 blockGrowths=32 blockSwitches=45531 ringWraps=0 ringResets=0 ringScans=0 ringReentries=0 ringStalls=0 stallBytes=0 strandedBytes=0 strandedShare=n/a holes<=256=0 holes<=1k=0 holes<=4k=0 holes<=8k=0 holes>8k=0 hooks=793386 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=0 reallocMoved=0 reallocDelegated=0 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=136 bytesHeap=0 bytesDirect=11866710040 liveHeap=0 liveDirect=0
+```
+`summary-h1-same.txt`:
+```
+adaptive       126781.95 req/s | 64us    162.00ms       511us       991us    99.66% | RSS 105->793 MB (mean 752, 38 samples) | 83 young GCs | RINGTELE transport=io_uring ringAllocs=1298422 ringReads=3833223 ringReadBytes=10634604174 bgId=1 entries=64 chunk=8192 incremental=true batchSize=32 batchAllocation=false alloc=same allocClass=AdaptiveByteBufAllocator
+arena          126697.05 req/s | 69us    164.87ms       513us      1.10ms    99.69% | RSS 107->824 MB (mean 783, 38 samples) | 82 young GCs | RINGTELE transport=io_uring ringAllocs=1297553 ringReads=3830655 ringReadBytes=10627486956 bgId=1 entries=64 chunk=8192 incremental=true batchSize=32 batchAllocation=false alloc=same allocClass=CycleArenaAllocator | ARENATELE blockSize=262144 maxBlocks=8 cap=8192 maxObjects=16384 debug=false ring=false ringStats=false arenaHeap=0 arenaDirect=10088684 delegateHeap=0 delegateDirect=57413 arenaShare=99.43% blocksHeap=8 blocksDirect=64 pinned=38 reusable=26 maxPinnedHeap=0 maxPinnedDirect=40 blockReuses=152291 blockGrowths=56 blockSwitches=152648 ringWraps=0 ringResets=0 ringScans=0 ringReentries=0 ringStalls=0 stallBytes=0 strandedBytes=0 strandedShare=n/a holes<=256=0 holes<=1k=0 holes<=4k=0 holes<=8k=0 holes>8k=0 hooks=692555 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=26532 reallocMoved=1540 reallocDelegated=5 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=395 bytesHeap=0 bytesDirect=39532247416 liveHeap=0 liveDirect=256
+```
+`summary-h2-ringadaptive.txt`:
+```
+arena          372490.00 req/s | 494us    226.87ms      1.32ms      2.88ms    99.55% | RSS 105->815 MB (mean 768, 38 samples) | 35 young GCs | RINGTELE transport=io_uring ringAllocs=3752589 ringReads=5484344 ringReadBytes=30739145571 bgId=1 entries=64 chunk=8192 incremental=true batchSize=32 batchAllocation=false alloc=adaptive allocClass=AdaptiveByteBufAllocator | ARENATELE blockSize=262144 maxBlocks=8 cap=8192 maxObjects=16384 debug=false ring=false ringStats=false arenaHeap=0 arenaDirect=37655978 delegateHeap=0 delegateDirect=2877037 arenaShare=92.90% blocksHeap=8 blocksDirect=16 pinned=0 reusable=8 maxPinnedHeap=0 maxPinnedDirect=12 blockReuses=143 blockGrowths=8 blockSwitches=151 ringWraps=0 ringResets=0 ringScans=0 ringReentries=0 ringStalls=0 stallBytes=0 strandedBytes=0 strandedShare=n/a holes<=256=0 holes<=1k=0 holes<=4k=0 holes<=8k=0 holes>8k=0 hooks=764853 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=3 reallocMoved=0 reallocDelegated=0 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=1392 bytesHeap=0 bytesDirect=2393117488 liveHeap=0 liveDirect=0
+```
+`summary-h2-same.txt`:
+```
+adaptive       371712.40 req/s | 578us    229.93ms      1.32ms      2.85ms    99.54% | RSS 106->809 MB (mean 764, 38 samples) | 36 young GCs | RINGTELE transport=io_uring ringAllocs=3744764 ringReads=5471069 ringReadBytes=30675042093 bgId=1 entries=64 chunk=8192 incremental=true batchSize=32 batchAllocation=false alloc=same allocClass=AdaptiveByteBufAllocator
+arena          369614.40 req/s | 516us    223.23ms      1.34ms      2.93ms    99.44% | RSS 107->827 MB (mean 773, 38 samples) | 34 young GCs | RINGTELE transport=io_uring ringAllocs=3723637 ringReads=5442376 ringReadBytes=30501975906 bgId=1 entries=64 chunk=8192 incremental=true batchSize=32 batchAllocation=false alloc=same allocClass=CycleArenaAllocator | ARENATELE blockSize=262144 maxBlocks=8 cap=8192 maxObjects=16384 debug=false ring=false ringStats=false arenaHeap=0 arenaDirect=43024727 delegateHeap=0 delegateDirect=3051403 arenaShare=93.38% blocksHeap=8 blocksDirect=64 pinned=17 reusable=47 maxPinnedHeap=0 maxPinnedDirect=24 blockReuses=162434 blockGrowths=56 blockSwitches=162778 ringWraps=0 ringResets=0 ringScans=0 ringReentries=0 ringStalls=0 stallBytes=0 strandedBytes=0 strandedShare=n/a holes<=256=0 holes<=1k=0 holes<=4k=0 holes<=8k=0 holes>8k=0 hooks=756872 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=0 reallocMoved=24 reallocDelegated=414031 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=1664 bytesHeap=0 bytesDirect=42188570096 liveHeap=0 liveDirect=256
+```
+
+Allocator share of event-loop CPU samples (async-profiler `cpu`, 1 ms, filter B of
+`tools/asprof-alloc-share.py`), one 14 s profile per cell:
+
+| proto | adaptive | arena everywhere | arena + adaptive ring |
+|---|---|---|---|
+| h1 | 1.52% | 3.22% | 1.71% |
+| h2 | 8.67% | 7.74% | 5.58% |
+
+req/s is within 0.8% across all three configurations (h1 126,782 / 126,697 / 126,902; h2 371,712 /
+369,614 / 372,490), so the split does not move throughput here - but it halves the arena's allocator
+CPU on h1, back to adaptive's level, and takes h2 below adaptive. The ring's buffers were costing the
+arena CPU as well as blocks.
+
+### 8.3 What survives a hook, and an instrument that was blind
+
+`CycleArenaAllocator` emits no `io.netty.AllocateBuffer` / `FreeBuffer` - those live on the adaptive
+paths - so for an ARENA cell the lifetime study of sections 6.4 and 7.3 only ever saw the buffers the
+arena could **not** serve. The event count tracks the delegated fraction exactly: W1 share 100% -> 0
+events here against 7.3's 64.43% -> 243,411; W6a/W6b 100% -> 0; W5 99.33% -> 942 against 7.3's
+83.66% -> 460,251. Those tables describe the delegated minority, not the arena's own traffic.
+
+The split run gives the attribution anyway, because there the ring's buffers **are** adaptive and do
+emit. Share of all pairs whose lifetime is at least one event-loop iteration, by release cause:
+
+| cell | survive a hook | top causes |
+|---|---|---|
+| W1 | 17.9% | handler 17.4, decoder/cumulation 0.4 |
+| W2 | 4.1% | decoder/cumulation 3.3, write-completion 0.9 |
+| W5 | 63.5% | aggregator 63.4 |
+| W6a | 85.0% | write-completion 49.4, `IoUringSocketUnsafe.handleWriteCompleteZeroCopy` 35.6 |
+| W6b | 100.0% | write-completion 64.4, `handleWriteCompleteZeroCopy` 35.6 |
+
+In the proxy workloads essentially every provided-ring buffer outlives the iteration that allocated
+it, on the write-completion and zero-copy-completion paths - and those are the buffers that were
+pinning 12-32 of the arena's blocks.
+
+### 8.4 W6b, the cross-loop proxy, with the ring on adaptive
+
+| configuration | violations | req/s |
+|---|---|---|
+| adaptive | 0 | 38,893 |
+| arena everywhere | 398 | 10.50 |
+| arena + adaptive buffer ring | **0** | **40,678** |
+
+The failure is gone. The stack of the one that used to fire says it was the ring's buffer:
+
+```
+IllegalStateException: arena buffer of Thread[multiThreadIoEventLoopGroup-3-4]
+    touched from Thread[multiThreadIoEventLoopGroup-4-2]
+  at CycleArenaAllocator$ArenaBuf.release
+  at AbstractDerivedByteBuf.release0        <- a retainedSlice, i.e. what useBuffer() hands out
+  at ReferenceCountUtil.safeRelease
+  at ChannelOutboundBuffer.remove           <- on the OUTBOUND loop
+```
+
+`IoUringBufferRing.useBuffer()` hands the pipeline a `retainedSlice` of a ring buffer; the proxy
+writes that slice to the other loop's channel and the outbound loop releases it. Nothing else crossed
+loops. Cross-loop is out of scope for the arena by design and is **not** fixed here.
+
+### 8.5 What section 8 does not establish
+
+* Absolute `req/s` is not comparable with section 7. The adaptive control is unchanged code and moved
+  with everything else (W2 219,602 vs 306,757; W3 13,112 vs 28,695; W6a 46,049 vs 87,304), so the
+  session differs, not the change. Everything above is compared **within** this run.
+* One run per cell, 8 s with a JFR recording inside; no repetitions, no error bars.
+* W6a with the arena everywhere came out at 14,094 req/s against adaptive's 46,049 in the same
+  session, where 7.3 had them at parity. The arena counters do not point at the arena (100% share,
+  12 blocks, 3,764 block switches, 1,524 re-entries, 0 violations). Unexplained.
+* Nothing here says the arena is the right tool for the channel buffers either - only that the
+  registered ring buffers are what it cannot hold.
+
+
+## 8. io_uring: is the arena wrong for the registered buffers, or wrong? (measured 2026-09-23, 2300 MHz, node 0)
+
+Section 7 measured the arena on io_uring with ONE allocator doing two jobs: serving the channels and
+filling the provided buffer ring. A ring buffer is handed to the kernel and comes back only when the
+kernel has filled it - lifetime class D, alive across an unbounded number of iterations - so that run
+could not separate "the arena is wrong for io_uring" from "the arena is wrong for the buffers the
+ring registers". `BUFFER_RING_ALLOC=adaptive` (PoC `lib/java/Transports.java`) gives the buffer ring
+its own `AdaptiveByteBufAllocator` and leaves `ChannelOption.ALLOCATOR` on the allocator under test,
+so the two can be measured apart. Code: netty `52b19c8ebf`, PoC `topology/run-matrix.sh` and `run-e2e.sh`
+with `TRANSPORT=io_uring`; the arena cells set `-Darena.ring=true` explicitly, as section 7's did.
+Server pinned with `numactl --cpunodebind=0 --membind=0`, h2load on node 1. Raw output:
+`arena-v3/io_uring-split/`.
+
+### 8.1 Lifecycle topology on io_uring, seven cells x three configurations
+
+| workload | configuration | arena share | maxPinned | violations | ringReads | reentries | req/s |
+|---|---|---|---|---|---|---|---|
+| W1 h1 snoop | adaptive | - | - | - | 1,112,000 | - | 91,926 |
+| W1 h1 snoop | arena everywhere | 100.00% | 21 | 0 | 1,191,403 | 43282 | 98,490 |
+| W1 h1 snoop | arena + adaptive ring | 100.00% | 6 | 0 | 1,165,043 | 0 | 96,311 |
+| W2 h2 hello | adaptive | - | - | - | 1,134,485 | - | 219,602 |
+| W2 h2 hello | arena everywhere | 96.63% | 18 | 0 | 1,442,633 | 41554 | 280,825 |
+| W2 h2 hello | arena + adaptive ring | 95.91% | 4 | 0 | 1,338,532 | 0 | 261,452 |
+| W3 h2 echo 64 KiB | adaptive | - | - | - | 1,116,171 | - | 13,112 |
+| W3 h2 echo 64 KiB | arena everywhere | 93.72% | 32 | 0 | 1,470,263 | 98317 | 17,265 |
+| W3 h2 echo 64 KiB | arena + adaptive ring | 94.76% | 5 | 0 | 1,504,931 | 0 | 17,483 |
+| W4 h1 chunked, slow readers | adaptive | - | - | - | 12,867 | - | 384 reqs |
+| W4 h1 chunked, slow readers | arena everywhere | 74.63% | 32 | 0 | 12,963 | 649 | 385 reqs |
+| W4 h1 chunked, slow readers | arena + adaptive ring | 99.97% | 4 | 0 | 12,858 | 0 | 384 reqs |
+| W5 aggregator 256 KiB | adaptive | - | - | - | 4,128,214 | - | 12,121 |
+| W5 aggregator 256 KiB | arena everywhere | 99.33% | 32 | 0 | 4,159,708 | 54192 | 12,105 |
+| W5 aggregator 256 KiB | arena + adaptive ring | 99.47% | 4 | 0 | 4,148,462 | 0 | 11,990 |
+| W6a proxy, same loop | adaptive | - | - | - | 1,744,296 | - | 46,048 |
+| W6a proxy, same loop | arena everywhere | 100.00% | 12 | 0 | 499,321 | 1524 | 14,094 |
+| W6a proxy, same loop | arena + adaptive ring | n/a | 0 | 0 | 1,758,231 | 0 | 46,461 |
+| W6b proxy, separate loop | adaptive | - | - | - | 1,487,402 | - | 38,893 |
+| W6b proxy, separate loop | arena everywhere | 100.00% | 16 | 398 | 371 | 0 | 10 |
+| W6b proxy, separate loop | arena + adaptive ring | n/a | 0 | 0 | 1,555,149 | 0 | 40,678 |
+
+### 8.2 End to end on io_uring, 20 s per cell, one run per cell
+
+`summary-h1-ringadaptive.txt`:
+```
+arena          126902.00 req/s | 70us    164.75ms       510us      1.03ms    99.68% | RSS 105->821 MB (mean 774, 38 samples) | 82 young GCs | RINGTELE transport=io_uring ringAllocs=1299657 ringReads=3836872 ringReadBytes=10644720102 bgId=1 entries=64 chunk=8192 incremental=true batchSize=32 batchAllocation=false alloc=adaptive allocClass=AdaptiveByteBufAllocator | ARENATELE blockSize=262144 maxBlocks=8 cap=8192 maxObjects=16384 debug=false ring=false ringStats=false arenaHeap=0 arenaDirect=5104566 delegateHeap=0 delegateDirect=0 arenaShare=100.00% blocksHeap=8 blocksDirect=40 pinned=4 reusable=31 maxPinnedHeap=0 maxPinnedDirect=16 blockReuses=45499 blockGrowths=32 blockSwitches=45531 ringWraps=0 ringResets=0 ringScans=0 ringReentries=0 ringStalls=0 stallBytes=0 strandedBytes=0 strandedShare=n/a holes<=256=0 holes<=1k=0 holes<=4k=0 holes<=8k=0 holes>8k=0 hooks=793386 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=0 reallocMoved=0 reallocDelegated=0 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=136 bytesHeap=0 bytesDirect=11866710040 liveHeap=0 liveDirect=0
+```
+`summary-h1-same.txt`:
+```
+adaptive       126781.95 req/s | 64us    162.00ms       511us       991us    99.66% | RSS 105->793 MB (mean 752, 38 samples) | 83 young GCs | RINGTELE transport=io_uring ringAllocs=1298422 ringReads=3833223 ringReadBytes=10634604174 bgId=1 entries=64 chunk=8192 incremental=true batchSize=32 batchAllocation=false alloc=same allocClass=AdaptiveByteBufAllocator
+arena          126697.05 req/s | 69us    164.87ms       513us      1.10ms    99.69% | RSS 107->824 MB (mean 783, 38 samples) | 82 young GCs | RINGTELE transport=io_uring ringAllocs=1297553 ringReads=3830655 ringReadBytes=10627486956 bgId=1 entries=64 chunk=8192 incremental=true batchSize=32 batchAllocation=false alloc=same allocClass=CycleArenaAllocator | ARENATELE blockSize=262144 maxBlocks=8 cap=8192 maxObjects=16384 debug=false ring=false ringStats=false arenaHeap=0 arenaDirect=10088684 delegateHeap=0 delegateDirect=57413 arenaShare=99.43% blocksHeap=8 blocksDirect=64 pinned=38 reusable=26 maxPinnedHeap=0 maxPinnedDirect=40 blockReuses=152291 blockGrowths=56 blockSwitches=152648 ringWraps=0 ringResets=0 ringScans=0 ringReentries=0 ringStalls=0 stallBytes=0 strandedBytes=0 strandedShare=n/a holes<=256=0 holes<=1k=0 holes<=4k=0 holes<=8k=0 holes>8k=0 hooks=692555 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=26532 reallocMoved=1540 reallocDelegated=5 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=395 bytesHeap=0 bytesDirect=39532247416 liveHeap=0 liveDirect=256
+```
+`summary-h2-ringadaptive.txt`:
+```
+arena          372490.00 req/s | 494us    226.87ms      1.32ms      2.88ms    99.55% | RSS 105->815 MB (mean 768, 38 samples) | 35 young GCs | RINGTELE transport=io_uring ringAllocs=3752589 ringReads=5484344 ringReadBytes=30739145571 bgId=1 entries=64 chunk=8192 incremental=true batchSize=32 batchAllocation=false alloc=adaptive allocClass=AdaptiveByteBufAllocator | ARENATELE blockSize=262144 maxBlocks=8 cap=8192 maxObjects=16384 debug=false ring=false ringStats=false arenaHeap=0 arenaDirect=37655978 delegateHeap=0 delegateDirect=2877037 arenaShare=92.90% blocksHeap=8 blocksDirect=16 pinned=0 reusable=8 maxPinnedHeap=0 maxPinnedDirect=12 blockReuses=143 blockGrowths=8 blockSwitches=151 ringWraps=0 ringResets=0 ringScans=0 ringReentries=0 ringStalls=0 stallBytes=0 strandedBytes=0 strandedShare=n/a holes<=256=0 holes<=1k=0 holes<=4k=0 holes<=8k=0 holes>8k=0 hooks=764853 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=3 reallocMoved=0 reallocDelegated=0 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=1392 bytesHeap=0 bytesDirect=2393117488 liveHeap=0 liveDirect=0
+```
+`summary-h2-same.txt`:
+```
+adaptive       371712.40 req/s | 578us    229.93ms      1.32ms      2.85ms    99.54% | RSS 106->809 MB (mean 764, 38 samples) | 36 young GCs | RINGTELE transport=io_uring ringAllocs=3744764 ringReads=5471069 ringReadBytes=30675042093 bgId=1 entries=64 chunk=8192 incremental=true batchSize=32 batchAllocation=false alloc=same allocClass=AdaptiveByteBufAllocator
+arena          369614.40 req/s | 516us    223.23ms      1.34ms      2.93ms    99.44% | RSS 107->827 MB (mean 773, 38 samples) | 34 young GCs | RINGTELE transport=io_uring ringAllocs=3723637 ringReads=5442376 ringReadBytes=30501975906 bgId=1 entries=64 chunk=8192 incremental=true batchSize=32 batchAllocation=false alloc=same allocClass=CycleArenaAllocator | ARENATELE blockSize=262144 maxBlocks=8 cap=8192 maxObjects=16384 debug=false ring=false ringStats=false arenaHeap=0 arenaDirect=43024727 delegateHeap=0 delegateDirect=3051403 arenaShare=93.38% blocksHeap=8 blocksDirect=64 pinned=17 reusable=47 maxPinnedHeap=0 maxPinnedDirect=24 blockReuses=162434 blockGrowths=56 blockSwitches=162778 ringWraps=0 ringResets=0 ringScans=0 ringReentries=0 ringStalls=0 stallBytes=0 strandedBytes=0 strandedShare=n/a holes<=256=0 holes<=1k=0 holes<=4k=0 holes<=8k=0 holes>8k=0 hooks=756872 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=0 reallocMoved=24 reallocDelegated=414031 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=1664 bytesHeap=0 bytesDirect=42188570096 liveHeap=0 liveDirect=256
+```
+
