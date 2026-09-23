@@ -1,0 +1,66 @@
+================================================================================================
+WORKLOAD w3-io_uring-arena-ra-slab   (w3-io_uring-arena-ra-slab.tsv)
+================================================================================================
+events: AllocateBuffer=104268 FreeBuffer=79165 ReallocateBuffer=25120 IterationEnd=2330
+pairs=104005  unpaired releases (alloc before window)=280  still live at window end=263  truncated stacks=78886  address reused with no release event=0
+BALANCE CHECK: allocs(104268) - pairs(104005) - live-at-end(263) - reuse(0) = 0  (must be 0)
+event-loop threads with markers: 4  iterations total=2330  with reads>0=576 (24.7%)
+
+(a) lifetime in event-loop ITERATIONS of the allocating thread
+     iters : 0=66.49%  1=31.38%  2-3=0.19%  4-7=0.24%  8+=1.70%
+  read-its : 0=66.49%  1=32.27%  2-3=1.14%  4-7=0.10%  8+=0.00%   (only iterations that saw >=1 channelRead)
+  iters p50=0 p90=1 p99=35 p99.9=155 max=248
+  wall-clock lifetime us: p50=3029.3 p90=8618.6 p99=16862.4 p99.9=37173.2 max=71751.5
+
+(b) released on the allocating thread: 100.000%  (cross-thread: 0)
+
+(c) nesting class at release: only=0.00%  youngest=0.00%  oldest=5.85%  middle=94.15%
+     within same-iteration releases (69155, 66.49% of all): only=0.00%  youngest=0.00%  oldest=1.69%  middle=98.31%
+
+(d) size bucket (power-of-two ceiling of the requested capacity)
+     32768=64.60%  16384=35.40%
+     exact sizes: 32768=64.60%  16384=35.40%
+
+(e) release cause (first non-allocator frame of the FreeBuffer stack)
+     other:no-site           75.561%  top site: io.netty.buffer.CompositeByteBuf$Component.free
+     realloc-grow            24.152%  top site: io.netty.buffer.AdaptiveByteBuf.capacity
+     write-completion         0.287%  top site: io.netty.channel.ChannelOutboundBuffer.remove
+
+    cause x lifetime-in-iterations (row %% of all pairs)
+    cause                         0        1      2-3      4-7       8+     share
+    other:no-site           42.233%  31.216%   0.188%   0.233%   1.691%   75.561%
+    realloc-grow            24.152%   0.000%   0.000%   0.000%   0.000%   24.152%
+    write-completion         0.108%   0.164%   0.003%   0.003%   0.010%    0.287%
+
+    cause x size bucket (row %% of all pairs)
+    cause                      32768     16384
+    other:no-site            64.342%   11.219%
+    realloc-grow              0.000%   24.152%
+    write-completion          0.254%    0.034%
+
+    max lifetime: 248 iterations (2512.3 us), size=32768, cause=other:no-site, site=io.netty.buffer.CompositeByteBuf$Component.free
+    max wall-clock: 71751.5 us (1 iterations), size=32768, cause=other:no-site
+
+(f) live buffers at end of iteration, per event-loop thread
+    thread                          iters  avgLive  maxLive   avgAlloc maxAlloc
+    multiThreadIoEventLoopGroup-3-1      410    62.40       78      63.28      241
+    multiThreadIoEventLoopGroup-3-2      528    64.10       83      51.82      240
+    multiThreadIoEventLoopGroup-3-3      704    64.15       80      36.59      233
+    multiThreadIoEventLoopGroup-3-4      688    65.96       76      35.92      242
+    live-at-marker over all markers: mean=64.364 p50=65 p90=71 p99=74 p99.9=79 max=83 ; markers with >0 live=2330 (100.00%)
+    allocations per iteration (all EL threads): mean=44.54 p50=0 p90=196 p99=222 max=242  zero-alloc iterations=75.3%
+    channelReads per iteration: mean=101.23 p50=0 p90=446 p99=483 max=508
+
+(g) the buffers that DO cross an iteration boundary (34850, 33.508% of pairs)
+     io.netty.buffer.CompositeByteBuf$Component.free            33.328% of all  iters p50=1 p99=106 max=248  bytes=978.8 MiB
+     io.netty.channel.ChannelOutboundBuffer.remove               0.180% of all  iters p50=1 p99=128 max=248  bytes=5.6 MiB
+     sizes of the crossing buffers: 32768=80.77%  16384=19.23%
+     bytes held across a boundary: 984.3 MiB of 2674.8 MiB allocated in the window (36.80%)
+
+    diagnostics: pairs whose stack had no non-plumbing frame=78587 (75.561%); pairs crossing >=1 marker=34850 (33.508%)
+
+HEADLINE CLASSIFICATION
+    ii-same-iter-out-of-order                 66.491%  (69154)
+    vi-cross-iter-other:other:no-site         33.328%  (34663)
+    iii-cross-iter-write-completion            0.180%  (187)
+    i-same-iter-LIFO                           0.001%  (1)

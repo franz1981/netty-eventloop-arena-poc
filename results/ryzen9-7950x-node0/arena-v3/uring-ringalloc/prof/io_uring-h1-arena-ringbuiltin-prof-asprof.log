@@ -1,0 +1,3 @@
+[WARN] perf_event_open for TID 1394256 failed: No such process
+Profiling for 14 seconds
+Done

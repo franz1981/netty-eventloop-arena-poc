@@ -1,0 +1,1 @@
+adaptive       127487.45 req/s | 74us    161.13ms       508us      1.04ms    99.67% | RSS 105->789 MB (mean 751, 38 samples) | 83 young GCs | RINGTELE transport=io_uring bufferRing=on ringAllocs=1305646 ringReads=3854561 ringReadBytes=10693785708 bgId=1 entries=64 chunk=8192 incremental=true batchSize=32 batchAllocation=false alloc=same allocClass=AdaptiveByteBufAllocator

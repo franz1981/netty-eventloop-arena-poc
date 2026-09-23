@@ -1,0 +1,292 @@
+=== w1-io_uring-arena-ra-slab
+TRANSPORT transport=io_uring ringSize=128 cqSize=4096 singleIssuer=true bufferRing=on [bgId=1 entries=64 chunk=8192 incremental=true batchSize=32 batchAllocation=false alloc=slab allocClass=RegisteredSlabBufferRingAllocator[256x8192 per loop]] zeroCopyThreshold=4096 | IoUring features: CQE_F_SOCK_NONEMPTY_SUPPORTED=true, UNIX_DOMAIN_SOCKET_INQ_SUPPORTED=true, SPLICE_SUPPORTED=true, ACCEPT_NO_WAIT_SUPPORTED=true, ACCEPT_MULTISHOT_SUPPORTED=true, POLL_ADD_MULTISHOT_SUPPORTED=true, RECV_MULTISHOT_SUPPORTED=true, IORING_RECVSEND_BUNDLE_SUPPORTED=true, REGISTER_IOWQ_MAX_WORKERS_SUPPORTED=true, SETUP_SUBMIT_ALL_SUPPORTED=true, SETUP_CQE_MIXED_SUPPORTED=true, SETUP_CQ_SIZE_SUPPORTED=true, SETUP_SINGLE_ISSUER_SUPPORTED=true, SETUP_DEFER_TASKRUN_SUPPORTED=true, SETUP_NO_SQARRAY_SUPPORTED=true, REGISTER_BUFFER_RING_SUPPORTED=true, REGISTER_BUFFER_RING_INC_SUPPORTED=true, SEND_ZC_SUPPORTED=true, SENDMSG_ZC_SUPPORTED=true, ENTER_NO_IOWAIT_SUPPORTED=true
+WINDOW DONE
+-rw-r--r--. 1 forked_franz forked_franz 583104 Sep 23 08:44 /home/forked_franz/IdeaProjects/netty-eventloop-arena-poc/results/ryzen9-7950x-node0/arena-v3/uring-ringalloc/topology/w1-io_uring-arena-ra-slab.jfr
+Main benchmark duration is started for thread #0.
+Application protocol: http/1.1
+Main benchmark duration is over for thread #1. Stopping all clients.
+Stopped all clients for thread #1
+Main benchmark duration is over for thread #2. Stopping all clients.
+Stopped all clients for thread #2
+Main benchmark duration is over for thread #3. Stopping all clients.
+Stopped all clients for thread #3
+Main benchmark duration is over for thread #0. Stopping all clients.
+Stopped all clients for thread #0
+
+finished in 8.00s, 96021.12 req/s, 414.96MB/s
+requests: 768169 total, 768233 started, 768169 done, 768169 succeeded, 0 failed, 0 errored, 0 timeout
+status codes: 768183 2xx, 0 3xx, 0 4xx, 0 5xx
+traffic: 3.24GB (3480961960) total, 85.72MB (89879868) headers (space savings 0.00%), 3.13GB (3361221673) data
+                     min         max         mean         sd        +/- sd
+time for request:       79us     81.25ms       666us       919us    98.37%
+time for connect:        2us       220us       110us        60us    60.94%
+time to 1st byte:    79.96ms     81.29ms     80.40ms       426us    73.44%
+req/s           :    1485.55     1520.41     1500.27        8.73    62.50%
+dumped 21369 events -> /home/forked_franz/IdeaProjects/netty-eventloop-arena-poc/results/ryzen9-7950x-node0/arena-v3/uring-ringalloc/topology/w1-io_uring-arena-ra-slab.tsv
+================================================================================================
+WORKLOAD w1-io_uring-arena-ra-slab   (w1-io_uring-arena-ra-slab.tsv)
+================================================================================================
+events: AllocateBuffer=5338 FreeBuffer=5338 ReallocateBuffer=0 IterationEnd=10693
+pairs=5338  unpaired releases (alloc before window)=0  still live at window end=0  truncated stacks=5338  address reused with no release event=0
+BALANCE CHECK: allocs(5338) - pairs(5338) - live-at-end(0) - reuse(0) = 0  (must be 0)
+event-loop threads with markers: 4  iterations total=10693  with reads>0=519 (4.9%)
+
+(a) lifetime in event-loop ITERATIONS of the allocating thread
+     iters : 0=66.49%  1=33.06%  2-3=0.00%  4-7=0.07%  8+=0.37%
+  read-its : 0=66.49%  1=33.35%  2-3=0.17%  4-7=0.00%  8+=0.00%   (only iterations that saw >=1 channelRead)
+  iters p50=0 p90=1 p99=1 p99.9=51 max=51
+  wall-clock lifetime us: p50=643.7 p90=1473.3 p99=2334.4 p99.9=2656.9 max=3079.8
+
+(b) released on the allocating thread: 100.000%  (cross-thread: 0)
+
+(c) nesting class at release: only=1.84%  youngest=0.00%  oldest=31.81%  middle=66.35%
+     within same-iteration releases (3549, 66.49% of all): only=0.00%  youngest=0.00%  oldest=29.90%  middle=70.10%
+
+(d) size bucket (power-of-two ceiling of the requested capacity)
+     8192=51.16%  256=48.84%
+     exact sizes: 208=48.84%  4381=25.40%  4370=25.23%  8192=0.51%  4392=0.02%
+
+(e) release cause (first non-allocator frame of the FreeBuffer stack)
+     other:io.netty.channel.uring.IoUringSocketChannel$IoUringSocketUnsafe.handleWriteCompleteZeroCopy  50.656%  top site: io.netty.channel.uring.IoUringSocketChannel$IoUringSocketUnsafe.handleWriteCompleteZeroCopy
+     write-completion        48.839%  top site: io.netty.channel.ChannelOutboundBuffer.remove
+     handler                  0.506%  top site: io.netty.channel.SimpleChannelInboundHandler.channelRead
+
+    cause x lifetime-in-iterations (row %% of all pairs)
+    cause                         0        1      2-3      4-7       8+     share
+    other:io.netty.channel.uring.IoUringSocketChannel$IoUringSocketUnsafe.handleWriteCompleteZeroCopy  28.794%  21.413%   0.000%   0.075%   0.375%   50.656%
+    write-completion        37.186%  11.652%   0.000%   0.000%   0.000%   48.839%
+    handler                  0.506%   0.000%   0.000%   0.000%   0.000%    0.506%
+
+    cause x size bucket (row %% of all pairs)
+    cause                       8192       256
+    other:io.netty.channel.uring.IoUringSocketChannel$IoUringSocketUnsafe.handleWriteCompleteZeroCopy   50.656%    0.000%
+    write-completion          0.000%   48.839%
+    handler                   0.506%    0.000%
+
+    max lifetime: 51 iterations (354.8 us), size=4381, cause=other:io.netty.channel.uring.IoUringSocketChannel$IoUringSocketUnsafe.handleWriteCompleteZeroCopy, site=io.netty.channel.uring.IoUringSocketChannel$IoUringSocketUnsafe.handleWriteCompleteZeroCopy
+    max wall-clock: 3079.8 us (0 iterations), size=4370, cause=other:io.netty.channel.uring.IoUringSocketChannel$IoUringSocketUnsafe.handleWriteCompleteZeroCopy
+
+(f) live buffers at end of iteration, per event-loop thread
+    thread                          iters  avgLive  maxLive   avgAlloc maxAlloc
+    multiThreadIoEventLoopGroup-3-1     3741     0.14       25       0.35      112
+    multiThreadIoEventLoopGroup-3-2     2540     0.25       27       0.55      171
+    multiThreadIoEventLoopGroup-3-3     2402     0.17       27       0.53      168
+    multiThreadIoEventLoopGroup-3-4     2010     0.47       28       0.68      153
+    live-at-marker over all markers: mean=0.235 p50=0 p90=0 p99=9 p99.9=25 max=28 ; markers with >0 live=186 (1.74%)
+    allocations per iteration (all EL threads): mean=0.50 p50=0 p90=0 p99=0 max=171  zero-alloc iterations=99.1%
+    channelReads per iteration: mean=21.23 p50=0 p90=0 p99=596 max=762
+
+(g) the buffers that DO cross an iteration boundary (1789, 33.514% of pairs)
+     io.netty.channel.uring.IoUringSocketChannel$IoUringSocketU 21.862% of all  iters p50=1 p99=35 max=51  bytes=4.9 MiB
+     io.netty.channel.ChannelOutboundBuffer.remove              11.652% of all  iters p50=1 p99=1 max=1  bytes=0.1 MiB
+     sizes of the crossing buffers: 8192=65.23%  256=34.77%
+     bytes held across a boundary: 5.0 MiB of 12.0 MiB allocated in the window (41.57%)
+
+    diagnostics: pairs whose stack had no non-plumbing frame=0 (0.000%); pairs crossing >=1 marker=1789 (33.514%)
+
+HEADLINE CLASSIFICATION
+    ii-same-iter-out-of-order                 66.486%  (3549)
+    vi-cross-iter-other:other:io.netty.channel.uring.IoUringSocketChannel$IoUringSocketUnsafe.handleWriteCompleteZeroCopy  21.862%  (1167)
+    iii-cross-iter-write-completion           11.652%  (622)
+=== w3-io_uring-arena-ra-slab
+TRANSPORT transport=io_uring ringSize=128 cqSize=4096 singleIssuer=true bufferRing=on [bgId=1 entries=64 chunk=8192 incremental=true batchSize=32 batchAllocation=false alloc=slab allocClass=RegisteredSlabBufferRingAllocator[256x8192 per loop]] zeroCopyThreshold=4096 | IoUring features: CQE_F_SOCK_NONEMPTY_SUPPORTED=true, UNIX_DOMAIN_SOCKET_INQ_SUPPORTED=true, SPLICE_SUPPORTED=true, ACCEPT_NO_WAIT_SUPPORTED=true, ACCEPT_MULTISHOT_SUPPORTED=true, POLL_ADD_MULTISHOT_SUPPORTED=true, RECV_MULTISHOT_SUPPORTED=true, IORING_RECVSEND_BUNDLE_SUPPORTED=true, REGISTER_IOWQ_MAX_WORKERS_SUPPORTED=true, SETUP_SUBMIT_ALL_SUPPORTED=true, SETUP_CQE_MIXED_SUPPORTED=true, SETUP_CQ_SIZE_SUPPORTED=true, SETUP_SINGLE_ISSUER_SUPPORTED=true, SETUP_DEFER_TASKRUN_SUPPORTED=true, SETUP_NO_SQARRAY_SUPPORTED=true, REGISTER_BUFFER_RING_SUPPORTED=true, REGISTER_BUFFER_RING_INC_SUPPORTED=true, SEND_ZC_SUPPORTED=true, SENDMSG_ZC_SUPPORTED=true, ENTER_NO_IOWAIT_SUPPORTED=true
+WINDOW DONE
+-rw-r--r--. 1 forked_franz forked_franz 7107383 Sep 23 08:44 /home/forked_franz/IdeaProjects/netty-eventloop-arena-poc/results/ryzen9-7950x-node0/arena-v3/uring-ringalloc/topology/w3-io_uring-arena-ra-slab.jfr
+Application protocol: h2c
+.
+Main benchmark duration is over for thread #3. Stopping all clients.
+Stopped all clients for thread #3
+Main benchmark duration is over for thread #2. Stopping all clients.
+Stopped all clients for thread #2
+Main benchmark duration is over for thread #0. Stopping all clients.
+Stopped all clients for thread #0
+Main benchmark duration is over for thread #1. Stopping all clients.
+Stopped all clients for thread #1
+
+finished in 8.00s, 17714.75 req/s, 1.09GB/s
+requests: 141718 total, 141846 started, 141718 done, 141718 succeeded, 0 failed, 0 errored, 0 timeout
+status codes: 141840 2xx, 0 3xx, 0 4xx, 0 5xx
+traffic: 8.73GB (9376565743) total, 138.52KB (141840) headers (space savings 90.00%), 8.65GB (9291378743) data
+                     min         max         mean         sd        +/- sd
+time for request:     3.73ms    222.16ms      7.20ms      8.25ms    97.22%
+time for connect:       13us        65us        35us        19us    50.00%
+time to 1st byte:   109.08ms    111.33ms    110.21ms       839us    50.00%
+req/s           :    2191.10     2238.96     2214.31       21.67    62.50%
+dumped 210883 events -> /home/forked_franz/IdeaProjects/netty-eventloop-arena-poc/results/ryzen9-7950x-node0/arena-v3/uring-ringalloc/topology/w3-io_uring-arena-ra-slab.tsv
+================================================================================================
+WORKLOAD w3-io_uring-arena-ra-slab   (w3-io_uring-arena-ra-slab.tsv)
+================================================================================================
+events: AllocateBuffer=104268 FreeBuffer=79165 ReallocateBuffer=25120 IterationEnd=2330
+pairs=104005  unpaired releases (alloc before window)=280  still live at window end=263  truncated stacks=78886  address reused with no release event=0
+BALANCE CHECK: allocs(104268) - pairs(104005) - live-at-end(263) - reuse(0) = 0  (must be 0)
+event-loop threads with markers: 4  iterations total=2330  with reads>0=576 (24.7%)
+
+(a) lifetime in event-loop ITERATIONS of the allocating thread
+     iters : 0=66.49%  1=31.38%  2-3=0.19%  4-7=0.24%  8+=1.70%
+  read-its : 0=66.49%  1=32.27%  2-3=1.14%  4-7=0.10%  8+=0.00%   (only iterations that saw >=1 channelRead)
+  iters p50=0 p90=1 p99=35 p99.9=155 max=248
+  wall-clock lifetime us: p50=3029.3 p90=8618.6 p99=16862.4 p99.9=37173.2 max=71751.5
+
+(b) released on the allocating thread: 100.000%  (cross-thread: 0)
+
+(c) nesting class at release: only=0.00%  youngest=0.00%  oldest=5.85%  middle=94.15%
+     within same-iteration releases (69155, 66.49% of all): only=0.00%  youngest=0.00%  oldest=1.69%  middle=98.31%
+
+(d) size bucket (power-of-two ceiling of the requested capacity)
+     32768=64.60%  16384=35.40%
+     exact sizes: 32768=64.60%  16384=35.40%
+
+(e) release cause (first non-allocator frame of the FreeBuffer stack)
+     other:no-site           75.561%  top site: io.netty.buffer.CompositeByteBuf$Component.free
+     realloc-grow            24.152%  top site: io.netty.buffer.AdaptiveByteBuf.capacity
+     write-completion         0.287%  top site: io.netty.channel.ChannelOutboundBuffer.remove
+
+    cause x lifetime-in-iterations (row %% of all pairs)
+    cause                         0        1      2-3      4-7       8+     share
+    other:no-site           42.233%  31.216%   0.188%   0.233%   1.691%   75.561%
+    realloc-grow            24.152%   0.000%   0.000%   0.000%   0.000%   24.152%
+    write-completion         0.108%   0.164%   0.003%   0.003%   0.010%    0.287%
+
+    cause x size bucket (row %% of all pairs)
+    cause                      32768     16384
+    other:no-site            64.342%   11.219%
+    realloc-grow              0.000%   24.152%
+    write-completion          0.254%    0.034%
+
+    max lifetime: 248 iterations (2512.3 us), size=32768, cause=other:no-site, site=io.netty.buffer.CompositeByteBuf$Component.free
+    max wall-clock: 71751.5 us (1 iterations), size=32768, cause=other:no-site
+
+(f) live buffers at end of iteration, per event-loop thread
+    thread                          iters  avgLive  maxLive   avgAlloc maxAlloc
+    multiThreadIoEventLoopGroup-3-1      410    62.40       78      63.28      241
+    multiThreadIoEventLoopGroup-3-2      528    64.10       83      51.82      240
+    multiThreadIoEventLoopGroup-3-3      704    64.15       80      36.59      233
+    multiThreadIoEventLoopGroup-3-4      688    65.96       76      35.92      242
+    live-at-marker over all markers: mean=64.364 p50=65 p90=71 p99=74 p99.9=79 max=83 ; markers with >0 live=2330 (100.00%)
+    allocations per iteration (all EL threads): mean=44.54 p50=0 p90=196 p99=222 max=242  zero-alloc iterations=75.3%
+    channelReads per iteration: mean=101.23 p50=0 p90=446 p99=483 max=508
+
+(g) the buffers that DO cross an iteration boundary (34850, 33.508% of pairs)
+     io.netty.buffer.CompositeByteBuf$Component.free            33.328% of all  iters p50=1 p99=106 max=248  bytes=978.8 MiB
+     io.netty.channel.ChannelOutboundBuffer.remove               0.180% of all  iters p50=1 p99=128 max=248  bytes=5.6 MiB
+     sizes of the crossing buffers: 32768=80.77%  16384=19.23%
+     bytes held across a boundary: 984.3 MiB of 2674.8 MiB allocated in the window (36.80%)
+
+    diagnostics: pairs whose stack had no non-plumbing frame=78587 (75.561%); pairs crossing >=1 marker=34850 (33.508%)
+
+HEADLINE CLASSIFICATION
+    ii-same-iter-out-of-order                 66.491%  (69154)
+    vi-cross-iter-other:other:no-site         33.328%  (34663)
+    iii-cross-iter-write-completion            0.180%  (187)
+    i-same-iter-LIFO                           0.001%  (1)
+=== w5-io_uring-arena-ra-slab
+TRANSPORT transport=io_uring ringSize=128 cqSize=4096 singleIssuer=true bufferRing=on [bgId=1 entries=64 chunk=8192 incremental=true batchSize=32 batchAllocation=false alloc=slab allocClass=RegisteredSlabBufferRingAllocator[256x8192 per loop]] zeroCopyThreshold=4096 | IoUring features: CQE_F_SOCK_NONEMPTY_SUPPORTED=true, UNIX_DOMAIN_SOCKET_INQ_SUPPORTED=true, SPLICE_SUPPORTED=true, ACCEPT_NO_WAIT_SUPPORTED=true, ACCEPT_MULTISHOT_SUPPORTED=true, POLL_ADD_MULTISHOT_SUPPORTED=true, RECV_MULTISHOT_SUPPORTED=true, IORING_RECVSEND_BUNDLE_SUPPORTED=true, REGISTER_IOWQ_MAX_WORKERS_SUPPORTED=true, SETUP_SUBMIT_ALL_SUPPORTED=true, SETUP_CQE_MIXED_SUPPORTED=true, SETUP_CQ_SIZE_SUPPORTED=true, SETUP_SINGLE_ISSUER_SUPPORTED=true, SETUP_DEFER_TASKRUN_SUPPORTED=true, SETUP_NO_SQARRAY_SUPPORTED=true, REGISTER_BUFFER_RING_SUPPORTED=true, REGISTER_BUFFER_RING_INC_SUPPORTED=true, SEND_ZC_SUPPORTED=true, SENDMSG_ZC_SUPPORTED=true, ENTER_NO_IOWAIT_SUPPORTED=true
+WINDOW DONE
+-rw-r--r--. 1 forked_franz forked_franz 142745791 Sep 23 08:44 /home/forked_franz/IdeaProjects/netty-eventloop-arena-poc/results/ryzen9-7950x-node0/arena-v3/uring-ringalloc/topology/w5-io_uring-arena-ra-slab.jfr
+Main benchmark duration is started for thread #0.
+Application protocol: http/1.1
+Main benchmark duration is over for thread #2. Stopping all clients.
+Stopped all clients for thread #2
+Main benchmark duration is over for thread #1. Stopping all clients.
+Stopped all clients for thread #1
+Main benchmark duration is over for thread #3. Stopping all clients.
+Stopped all clients for thread #3
+Main benchmark duration is over for thread #0. Stopping all clients.
+Stopped all clients for thread #0
+
+finished in 8.00s, 11975.25 req/s, 467.78KB/s
+requests: 95802 total, 95866 started, 95802 done, 95802 succeeded, 0 failed, 0 errored, 0 timeout
+status codes: 95802 2xx, 0 3xx, 0 4xx, 0 5xx
+traffic: 3.65MB (3832080) total, 1.37MB (1437510) headers (space savings 0.00%), 187.18KB (191668) data
+                     min         max         mean         sd        +/- sd
+time for request:     1.24ms     88.70ms      5.34ms      2.47ms    98.34%
+time for connect:        2us       414us       203us       120us    57.81%
+time to 1st byte:    66.72ms     88.74ms     80.82ms      6.28ms    71.88%
+req/s           :     185.06      189.35      187.07        1.06    65.63%
+dumped 11785750 events -> /home/forked_franz/IdeaProjects/netty-eventloop-arena-poc/results/ryzen9-7950x-node0/arena-v3/uring-ringalloc/topology/w5-io_uring-arena-ra-slab.tsv
+================================================================================================
+WORKLOAD w5-io_uring-arena-ra-slab   (w5-io_uring-arena-ra-slab.tsv)
+================================================================================================
+events: AllocateBuffer=233 FreeBuffer=233 ReallocateBuffer=0 IterationEnd=11785284
+pairs=233  unpaired releases (alloc before window)=0  still live at window end=0  truncated stacks=233  address reused with no release event=0
+BALANCE CHECK: allocs(233) - pairs(233) - live-at-end(0) - reuse(0) = 0  (must be 0)
+event-loop threads with markers: 4  iterations total=11785284  with reads>0=189422 (1.6%)
+
+(a) lifetime in event-loop ITERATIONS of the allocating thread
+     iters : 0=24.89%  1=0.00%  2-3=0.00%  4-7=0.43%  8+=74.68%
+  read-its : 0=24.89%  1=0.86%  2-3=5.15%  4-7=13.30%  8+=55.79%   (only iterations that saw >=1 channelRead)
+  iters p50=245 p90=595 p99=646 p99.9=941 max=941
+  wall-clock lifetime us: p50=293.3 p90=353.1 p99=650.3 p99.9=1213.4 max=1213.4
+
+(b) released on the allocating thread: 100.000%  (cross-thread: 0)
+
+(c) nesting class at release: only=100.00%  youngest=0.00%  oldest=0.00%  middle=0.00%
+     within same-iteration releases (58, 24.89% of all): only=100.00%  youngest=0.00%  oldest=0.00%  middle=0.00%
+
+(d) size bucket (power-of-two ceiling of the requested capacity)
+     16384=100.00%
+     exact sizes: 16384=100.00%
+
+(e) release cause (first non-allocator frame of the FreeBuffer stack)
+     aggregator             100.000%  top site: io.netty.handler.codec.http.HttpObjectAggregator$AggregatedFullHttpMessage.release
+
+    cause x lifetime-in-iterations (row %% of all pairs)
+    cause                         0        1      2-3      4-7       8+     share
+    aggregator              24.893%   0.000%   0.000%   0.429%  74.678%  100.000%
+
+    cause x size bucket (row %% of all pairs)
+    cause                      16384
+    aggregator              100.000%
+
+    max lifetime: 941 iterations (400.7 us), size=16384, cause=aggregator, site=io.netty.handler.codec.http.HttpObjectAggregator$AggregatedFullHttpMessage.release
+    max wall-clock: 1213.4 us (0 iterations), size=16384, cause=aggregator
+
+(f) live buffers at end of iteration, per event-loop thread
+    thread                          iters  avgLive  maxLive   avgAlloc maxAlloc
+    multiThreadIoEventLoopGroup-3-1  2879102     0.01        1       0.00        1
+    multiThreadIoEventLoopGroup-3-2  3118874     0.00        1       0.00        1
+    multiThreadIoEventLoopGroup-3-3  2929584     0.00        1       0.00        1
+    multiThreadIoEventLoopGroup-3-4  2857724     0.01        1       0.00        1
+    live-at-marker over all markers: mean=0.005 p50=0 p90=0 p99=0 p99.9=1 max=1 ; markers with >0 live=63486 (0.54%)
+    allocations per iteration (all EL threads): mean=0.00 p50=0 p90=0 p99=0 max=1  zero-alloc iterations=100.0%
+    channelReads per iteration: mean=0.08 p50=0 p90=0 p99=3 max=4224
+
+(g) the buffers that DO cross an iteration boundary (175, 75.107% of pairs)
+     io.netty.handler.codec.http.HttpObjectAggregator$Aggregate 75.107% of all  iters p50=366 p99=696 max=941  bytes=2.7 MiB
+     sizes of the crossing buffers: 16384=100.00%
+     bytes held across a boundary: 2.7 MiB of 3.6 MiB allocated in the window (75.11%)
+
+    diagnostics: pairs whose stack had no non-plumbing frame=0 (0.000%); pairs crossing >=1 marker=175 (75.107%)
+
+HEADLINE CLASSIFICATION
+    iv-cross-iter-cumulation/aggregation      75.107%  (175)
+    i-same-iter-LIFO                          24.893%  (58)
+
+== ARENATELE / RINGTELE lines, io_uring ==
+RINGTELE transport=io_uring bufferRing=on ringAllocs=380098 ringReads=1121892 ringReadBytes=3112736145 bgId=1 entries=64 chunk=8192 incremental=true batchSize=32 batchAllocation=false alloc=same allocClass=AdaptiveByteBufAllocator
+RINGTELE transport=io_uring bufferRing=on ringAllocs=385579 ringReads=1138076 ringReadBytes=3157626840 bgId=1 entries=64 chunk=8192 incremental=true batchSize=32 batchAllocation=false alloc=adaptive allocClass=AdaptiveByteBufAllocator
+ARENATELE blockSize=262144 maxBlocks=8 cap=8192 maxObjects=16384 debug=false ring=false ringStats=false arenaHeap=0 arenaDirect=1501920 delegateHeap=0 delegateDirect=11842 arenaShare=99.22% blocksHeap=4 blocksDirect=32 pinned=0 reusable=28 maxPinnedHeap=0 maxPinnedDirect=9 blockReuses=13239 blockGrowths=28 blockSwitches=13584 ringWraps=0 ringResets=0 ringScans=0 ringReentries=0 ringStalls=0 stallBytes=0 strandedBytes=0 strandedShare=n/a holes<=256=0 holes<=1k=0 holes<=4k=0 holes<=8k=0 holes>8k=0 hooks=2910 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=0 reallocMoved=0 reallocDelegated=0 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=128 bytesHeap=0 bytesDirect=3575816216 liveHeap=0 liveDirect=0
+RINGTELE transport=io_uring bufferRing=on ringAllocs=271564 ringReads=1028154 ringReadBytes=3174683710 bgId=1 entries=64 chunk=8192 incremental=true batchSize=32 batchAllocation=false alloc=builtinadaptive allocClass=IoUringAdaptiveBufferRingAllocator/AdaptiveByteBufAllocator
+ARENATELE blockSize=262144 maxBlocks=8 cap=8192 maxObjects=16384 debug=false ring=false ringStats=false arenaHeap=0 arenaDirect=1508164 delegateHeap=0 delegateDirect=11209 arenaShare=99.26% blocksHeap=4 blocksDirect=32 pinned=1 reusable=28 maxPinnedHeap=0 maxPinnedDirect=9 blockReuses=13221 blockGrowths=28 blockSwitches=13485 ringWraps=0 ringResets=0 ringScans=0 ringReentries=0 ringStalls=0 stallBytes=0 strandedBytes=0 strandedShare=n/a holes<=256=0 holes<=1k=0 holes<=4k=0 holes<=8k=0 holes>8k=0 hooks=2839 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=0 reallocMoved=0 reallocDelegated=0 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=128 bytesHeap=0 bytesDirect=3549547248 liveHeap=0 liveDirect=0
+RINGTELE transport=io_uring bufferRing=on ringAllocs=387678 ringReads=1144274 ringReadBytes=3174826340 bgId=1 entries=64 chunk=8192 incremental=true batchSize=32 batchAllocation=false alloc=builtin allocClass=IoUringFixedBufferRingAllocator/AdaptiveByteBufAllocator
+ARENATELE blockSize=262144 maxBlocks=8 cap=8192 maxObjects=16384 debug=false ring=false ringStats=false arenaHeap=0 arenaDirect=1508852 delegateHeap=0 delegateDirect=13187 arenaShare=99.13% blocksHeap=4 blocksDirect=32 pinned=0 reusable=28 maxPinnedHeap=0 maxPinnedDirect=8 blockReuses=13278 blockGrowths=28 blockSwitches=13631 ringWraps=0 ringResets=0 ringScans=0 ringReentries=0 ringStalls=0 stallBytes=0 strandedBytes=0 strandedShare=n/a holes<=256=0 holes<=1k=0 holes<=4k=0 holes<=8k=0 holes>8k=0 hooks=2787 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=0 reallocMoved=0 reallocDelegated=0 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=128 bytesHeap=0 bytesDirect=3594177216 liveHeap=0 liveDirect=0
+RINGTELE transport=io_uring bufferRing=on ringAllocs=393522 ringReads=1161529 ringReadBytes=3222699680 bgId=1 entries=64 chunk=8192 incremental=true batchSize=32 batchAllocation=false alloc=slab allocClass=RegisteredSlabBufferRingAllocator[256x8192 per loop] | SLABTELE instances=4 regionBytes=8388608 slabAcquires=393522 slabReleases=393394 slabFallbacks=0 slabForeignReleases=0 lastBytesReadCalls=1161529
+ARENATELE blockSize=262144 maxBlocks=8 cap=8192 maxObjects=16384 debug=false ring=false ringStats=false arenaHeap=0 arenaDirect=1533449 delegateHeap=0 delegateDirect=11562 arenaShare=99.25% blocksHeap=4 blocksDirect=32 pinned=0 reusable=28 maxPinnedHeap=0 maxPinnedDirect=8 blockReuses=13512 blockGrowths=28 blockSwitches=13838 ringWraps=0 ringResets=0 ringScans=0 ringReentries=0 ringStalls=0 stallBytes=0 strandedBytes=0 strandedShare=n/a holes<=256=0 holes<=1k=0 holes<=4k=0 holes<=8k=0 holes>8k=0 hooks=2832 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=0 reallocMoved=0 reallocDelegated=0 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=128 bytesHeap=0 bytesDirect=3644497112 liveHeap=0 liveDirect=0
+RINGTELE transport=io_uring bufferRing=on ringAllocs=802626 ringReads=1072042 ringReadBytes=6574077970 bgId=1 entries=64 chunk=8192 incremental=true batchSize=32 batchAllocation=false alloc=same allocClass=AdaptiveByteBufAllocator
+RINGTELE transport=io_uring bufferRing=on ringAllocs=1136514 ringReads=1528921 ringReadBytes=9309295819 bgId=1 entries=64 chunk=8192 incremental=true batchSize=32 batchAllocation=false alloc=adaptive allocClass=AdaptiveByteBufAllocator
+ARENATELE blockSize=262144 maxBlocks=8 cap=8192 maxObjects=16384 debug=false ring=false ringStats=false arenaHeap=0 arenaDirect=9409070 delegateHeap=0 delegateDirect=524260 arenaShare=94.72% blocksHeap=4 blocksDirect=8 pinned=0 reusable=4 maxPinnedHeap=0 maxPinnedDirect=8 blockReuses=331 blockGrowths=4 blockSwitches=335 ringWraps=0 ringResets=0 ringScans=0 ringReentries=0 ringStalls=0 stallBytes=0 strandedBytes=0 strandedShare=n/a holes<=256=0 holes<=1k=0 holes<=4k=0 holes<=8k=0 holes>8k=0 hooks=5886 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=156 reallocMoved=0 reallocDelegated=6 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=505 bytesHeap=0 bytesDirect=189147136 liveHeap=0 liveDirect=0
+RINGTELE transport=io_uring bufferRing=on ringAllocs=217237 ringReads=648903 ringReadBytes=10041478219 bgId=1 entries=64 chunk=8192 incremental=true batchSize=32 batchAllocation=false alloc=builtinadaptive allocClass=IoUringAdaptiveBufferRingAllocator/AdaptiveByteBufAllocator
+ARENATELE blockSize=262144 maxBlocks=8 cap=8192 maxObjects=16384 debug=false ring=false ringStats=false arenaHeap=0 arenaDirect=10174837 delegateHeap=0 delegateDirect=193244 arenaShare=98.14% blocksHeap=4 blocksDirect=8 pinned=0 reusable=4 maxPinnedHeap=0 maxPinnedDirect=7 blockReuses=294 blockGrowths=4 blockSwitches=298 ringWraps=0 ringResets=0 ringScans=0 ringReentries=0 ringStalls=0 stallBytes=0 strandedBytes=0 strandedShare=n/a holes<=256=0 holes<=1k=0 holes<=4k=0 holes<=8k=0 holes>8k=0 hooks=8266 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=26 reallocMoved=0 reallocDelegated=0 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=500 bytesHeap=0 bytesDirect=201067312 liveHeap=0 liveDirect=0
+RINGTELE transport=io_uring bufferRing=on ringAllocs=1146232 ringReads=1511527 ringReadBytes=9388893224 bgId=1 entries=64 chunk=8192 incremental=true batchSize=32 batchAllocation=false alloc=builtin allocClass=IoUringFixedBufferRingAllocator/AdaptiveByteBufAllocator
+ARENATELE blockSize=262144 maxBlocks=8 cap=8192 maxObjects=16384 debug=false ring=false ringStats=false arenaHeap=0 arenaDirect=9554227 delegateHeap=0 delegateDirect=522410 arenaShare=94.82% blocksHeap=4 blocksDirect=8 pinned=0 reusable=4 maxPinnedHeap=0 maxPinnedDirect=8 blockReuses=438 blockGrowths=4 blockSwitches=442 ringWraps=0 ringResets=0 ringScans=0 ringReentries=0 ringStalls=0 stallBytes=0 strandedBytes=0 strandedShare=n/a holes<=256=0 holes<=1k=0 holes<=4k=0 holes<=8k=0 holes>8k=0 hooks=5518 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=86 reallocMoved=0 reallocDelegated=5 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=508 bytesHeap=0 bytesDirect=190663608 liveHeap=0 liveDirect=0
+RINGTELE transport=io_uring bufferRing=on ringAllocs=1142550 ringReads=1535981 ringReadBytes=9358738814 bgId=1 entries=64 chunk=8192 incremental=true batchSize=32 batchAllocation=false alloc=slab allocClass=RegisteredSlabBufferRingAllocator[256x8192 per loop] | SLABTELE instances=4 regionBytes=8388608 slabAcquires=1142550 slabReleases=1142422 slabFallbacks=0 slabForeignReleases=0 lastBytesReadCalls=1535981
+ARENATELE blockSize=262144 maxBlocks=8 cap=8192 maxObjects=16384 debug=false ring=false ringStats=false arenaHeap=0 arenaDirect=9462582 delegateHeap=0 delegateDirect=525864 arenaShare=94.74% blocksHeap=4 blocksDirect=8 pinned=0 reusable=4 maxPinnedHeap=0 maxPinnedDirect=8 blockReuses=318 blockGrowths=4 blockSwitches=322 ringWraps=0 ringResets=0 ringScans=0 ringReentries=0 ringStalls=0 stallBytes=0 strandedBytes=0 strandedShare=n/a holes<=256=0 holes<=1k=0 holes<=4k=0 holes<=8k=0 holes>8k=0 hooks=6104 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=157 reallocMoved=0 reallocDelegated=8 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=503 bytesHeap=0 bytesDirect=190236288 liveHeap=0 liveDirect=0
+RINGTELE transport=io_uring bufferRing=on ringAllocs=3055255 ringReads=4131185 ringReadBytes=25026567870 bgId=1 entries=64 chunk=8192 incremental=true batchSize=32 batchAllocation=false alloc=same allocClass=AdaptiveByteBufAllocator
+RINGTELE transport=io_uring bufferRing=on ringAllocs=3046169 ringReads=4118260 ringReadBytes=24952138230 bgId=1 entries=64 chunk=8192 incremental=true batchSize=32 batchAllocation=false alloc=adaptive allocClass=AdaptiveByteBufAllocator
+ARENATELE blockSize=262144 maxBlocks=8 cap=8192 maxObjects=16384 debug=false ring=false ringStats=false arenaHeap=0 arenaDirect=190296 delegateHeap=0 delegateDirect=1014 arenaShare=99.47% blocksHeap=4 blocksDirect=4 pinned=0 reusable=0 maxPinnedHeap=0 maxPinnedDirect=4 blockReuses=0 blockGrowths=0 blockSwitches=0 ringWraps=0 ringResets=0 ringScans=0 ringReentries=0 ringStalls=0 stallBytes=0 strandedBytes=0 strandedShare=n/a holes<=256=0 holes<=1k=0 holes<=4k=0 holes<=8k=0 holes>8k=0 hooks=62573 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=0 reallocMoved=0 reallocDelegated=0 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=29 bytesHeap=0 bytesDirect=6168768 liveHeap=0 liveDirect=0
+RINGTELE transport=io_uring bufferRing=on ringAllocs=843622 ringReads=2186825 ringReadBytes=25681393635 bgId=1 entries=64 chunk=8192 incremental=true batchSize=32 batchAllocation=false alloc=builtinadaptive allocClass=IoUringAdaptiveBufferRingAllocator/AdaptiveByteBufAllocator
+ARENATELE blockSize=262144 maxBlocks=8 cap=8192 maxObjects=16384 debug=false ring=false ringStats=false arenaHeap=0 arenaDirect=195856 delegateHeap=0 delegateDirect=143 arenaShare=99.93% blocksHeap=4 blocksDirect=4 pinned=0 reusable=0 maxPinnedHeap=0 maxPinnedDirect=0 blockReuses=0 blockGrowths=0 blockSwitches=0 ringWraps=0 ringResets=0 ringScans=0 ringReentries=0 ringStalls=0 stallBytes=0 strandedBytes=0 strandedShare=n/a holes<=256=0 holes<=1k=0 holes<=4k=0 holes<=8k=0 holes>8k=0 hooks=76425 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=0 reallocMoved=0 reallocDelegated=0 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=66 bytesHeap=0 bytesDirect=6346688 liveHeap=0 liveDirect=0
+RINGTELE transport=io_uring bufferRing=on ringAllocs=3062863 ringReads=4166676 ringReadBytes=25088883270 bgId=1 entries=64 chunk=8192 incremental=true batchSize=32 batchAllocation=false alloc=builtin allocClass=IoUringFixedBufferRingAllocator/AdaptiveByteBufAllocator
+ARENATELE blockSize=262144 maxBlocks=8 cap=8192 maxObjects=16384 debug=false ring=false ringStats=false arenaHeap=0 arenaDirect=191340 delegateHeap=0 delegateDirect=1016 arenaShare=99.47% blocksHeap=4 blocksDirect=4 pinned=0 reusable=0 maxPinnedHeap=0 maxPinnedDirect=4 blockReuses=0 blockGrowths=0 blockSwitches=0 ringWraps=0 ringResets=0 ringScans=0 ringReentries=0 ringStalls=0 stallBytes=0 strandedBytes=0 strandedShare=n/a holes<=256=0 holes<=1k=0 holes<=4k=0 holes<=8k=0 holes>8k=0 hooks=65416 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=0 reallocMoved=0 reallocDelegated=0 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=31 bytesHeap=0 bytesDirect=6218496 liveHeap=0 liveDirect=0
+RINGTELE transport=io_uring bufferRing=on ringAllocs=3068667 ringReads=4341107 ringReadBytes=25136447010 bgId=1 entries=64 chunk=8192 incremental=true batchSize=32 batchAllocation=false alloc=slab allocClass=RegisteredSlabBufferRingAllocator[256x8192 per loop] | SLABTELE instances=4 regionBytes=8388608 slabAcquires=3064590 slabReleases=3064334 slabFallbacks=4077 slabForeignReleases=0 lastBytesReadCalls=4341107
+ARENATELE blockSize=262144 maxBlocks=8 cap=8192 maxObjects=16384 debug=false ring=false ringStats=false arenaHeap=0 arenaDirect=191701 delegateHeap=0 delegateDirect=1060 arenaShare=99.45% blocksHeap=4 blocksDirect=4 pinned=0 reusable=0 maxPinnedHeap=0 maxPinnedDirect=4 blockReuses=0 blockGrowths=0 blockSwitches=0 ringWraps=0 ringResets=0 ringScans=0 ringReentries=0 ringStalls=0 stallBytes=0 strandedBytes=0 strandedShare=n/a holes<=256=0 holes<=1k=0 holes<=4k=0 holes<=8k=0 holes>8k=0 hooks=75293 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=0 reallocMoved=0 reallocDelegated=0 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=33 bytesHeap=0 bytesDirect=6205568 liveHeap=0 liveDirect=0
