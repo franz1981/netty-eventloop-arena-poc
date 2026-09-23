@@ -1,0 +1,30 @@
+perfasm, cycleDirect, -Darena.ring=true, event=cycles (NEVER cycles:P on this Zen 4 box), the
+address computation for the ALLOCATE-side bitmap store.
+
+committed long[][] + cached curBits row (perfasm-ring-true-cycleDirect.log):
+  mov    0x160(%r11),%ecx       ;*getfield curBits
+  mov    %r9d,%edi
+  shr    $0x9,%edi              ;*iushr   start >>> 9
+  mov    0xc(%r12,%rcx,8),%..   ; curBits.length
+  cmp/jae                       ; one bounds check
+  lea    (%r12,%rcx,8),%rsi     ; decompress the row
+
+ONE flat long[] + curBitsBase (perfasm-flat-true-cycleDirect.log):
+  mov    0x128(%r11),%esi       ;*getfield curBitsBase      <-- extra
+  mov    0x160(%r11),%ebp       ;*getfield startBits
+  mov    %ecx,%r13d
+  shr    $0x9,%r13d             ;*iushr   start >>> 9
+  lea    (%rsi,%r13,1),%ebx     ; base + word               <-- extra
+  mov    0xc(%r12,%rbp,8),%r10d ; startBits.length
+  cmp    %r10d,%ebx / jae       ; one bounds check
+  movslq %esi,%rbx                                          <-- extra
+  lea    (%r12,%rbp,8),%rsi
+
+and the RELEASE side loses work in the flat form: the long[][] does
+  getfield startBits ; length ; cmp/jae ; lea ; aaload ; shr ; row length ; cmp/jae   (11)
+against the flat
+  getfield startBits ; shl $0x9 (id) ; shr $0x9 (st) ; lea (add) ; length ; cmp/jae   (9)
+Allocate +3, release -2, yet perfnorm measures +6.9 instructions per pair. The two do not add up
+and I did not localise the rest. Observation without a mechanism: in the printed hot region the
+flat build touches %rsp 33 times against 17 - but "printed lines" is a sampling-threshold artefact,
+not an instruction count, so that is not a claim.

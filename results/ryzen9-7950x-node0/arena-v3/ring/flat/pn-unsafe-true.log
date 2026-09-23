@@ -1,0 +1,235 @@
+# JMH version: 1.37
+# VM version: JDK 21, Java HotSpot(TM) 64-Bit Server VM, 21+35-LTS-2513
+# VM invoker: /home/forked_franz/.sdkman/candidates/java/21-oracle/bin/java
+# VM options: -server -dsa -da -XX:InitialRAMPercentage=40.0 -XX:MaxRAMPercentage=40.0 -Dio.netty.leakDetection.level=disabled -Djmh.executor=CUSTOM -Djmh.executor.class=io.github.neoionet.netty.microbenchmark.executor.FastThreadLocalThreadHarnessExecutor -XX:MaxRAM=60g -Darena.ring=true
+# Blackhole mode: compiler (auto-detected, use -Djmh.blackhole.autoDetect=false to disable)
+# Warmup: 10 iterations, 1 s each
+# Measurement: 10 iterations, 1 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Average time, time/op
+# Benchmark: io.github.neoionet.netty.microbenchmark.CycleScopedAllocBenchmark.cycleDirect
+# Parameters: (allocatorType = ARENA, k = 64, releaseOrder = FIFO, sizes = SMALL)
+
+# Run progress: 0.00% complete, ETA 00:00:40
+# Fork: 1 of 1
+# Preparing profilers: LinuxPerfNormProfiler 
+# Profilers consume stderr from target VM, use -v EXTRA to copy to console
+# Warmup Iteration   1: 1859.389 ns/op
+# Warmup Iteration   2: 1649.770 ns/op
+# Warmup Iteration   3: 1644.826 ns/op
+# Warmup Iteration   4: 1644.587 ns/op
+# Warmup Iteration   5: 1645.555 ns/op
+# Warmup Iteration   6: 1645.303 ns/op
+# Warmup Iteration   7: 1645.300 ns/op
+# Warmup Iteration   8: 1645.474 ns/op
+# Warmup Iteration   9: 1645.788 ns/op
+# Warmup Iteration  10: 1645.022 ns/op
+Iteration   1: 1645.245 ns/op
+Iteration   2: 1645.932 ns/op
+Iteration   3: 1644.609 ns/op
+Iteration   4: 1645.291 ns/op
+Iteration   5: 1645.706 ns/op
+Iteration   6: 1645.511 ns/op
+Iteration   7: 1644.984 ns/op
+Iteration   8: 1646.121 ns/op
+Iteration   9: 1645.861 ns/op
+Iteration  10: ARENATELE blockSize=262144 maxBlocks=8 cap=8192 maxObjects=16384 debug=false ring=true ringStats=false arenaHeap=0 arenaDirect=773448640 delegateHeap=0 delegateDirect=0 arenaShare=100.00% blocksHeap=1 blocksDirect=1 pinned=0 reusable=0 maxPinnedHeap=0 maxPinnedDirect=0 blockReuses=0 blockGrowths=0 blockSwitches=0 ringWraps=0 ringResets=0 ringScans=0 ringReentries=0 ringStalls=0 stallBytes=0 strandedBytes=0 strandedShare=n/a holes<=256=0 holes<=1k=0 holes<=4k=0 holes<=8k=0 holes>8k=0 hooks=12085135 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=0 reallocMoved=0 reallocDelegated=0 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=64 bytesHeap=0 bytesDirect=185627673600 liveHeap=0 liveDirect=0
+ARENALOOP thread=io.github.neoionet.netty.microbenchmark.CycleScopedAllocBenchmark.cycleDirect-1-1 arenaHeap=0 arenaDirect=773448640 delegateHeap=0 delegateDirect=0 arenaShare=100.00% blocksHeap=1 blocksDirect=1 pinned=0 reusable=0 maxPinnedHeap=0 maxPinnedDirect=0 blockReuses=0 blockGrowths=0 blockSwitches=0 ringWraps=0 ringResets=0 ringScans=0 ringReentries=0 ringStalls=0 stallBytes=0 strandedBytes=0 strandedShare=n/a holes<=256=0 holes<=1k=0 holes<=4k=0 holes<=8k=0 holes>8k=0 hooks=12085135 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=0 reallocMoved=0 reallocDelegated=0 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=64 bytesHeap=0 bytesDirect=185627673600 liveHeap=0 liveDirect=0
+1645.442 ns/op
+# Processing profiler results: LinuxPerfNormProfiler 
+
+
+Result "io.github.neoionet.netty.microbenchmark.CycleScopedAllocBenchmark.cycleDirect":
+  1645.470 ±(99.9%) 0.696 ns/op [Average]
+  (min, avg, max) = (1644.609, 1645.470, 1646.121), stdev = 0.460
+  CI (99.9%): [1644.774, 1646.166] (assumes normal distribution)
+
+Secondary result "io.github.neoionet.netty.microbenchmark.CycleScopedAllocBenchmark.cycleDirect:CPI":
+  0.255 clks/insn
+
+Secondary result "io.github.neoionet.netty.microbenchmark.CycleScopedAllocBenchmark.cycleDirect:IPC":
+  3.928 insns/clk
+
+Secondary result "io.github.neoionet.netty.microbenchmark.CycleScopedAllocBenchmark.cycleDirect:L1-dcache-load-misses":
+  1.473 #/op
+
+Secondary result "io.github.neoionet.netty.microbenchmark.CycleScopedAllocBenchmark.cycleDirect:L1-dcache-loads":
+  5834.128 #/op
+
+Secondary result "io.github.neoionet.netty.microbenchmark.CycleScopedAllocBenchmark.cycleDirect:L1-icache-load-misses":
+  0.036 #/op
+
+Secondary result "io.github.neoionet.netty.microbenchmark.CycleScopedAllocBenchmark.cycleDirect:L1-icache-loads":
+  7.665 #/op
+
+Secondary result "io.github.neoionet.netty.microbenchmark.CycleScopedAllocBenchmark.cycleDirect:branch-misses":
+  0.450 #/op
+
+Secondary result "io.github.neoionet.netty.microbenchmark.CycleScopedAllocBenchmark.cycleDirect:branches":
+  2457.013 #/op
+
+Secondary result "io.github.neoionet.netty.microbenchmark.CycleScopedAllocBenchmark.cycleDirect:cycles":
+  3731.152 #/op
+
+Secondary result "io.github.neoionet.netty.microbenchmark.CycleScopedAllocBenchmark.cycleDirect:dTLB-load-misses":
+  0.009 #/op
+
+Secondary result "io.github.neoionet.netty.microbenchmark.CycleScopedAllocBenchmark.cycleDirect:dTLB-loads":
+  0.151 #/op
+
+Secondary result "io.github.neoionet.netty.microbenchmark.CycleScopedAllocBenchmark.cycleDirect:iTLB-load-misses":
+  0.010 #/op
+
+Secondary result "io.github.neoionet.netty.microbenchmark.CycleScopedAllocBenchmark.cycleDirect:iTLB-loads":
+  0.013 #/op
+
+Secondary result "io.github.neoionet.netty.microbenchmark.CycleScopedAllocBenchmark.cycleDirect:instructions":
+  14657.045 #/op
+
+Secondary result "io.github.neoionet.netty.microbenchmark.CycleScopedAllocBenchmark.cycleDirect:stalled-cycles-frontend":
+  18.988 #/op
+
+
+# JMH version: 1.37
+# VM version: JDK 21, Java HotSpot(TM) 64-Bit Server VM, 21+35-LTS-2513
+# VM invoker: /home/forked_franz/.sdkman/candidates/java/21-oracle/bin/java
+# VM options: -server -dsa -da -XX:InitialRAMPercentage=40.0 -XX:MaxRAMPercentage=40.0 -Dio.netty.leakDetection.level=disabled -Djmh.executor=CUSTOM -Djmh.executor.class=io.github.neoionet.netty.microbenchmark.executor.FastThreadLocalThreadHarnessExecutor -XX:MaxRAM=60g -Darena.ring=true
+# Blackhole mode: compiler (auto-detected, use -Djmh.blackhole.autoDetect=false to disable)
+# Warmup: 10 iterations, 1 s each
+# Measurement: 10 iterations, 1 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Average time, time/op
+# Benchmark: io.github.neoionet.netty.microbenchmark.CycleScopedAllocBenchmark.cycleHeap
+# Parameters: (allocatorType = ARENA, k = 64, releaseOrder = FIFO, sizes = SMALL)
+
+# Run progress: 50.00% complete, ETA 00:00:21
+# Fork: 1 of 1
+# Preparing profilers: LinuxPerfNormProfiler 
+# Profilers consume stderr from target VM, use -v EXTRA to copy to console
+# Warmup Iteration   1: 2120.630 ns/op
+# Warmup Iteration   2: 1869.416 ns/op
+# Warmup Iteration   3: 1869.977 ns/op
+# Warmup Iteration   4: 1870.576 ns/op
+# Warmup Iteration   5: 1871.076 ns/op
+# Warmup Iteration   6: 1870.448 ns/op
+# Warmup Iteration   7: 1870.126 ns/op
+# Warmup Iteration   8: 1870.898 ns/op
+# Warmup Iteration   9: 1871.895 ns/op
+# Warmup Iteration  10: 1871.776 ns/op
+Iteration   1: 1871.485 ns/op
+Iteration   2: 1872.478 ns/op
+Iteration   3: 1871.427 ns/op
+Iteration   4: 1871.140 ns/op
+Iteration   5: 1871.443 ns/op
+Iteration   6: 1873.120 ns/op
+Iteration   7: 1870.128 ns/op
+Iteration   8: 1871.389 ns/op
+Iteration   9: 1870.709 ns/op
+Iteration  10: ARENATELE blockSize=262144 maxBlocks=8 cap=8192 maxObjects=16384 debug=false ring=true ringStats=false arenaHeap=680128256 arenaDirect=0 delegateHeap=0 delegateDirect=0 arenaShare=100.00% blocksHeap=1 blocksDirect=1 pinned=0 reusable=0 maxPinnedHeap=0 maxPinnedDirect=0 blockReuses=0 blockGrowths=0 blockSwitches=0 ringWraps=0 ringResets=0 ringScans=0 ringReentries=0 ringStalls=0 stallBytes=0 strandedBytes=0 strandedShare=n/a holes<=256=0 holes<=1k=0 holes<=4k=0 holes<=8k=0 holes>8k=0 hooks=10627004 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=0 reallocMoved=0 reallocDelegated=0 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=64 bytesHeap=163230781440 bytesDirect=0 liveHeap=0 liveDirect=0
+ARENALOOP thread=io.github.neoionet.netty.microbenchmark.CycleScopedAllocBenchmark.cycleHeap-1-1 arenaHeap=680128256 arenaDirect=0 delegateHeap=0 delegateDirect=0 arenaShare=100.00% blocksHeap=1 blocksDirect=1 pinned=0 reusable=0 maxPinnedHeap=0 maxPinnedDirect=0 blockReuses=0 blockGrowths=0 blockSwitches=0 ringWraps=0 ringResets=0 ringScans=0 ringReentries=0 ringStalls=0 stallBytes=0 strandedBytes=0 strandedShare=n/a holes<=256=0 holes<=1k=0 holes<=4k=0 holes<=8k=0 holes>8k=0 hooks=10627004 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=0 reallocMoved=0 reallocDelegated=0 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=64 bytesHeap=163230781440 bytesDirect=0 liveHeap=0 liveDirect=0
+1872.659 ns/op
+# Processing profiler results: LinuxPerfNormProfiler 
+
+
+Result "io.github.neoionet.netty.microbenchmark.CycleScopedAllocBenchmark.cycleHeap":
+  1871.598 ±(99.9%) 1.379 ns/op [Average]
+  (min, avg, max) = (1870.128, 1871.598, 1873.120), stdev = 0.912
+  CI (99.9%): [1870.219, 1872.977] (assumes normal distribution)
+
+Secondary result "io.github.neoionet.netty.microbenchmark.CycleScopedAllocBenchmark.cycleHeap:CPI":
+  0.270 clks/insn
+
+Secondary result "io.github.neoionet.netty.microbenchmark.CycleScopedAllocBenchmark.cycleHeap:IPC":
+  3.697 insns/clk
+
+Secondary result "io.github.neoionet.netty.microbenchmark.CycleScopedAllocBenchmark.cycleHeap:L1-dcache-load-misses":
+  4.786 #/op
+
+Secondary result "io.github.neoionet.netty.microbenchmark.CycleScopedAllocBenchmark.cycleHeap:L1-dcache-loads":
+  5999.030 #/op
+
+Secondary result "io.github.neoionet.netty.microbenchmark.CycleScopedAllocBenchmark.cycleHeap:L1-icache-load-misses":
+  0.041 #/op
+
+Secondary result "io.github.neoionet.netty.microbenchmark.CycleScopedAllocBenchmark.cycleHeap:L1-icache-loads":
+  16.739 #/op
+
+Secondary result "io.github.neoionet.netty.microbenchmark.CycleScopedAllocBenchmark.cycleHeap:branch-misses":
+  0.541 #/op
+
+Secondary result "io.github.neoionet.netty.microbenchmark.CycleScopedAllocBenchmark.cycleHeap:branches":
+  2583.644 #/op
+
+Secondary result "io.github.neoionet.netty.microbenchmark.CycleScopedAllocBenchmark.cycleHeap:cycles":
+  4243.769 #/op
+
+Secondary result "io.github.neoionet.netty.microbenchmark.CycleScopedAllocBenchmark.cycleHeap:dTLB-load-misses":
+  0.005 #/op
+
+Secondary result "io.github.neoionet.netty.microbenchmark.CycleScopedAllocBenchmark.cycleHeap:dTLB-loads":
+  0.153 #/op
+
+Secondary result "io.github.neoionet.netty.microbenchmark.CycleScopedAllocBenchmark.cycleHeap:iTLB-load-misses":
+  0.008 #/op
+
+Secondary result "io.github.neoionet.netty.microbenchmark.CycleScopedAllocBenchmark.cycleHeap:iTLB-loads":
+  0.010 #/op
+
+Secondary result "io.github.neoionet.netty.microbenchmark.CycleScopedAllocBenchmark.cycleHeap:instructions":
+  15689.640 #/op
+
+Secondary result "io.github.neoionet.netty.microbenchmark.CycleScopedAllocBenchmark.cycleHeap:stalled-cycles-frontend":
+  36.783 #/op
+
+
+# Run complete. Total time: 00:00:43
+
+REMEMBER: The numbers below are just data. To gain reusable insights, you need to follow up on
+why the numbers are the way they are. Use profilers (see -prof, -lprof), design factorial
+experiments, perform baseline and negative tests that provide experimental control, make sure
+the benchmarking environment is safe on JVM/OS/HW level, ask for reviews from the domain experts.
+Do not assume the numbers tell you what you want them to tell.
+
+NOTE: Current JVM experimentally supports Compiler Blackholes, and they are in use. Please exercise
+extra caution when trusting the results, look into the generated code to check the benchmark still
+works, and factor in a small probability of new VM bugs. Additionally, while comparisons between
+different JVMs are already problematic, the performance difference caused by different Blackhole
+modes can be very significant. Please make sure you use the consistent Blackhole mode for comparisons.
+
+Benchmark                                                      (allocatorType)  (k)  (releaseOrder)  (sizes)  Mode  Cnt      Score   Error      Units
+CycleScopedAllocBenchmark.cycleDirect                                    ARENA   64            FIFO    SMALL  avgt   10   1645.470 ± 0.696      ns/op
+CycleScopedAllocBenchmark.cycleDirect:CPI                                ARENA   64            FIFO    SMALL  avgt           0.255          clks/insn
+CycleScopedAllocBenchmark.cycleDirect:IPC                                ARENA   64            FIFO    SMALL  avgt           3.928          insns/clk
+CycleScopedAllocBenchmark.cycleDirect:L1-dcache-load-misses              ARENA   64            FIFO    SMALL  avgt           1.473               #/op
+CycleScopedAllocBenchmark.cycleDirect:L1-dcache-loads                    ARENA   64            FIFO    SMALL  avgt        5834.128               #/op
+CycleScopedAllocBenchmark.cycleDirect:L1-icache-load-misses              ARENA   64            FIFO    SMALL  avgt           0.036               #/op
+CycleScopedAllocBenchmark.cycleDirect:L1-icache-loads                    ARENA   64            FIFO    SMALL  avgt           7.665               #/op
+CycleScopedAllocBenchmark.cycleDirect:branch-misses                      ARENA   64            FIFO    SMALL  avgt           0.450               #/op
+CycleScopedAllocBenchmark.cycleDirect:branches                           ARENA   64            FIFO    SMALL  avgt        2457.013               #/op
+CycleScopedAllocBenchmark.cycleDirect:cycles                             ARENA   64            FIFO    SMALL  avgt        3731.152               #/op
+CycleScopedAllocBenchmark.cycleDirect:dTLB-load-misses                   ARENA   64            FIFO    SMALL  avgt           0.009               #/op
+CycleScopedAllocBenchmark.cycleDirect:dTLB-loads                         ARENA   64            FIFO    SMALL  avgt           0.151               #/op
+CycleScopedAllocBenchmark.cycleDirect:iTLB-load-misses                   ARENA   64            FIFO    SMALL  avgt           0.010               #/op
+CycleScopedAllocBenchmark.cycleDirect:iTLB-loads                         ARENA   64            FIFO    SMALL  avgt           0.013               #/op
+CycleScopedAllocBenchmark.cycleDirect:instructions                       ARENA   64            FIFO    SMALL  avgt       14657.045               #/op
+CycleScopedAllocBenchmark.cycleDirect:stalled-cycles-frontend            ARENA   64            FIFO    SMALL  avgt          18.988               #/op
+CycleScopedAllocBenchmark.cycleHeap                                      ARENA   64            FIFO    SMALL  avgt   10   1871.598 ± 1.379      ns/op
+CycleScopedAllocBenchmark.cycleHeap:CPI                                  ARENA   64            FIFO    SMALL  avgt           0.270          clks/insn
+CycleScopedAllocBenchmark.cycleHeap:IPC                                  ARENA   64            FIFO    SMALL  avgt           3.697          insns/clk
+CycleScopedAllocBenchmark.cycleHeap:L1-dcache-load-misses                ARENA   64            FIFO    SMALL  avgt           4.786               #/op
+CycleScopedAllocBenchmark.cycleHeap:L1-dcache-loads                      ARENA   64            FIFO    SMALL  avgt        5999.030               #/op
+CycleScopedAllocBenchmark.cycleHeap:L1-icache-load-misses                ARENA   64            FIFO    SMALL  avgt           0.041               #/op
+CycleScopedAllocBenchmark.cycleHeap:L1-icache-loads                      ARENA   64            FIFO    SMALL  avgt          16.739               #/op
+CycleScopedAllocBenchmark.cycleHeap:branch-misses                        ARENA   64            FIFO    SMALL  avgt           0.541               #/op
+CycleScopedAllocBenchmark.cycleHeap:branches                             ARENA   64            FIFO    SMALL  avgt        2583.644               #/op
+CycleScopedAllocBenchmark.cycleHeap:cycles                               ARENA   64            FIFO    SMALL  avgt        4243.769               #/op
+CycleScopedAllocBenchmark.cycleHeap:dTLB-load-misses                     ARENA   64            FIFO    SMALL  avgt           0.005               #/op
+CycleScopedAllocBenchmark.cycleHeap:dTLB-loads                           ARENA   64            FIFO    SMALL  avgt           0.153               #/op
+CycleScopedAllocBenchmark.cycleHeap:iTLB-load-misses                     ARENA   64            FIFO    SMALL  avgt           0.008               #/op
+CycleScopedAllocBenchmark.cycleHeap:iTLB-loads                           ARENA   64            FIFO    SMALL  avgt           0.010               #/op
+CycleScopedAllocBenchmark.cycleHeap:instructions                         ARENA   64            FIFO    SMALL  avgt       15689.640               #/op
+CycleScopedAllocBenchmark.cycleHeap:stalled-cycles-frontend              ARENA   64            FIFO    SMALL  avgt          36.783               #/op
+
+Benchmark result is saved to /home/forked_franz/IdeaProjects/netty-bench/results/h2h-merged-x86-2026-09-22/arena-v3/ring/flat/pn-unsafe-true.json

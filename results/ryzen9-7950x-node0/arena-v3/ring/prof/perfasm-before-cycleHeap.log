@@ -1,0 +1,762 @@
+# JMH version: 1.37
+# VM version: JDK 21, Java HotSpot(TM) 64-Bit Server VM, 21+35-LTS-2513
+# VM invoker: /home/forked_franz/.sdkman/candidates/java/21-oracle/bin/java
+# VM options: -server -dsa -da -XX:InitialRAMPercentage=40.0 -XX:MaxRAMPercentage=40.0 -Dio.netty.leakDetection.level=disabled -Djmh.executor=CUSTOM -Djmh.executor.class=io.github.neoionet.netty.microbenchmark.executor.FastThreadLocalThreadHarnessExecutor -XX:MaxRAM=60g
+# Blackhole mode: compiler (auto-detected, use -Djmh.blackhole.autoDetect=false to disable)
+# Warmup: 5 iterations, 1 s each
+# Measurement: 5 iterations, 1 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Average time, time/op
+# Benchmark: io.github.neoionet.netty.microbenchmark.CycleScopedAllocBenchmark.cycleHeap
+# Parameters: (allocatorType = ARENA, k = 64, releaseOrder = FIFO, sizes = SMALL)
+
+# Run progress: 0.00% complete, ETA 00:00:10
+# Fork: 1 of 1
+# Preparing profilers: LinuxPerfAsmProfiler 
+# Profilers consume stdout and stderr from target VM, use -v EXTRA to copy to console
+# Warmup Iteration   1: 3338843.904 ns/op
+# Warmup Iteration   2: 1863.316 ns/op
+# Warmup Iteration   3: 1694.990 ns/op
+# Warmup Iteration   4: 1827.930 ns/op
+# Warmup Iteration   5: 1826.908 ns/op
+Iteration   1: 1828.515 ns/op
+Iteration   2: 1827.943 ns/op
+Iteration   3: 1826.983 ns/op
+Iteration   4: 1827.628 ns/op
+Iteration   5: ARENATELE blockSize=262144 maxBlocks=8 cap=8192 maxObjects=16384 debug=false arenaHeap=317683520 arenaDirect=0 delegateHeap=0 delegateDirect=0 arenaShare=100.00% blocksHeap=1 blocksDirect=1 pinned=0 reusable=0 maxPinnedHeap=0 maxPinnedDirect=0 blockReuses=0 blockGrowths=0 hooks=4963805 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=0 reallocMoved=0 reallocDelegated=0 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=64 bytesHeap=76244044800 bytesDirect=0 liveHeap=0 liveDirect=0
+ARENALOOP thread=io.github.neoionet.netty.microbenchmark.CycleScopedAllocBenchmark.cycleHeap-1-1 arenaHeap=317683520 arenaDirect=0 delegateHeap=0 delegateDirect=0 arenaShare=100.00% blocksHeap=1 blocksDirect=1 pinned=0 reusable=0 maxPinnedHeap=0 maxPinnedDirect=0 blockReuses=0 blockGrowths=0 hooks=4963805 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=0 reallocMoved=0 reallocDelegated=0 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=64 bytesHeap=76244044800 bytesDirect=0 liveHeap=0 liveDirect=0
+1828.151 ns/op
+# Processing profiler results: LinuxPerfAsmProfiler 
+
+
+Result "io.github.neoionet.netty.microbenchmark.CycleScopedAllocBenchmark.cycleHeap":
+  1827.844 ±(99.9%) 2.231 ns/op [Average]
+  (min, avg, max) = (1826.983, 1827.844, 1828.515), stdev = 0.579
+  CI (99.9%): [1825.613, 1830.075] (assumes normal distribution)
+
+Secondary result "io.github.neoionet.netty.microbenchmark.CycleScopedAllocBenchmark.cycleHeap:asm":
+PrintAssembly processed: 339361 total address lines.
+Perf output processed (skipped 15.307 seconds):
+ Column 1: cycles (4590 events)
+
+Hottest code regions (>10.00% "cycles" events):
+ Event counts are percents of total event count.
+
+....[Hottest Region 1]..............................................................................
+c2, level 4, io.github.neoionet.netty.microbenchmark.CycleScopedAllocBenchmark::cycle, version 3, compile id 1397 
+
+                                                                       ; - io.netty.util.concurrent.FastThreadLocal::get@0 (line 137)
+                                                                       ; - io.netty.buffer.CycleArenaAllocator::newHeapBuffer@4 (line 172)
+                                                                       ; - io.netty.buffer.AbstractByteBufAllocator::heapBuffer@21 (line 149)
+                                                                       ; - io.netty.buffer.AbstractByteBufAllocator::heapBuffer@4 (line 140)
+                                                                       ; - io.github.neoionet.netty.microbenchmark.CycleScopedAllocBenchmark::cycle@78 (line 87)
+             0x00007f3b2461b49d:   lea    (%r12,%r11,8),%r9            ;*getfield sizeTable {reexecute=0 rethrow=0 return_oop=0}
+                                                                       ; - io.github.neoionet.netty.microbenchmark.CycleScopedAllocBenchmark::cycle@6 (line 82)
+             0x00007f3b2461b4a1:   xor    %ebx,%ebx
+             0x00007f3b2461b4a3:   mov    %ebp,0x18(%rsp)
+             0x00007f3b2461b4a7:   mov    %r8,0x20(%rsp)
+   0.04%     0x00007f3b2461b4ac:   mov    %r10d,0x1c(%rsp)
+             0x00007f3b2461b4b1:   mov    %r14,0x28(%rsp)
+   0.07%     0x00007f3b2461b4b6:   mov    %edx,0x34(%rsp)
+             0x00007f3b2461b4ba:   mov    %r11d,0x54(%rsp)
+   0.02%     0x00007f3b2461b4bf:   mov    %edi,0x38(%rsp)
+             0x00007f3b2461b4c3:   mov    %r13,0x40(%rsp)
+             0x00007f3b2461b4c8:   mov    %r9,0x58(%rsp)
+             0x00007f3b2461b4cd:   mov    %ebx,0x10(%rsp)
+             0x00007f3b2461b4d1:   mov    0x8(%rsp),%r11d
+             0x00007f3b2461b4d6:   sub    0x10(%rsp),%r11d
+   0.04%     0x00007f3b2461b4db:   xor    %r8d,%r8d
+             0x00007f3b2461b4de:   mov    0x8(%rsp),%r10d
+             0x00007f3b2461b4e3:   cmp    0x10(%rsp),%r10d
+             0x00007f3b2461b4e8:   cmovl  %r8d,%r11d
+   0.02%     0x00007f3b2461b4ec:   cmp    $0x3e8,%r11d
+             0x00007f3b2461b4f3:   mov    $0x3e8,%r10d
+             0x00007f3b2461b4f9:   cmova  %r10d,%r11d
+             0x00007f3b2461b4fd:   add    0x10(%rsp),%r11d
+   0.02%     0x00007f3b2461b502:   mov    %r11d,0x14(%rsp)
+             0x00007f3b2461b507:   nopw   0x0(%rax,%rax,1)             ;*aload {reexecute=0 rethrow=0 return_oop=0}
+                                                                       ; - io.github.neoionet.netty.microbenchmark.CycleScopedAllocBenchmark::cycle@27 (line 85)
+             0x00007f3b2461b510:   mov    0x18(%rsp),%ebx
+   0.26%     0x00007f3b2461b514:   cmp    0x38(%rsp),%ebx
+   0.44%     0x00007f3b2461b518:   jae    0x00007f3b2461bf16
+             0x00007f3b2461b51e:   mov    0x58(%rsp),%rbp
+   0.22%     0x00007f3b2461b523:   mov    0x10(%rbp,%rbx,4),%r11d      ;*iaload {reexecute=0 rethrow=0 return_oop=0}
+                                                                       ; - io.github.neoionet.netty.microbenchmark.CycleScopedAllocBenchmark::cycle@31 (line 85)
+   2.37%     0x00007f3b2461b528:   mov    %r11d,0x30(%rsp)
+   0.31%     0x00007f3b2461b52d:   mov    (%rsp),%r10
+   0.04%     0x00007f3b2461b531:   mov    0x20(%r10),%r10d             ;*getfield allocator {reexecute=0 rethrow=0 return_oop=0}
+                                                                       ; - io.github.neoionet.netty.microbenchmark.CycleScopedAllocBenchmark::cycle@73 (line 87)
+             0x00007f3b2461b535:   mov    0x8(%r12,%r10,8),%r11d       ; implicit exception: dispatches to 0x00007f3b2461c9ec
+   0.04%     0x00007f3b2461b53a:   inc    %ebx                         ;*iadd {reexecute=0 rethrow=0 return_oop=0}
+                                                                       ; - io.github.neoionet.netty.microbenchmark.CycleScopedAllocBenchmark::cycle@37 (line 86)
+   0.13%     0x00007f3b2461b53c:   xor    %r8d,%r8d
+             0x00007f3b2461b53f:   cmp    0x38(%rsp),%ebx
+   0.09%     0x00007f3b2461b543:   cmove  %r8d,%ebx                    ;*istore {reexecute=0 rethrow=0 return_oop=0}
+                                                                       ; - io.github.neoionet.netty.microbenchmark.CycleScopedAllocBenchmark::cycle@52 (line 86)
+   0.61%     0x00007f3b2461b547:   mov    %ebx,0x18(%rsp)
+   0.24%     0x00007f3b2461b54b:   cmp    $0x1082368,%r11d             ;   {metadata(&apos;io/netty/buffer/CycleArenaAllocator&apos;)}
+   0.02%     0x00007f3b2461b552:   jne    0x00007f3b2461c098
+             0x00007f3b2461b558:   lea    (%r12,%r10,8),%r11           ;*invokeinterface heapBuffer {reexecute=0 rethrow=0 return_oop=0}
+                                                                       ; - io.github.neoionet.netty.microbenchmark.CycleScopedAllocBenchmark::cycle@78 (line 87)
+   0.02%     0x00007f3b2461b55c:   mov    0x30(%rsp),%r10d
+   0.17%     0x00007f3b2461b561:   test   %r10d,%r10d
+             0x00007f3b2461b564:   je     0x00007f3b2461c22e           ;*ifne {reexecute=0 rethrow=0 return_oop=0}
+                                                                       ; - io.netty.buffer.AbstractByteBufAllocator::heapBuffer@1 (line 145)
+                                                                       ; - io.netty.buffer.AbstractByteBufAllocator::heapBuffer@4 (line 140)
+                                                                       ; - io.github.neoionet.netty.microbenchmark.CycleScopedAllocBenchmark::cycle@78 (line 87)
+             0x00007f3b2461b56a:   test   %r10d,%r10d
+   0.89%     0x00007f3b2461b56d:   jl     0x00007f3b2461c268           ;*ifge {reexecute=0 rethrow=0 return_oop=0}
+                                                                       ; - io.netty.util.internal.ObjectUtil::checkPositiveOrZero@1 (line 155)
+                                                                       ; - io.netty.buffer.AbstractByteBufAllocator::validate@3 (line 208)
+                                                                       ; - io.netty.buffer.AbstractByteBufAllocator::heapBuffer@15 (line 148)
+                                                                       ; - io.netty.buffer.AbstractByteBufAllocator::heapBuffer@4 (line 140)
+                                                                       ; - io.github.neoionet.netty.microbenchmark.CycleScopedAllocBenchmark::cycle@78 (line 87)
+             0x00007f3b2461b573:   mov    0x24(%r11),%r10d             ;*getfield heapSpaces {reexecute=0 rethrow=0 return_oop=0}
+                                                                       ; - io.netty.buffer.CycleArenaAllocator::newHeapBuffer@1 (line 172)
+                                                                       ; - io.netty.buffer.AbstractByteBufAllocator::heapBuffer@21 (line 149)
+                                                                       ; - io.netty.buffer.AbstractByteBufAllocator::heapBuffer@4 (line 140)
+                                                                       ; - io.github.neoionet.netty.microbenchmark.CycleScopedAllocBenchmark::cycle@78 (line 87)
+             0x00007f3b2461b577:   mov    0xc(%r12,%r10,8),%edi        ; implicit exception: dispatches to 0x00007f3b2461ca08
+                                                                       ;*getfield index {reexecute=0 rethrow=0 return_oop=0}
+                                                                       ; - io.netty.util.concurrent.FastThreadLocal::get@6 (line 138)
+                                                                       ; - io.netty.buffer.CycleArenaAllocator::newHeapBuffer@4 (line 172)
+                                                                       ; - io.netty.buffer.AbstractByteBufAllocator::heapBuffer@21 (line 149)
+                                                                       ; - io.netty.buffer.AbstractByteBufAllocator::heapBuffer@4 (line 140)
+                                                                       ; - io.github.neoionet.netty.microbenchmark.CycleScopedAllocBenchmark::cycle@78 (line 87)
+   0.15%     0x00007f3b2461b57c:   mov    0x40(%rsp),%rbx
+   0.02%     0x00007f3b2461b581:   mov    0x78(%rbx),%r9d              ;*getfield threadLocalMap {reexecute=0 rethrow=0 return_oop=0}
+                                                                       ; - io.netty.util.concurrent.FastThreadLocalThread::threadLocalMap@36 (line 91)
+                                                                       ; - io.netty.util.internal.InternalThreadLocalMap::fastGet@1 (line 120)
+                                                                       ; - io.netty.util.internal.InternalThreadLocalMap::get@15 (line 113)
+                                                                       ; - io.netty.util.concurrent.FastThreadLocal::get@0 (line 137)
+                                                                       ; - io.netty.buffer.CycleArenaAllocator::newHeapBuffer@4 (line 172)
+                                                                       ; - io.netty.buffer.AbstractByteBufAllocator::heapBuffer@21 (line 149)
+                                                                       ; - io.netty.buffer.AbstractByteBufAllocator::heapBuffer@4 (line 140)
+                                                                       ; - io.github.neoionet.netty.microbenchmark.CycleScopedAllocBenchmark::cycle@78 (line 87)
+   0.24%     0x00007f3b2461b585:   mov    0x54(%r12,%r9,8),%ebx        ; implicit exception: dispatches to 0x00007f3b2461cb58
+                                                                       ;*getfield indexedVariables {reexecute=0 rethrow=0 return_oop=0}
+                                                                       ; - io.netty.util.internal.InternalThreadLocalMap::indexedVariable@1 (line 318)
+                                                                       ; - io.netty.util.concurrent.FastThreadLocal::get@9 (line 138)
+                                                                       ; - io.netty.buffer.CycleArenaAllocator::newHeapBuffer@4 (line 172)
+                                                                       ; - io.netty.buffer.AbstractByteBufAllocator::heapBuffer@21 (line 149)
+                                                                       ; - io.netty.buffer.AbstractByteBufAllocator::heapBuffer@4 (line 140)
+                                                                       ; - io.github.neoionet.netty.microbenchmark.CycleScopedAllocBenchmark::cycle@78 (line 87)
+             0x00007f3b2461b58a:   mov    0xc(%r12,%rbx,8),%edx        ; implicit exception: dispatches to 0x00007f3b2461ca20
+                                                                       ;*arraylength {reexecute=0 rethrow=0 return_oop=0}
+                                                                       ; - io.netty.util.internal.InternalThreadLocalMap::indexedVariable@7 (line 319)
+                                                                       ; - io.netty.util.concurrent.FastThreadLocal::get@9 (line 138)
+                                                                       ; - io.netty.buffer.CycleArenaAllocator::newHeapBuffer@4 (line 172)
+                                                                       ; - io.netty.buffer.AbstractByteBufAllocator::heapBuffer@21 (line 149)
+                                                                       ; - io.netty.buffer.AbstractByteBufAllocator::heapBuffer@4 (line 140)
+                                                                       ; - io.github.neoionet.netty.microbenchmark.CycleScopedAllocBenchmark::cycle@78 (line 87)
+   0.22%     0x00007f3b2461b58f:   cmp    %edx,%edi
+             0x00007f3b2461b591:   jge    0x00007f3b2461c2a8           ;*if_icmpge {reexecute=0 rethrow=0 return_oop=0}
+                                                                       ; - io.netty.util.internal.InternalThreadLocalMap::indexedVariable@8 (line 319)
+                                                                       ; - io.netty.util.concurrent.FastThreadLocal::get@9 (line 138)
+                                                                       ; - io.netty.buffer.CycleArenaAllocator::newHeapBuffer@4 (line 172)
+                                                                       ; - io.netty.buffer.AbstractByteBufAllocator::heapBuffer@21 (line 149)
+                                                                       ; - io.netty.buffer.AbstractByteBufAllocator::heapBuffer@4 (line 140)
+                                                                       ; - io.github.neoionet.netty.microbenchmark.CycleScopedAllocBenchmark::cycle@78 (line 87)
+             0x00007f3b2461b597:   cmp    %edx,%edi
+   0.02%     0x00007f3b2461b599:   jae    0x00007f3b2461bf58
+             0x00007f3b2461b59f:   lea    (%r12,%rbx,8),%r8
+   0.68%     0x00007f3b2461b5a3:   mov    0x10(%r8,%rdi,4),%r8d        ;*aaload {reexecute=0 rethrow=0 return_oop=0}
+                                                                       ; - io.netty.util.internal.InternalThreadLocalMap::indexedVariable@13 (line 319)
+                                                                       ; - io.netty.util.concurrent.FastThreadLocal::get@9 (line 138)
+                                                                       ; - io.netty.buffer.CycleArenaAllocator::newHeapBuffer@4 (line 172)
+                                                                       ; - io.netty.buffer.AbstractByteBufAllocator::heapBuffer@21 (line 149)
+                                                                       ; - io.netty.buffer.AbstractByteBufAllocator::heapBuffer@4 (line 140)
+                                                                       ; - io.github.neoionet.netty.microbenchmark.CycleScopedAllocBenchmark::cycle@78 (line 87)
+   0.24%     0x00007f3b2461b5a8:   cmp    $0xffcdb1bb,%r8d             ;   {oop(a &apos;java/lang/Object&apos;{0x00000007fe6d8dd8})}
+   0.39%     0x00007f3b2461b5af:   je     0x00007f3b2461c2f8           ;*if_acmpeq {reexecute=0 rethrow=0 return_oop=0}
+                                                                       ; - io.netty.util.concurrent.FastThreadLocal::get@17 (line 139)
+                                                                       ; - io.netty.buffer.CycleArenaAllocator::newHeapBuffer@4 (line 172)
+                                                                       ; - io.netty.buffer.AbstractByteBufAllocator::heapBuffer@21 (line 149)
+                                                                       ; - io.netty.buffer.AbstractByteBufAllocator::heapBuffer@4 (line 140)
+                                                                       ; - io.github.neoionet.netty.microbenchmark.CycleScopedAllocBenchmark::cycle@78 (line 87)
+             0x00007f3b2461b5b5:   mov    0x8(%r12,%r8,8),%r9d         ; implicit exception: dispatches to 0x00007f3b2461ca38
+   1.18%     0x00007f3b2461b5ba:   cmp    $0x10a1740,%r9d              ;   {metadata(&apos;io/netty/buffer/CycleArenaAllocator$Space&apos;)}
+   0.46%     0x00007f3b2461b5c1:   jne    0x00007f3b2461c9a8
+             0x00007f3b2461b5c7:   lea    (%r12,%r8,8),%r10            ;*checkcast {reexecute=0 rethrow=0 return_oop=0}
+                                                                       ; - io.netty.buffer.CycleArenaAllocator::newHeapBuffer@7 (line 172)
+                                                                       ; - io.netty.buffer.AbstractByteBufAllocator::heapBuffer@21 (line 149)
+                                                                       ; - io.netty.buffer.AbstractByteBufAllocator::heapBuffer@4 (line 140)
+                                                                       ; - io.github.neoionet.netty.microbenchmark.CycleScopedAllocBenchmark::cycle@78 (line 87)
+             0x00007f3b2461b5cb:   mov    0xc(%r10),%r8d               ;*getfield cap {reexecute=0 rethrow=0 return_oop=0}
+                                                                       ; - io.netty.buffer.CycleArenaAllocator$Space::allocate@2 (line 410)
+                                                                       ; - io.netty.buffer.CycleArenaAllocator::newHeapBuffer@14 (line 173)
+                                                                       ; - io.netty.buffer.AbstractByteBufAllocator::heapBuffer@21 (line 149)
+                                                                       ; - io.netty.buffer.AbstractByteBufAllocator::heapBuffer@4 (line 140)
+                                                                       ; - io.github.neoionet.netty.microbenchmark.CycleScopedAllocBenchmark::cycle@78 (line 87)
+             0x00007f3b2461b5cf:   mov    0x30(%rsp),%ebx
+   0.13%     0x00007f3b2461b5d3:   cmp    %r8d,%ebx
+             0x00007f3b2461b5d6:   jg     0x00007f3b2461c340           ;*if_icmple {reexecute=0 rethrow=0 return_oop=0}
+                                                                       ; - io.netty.buffer.CycleArenaAllocator$Space::allocate@5 (line 410)
+                                                                       ; - io.netty.buffer.CycleArenaAllocator::newHeapBuffer@14 (line 173)
+                                                                       ; - io.netty.buffer.AbstractByteBufAllocator::heapBuffer@21 (line 149)
+                                                                       ; - io.netty.buffer.AbstractByteBufAllocator::heapBuffer@4 (line 140)
+                                                                       ; - io.github.neoionet.netty.microbenchmark.CycleScopedAllocBenchmark::cycle@78 (line 87)
+             0x00007f3b2461b5dc:   movzbl 0xe5(%r10),%r9d              ;*getfield exhausted {reexecute=0 rethrow=0 return_oop=0}
+                                                                       ; - io.netty.buffer.CycleArenaAllocator$Space::allocate@11 (line 413)
+                                                                       ; - io.netty.buffer.CycleArenaAllocator::newHeapBuffer@14 (line 173)
+                                                                       ; - io.netty.buffer.AbstractByteBufAllocator::heapBuffer@21 (line 149)
+                                                                       ; - io.netty.buffer.AbstractByteBufAllocator::heapBuffer@4 (line 140)
+                                                                       ; - io.github.neoionet.netty.microbenchmark.CycleScopedAllocBenchmark::cycle@78 (line 87)
+   0.68%     0x00007f3b2461b5e4:   test   %r9d,%r9d
+   0.22%     0x00007f3b2461b5e7:   jne    0x00007f3b2461c384           ;*ifeq {reexecute=0 rethrow=0 return_oop=0}
+                                                                       ; - io.netty.buffer.CycleArenaAllocator$Space::allocate@14 (line 413)
+                                                                       ; - io.netty.buffer.CycleArenaAllocator::newHeapBuffer@14 (line 173)
+                                                                       ; - io.netty.buffer.AbstractByteBufAllocator::heapBuffer@21 (line 149)
+                                                                       ; - io.netty.buffer.AbstractByteBufAllocator::heapBuffer@4 (line 140)
+                                                                       ; - io.github.neoionet.netty.microbenchmark.CycleScopedAllocBenchmark::cycle@78 (line 87)
+             0x00007f3b2461b5ed:   mov    0x118(%r10),%r8d
+   0.26%     0x00007f3b2461b5f4:   test   %r8d,%r8d
+   0.04%     0x00007f3b2461b5f7:   jne    0x00007f3b2461c0d0           ;*getfield hook {reexecute=0 rethrow=0 return_oop=0}
+                                                                       ; - io.netty.buffer.CycleArenaAllocator$Space::allocate@20 (line 416)
+                                                                       ; - io.netty.buffer.CycleArenaAllocator::newHeapBuffer@14 (line 173)
+                                                                       ; - io.netty.buffer.AbstractByteBufAllocator::heapBuffer@21 (line 149)
+                                                                       ; - io.netty.buffer.AbstractByteBufAllocator::heapBuffer@4 (line 140)
+                                                                       ; - io.github.neoionet.netty.microbenchmark.CycleScopedAllocBenchmark::cycle@78 (line 87)
+             0x00007f3b2461b5fd:   mov    0xc8(%r10),%ebp              ;*getfield curBump {reexecute=0 rethrow=0 return_oop=0}
+                                                                       ; - io.netty.buffer.CycleArenaAllocator$Space::allocate@40 (line 420)
+                                                                       ; - io.netty.buffer.CycleArenaAllocator::newHeapBuffer@14 (line 173)
+                                                                       ; - io.netty.buffer.AbstractByteBufAllocator::heapBuffer@21 (line 149)
+                                                                       ; - io.netty.buffer.AbstractByteBufAllocator::heapBuffer@4 (line 140)
+                                                                       ; - io.github.neoionet.netty.microbenchmark.CycleScopedAllocBenchmark::cycle@78 (line 87)
+   0.72%     0x00007f3b2461b604:   lea    0x7(%rbx),%r9d
+             0x00007f3b2461b608:   and    $0xfffffff8,%r9d
+   0.13%     0x00007f3b2461b60c:   add    %ebp,%r9d                    ;*iadd {reexecute=0 rethrow=0 return_oop=0}
+                                                                       ; - io.netty.buffer.CycleArenaAllocator$Space::allocate@54 (line 421)
+                                                                       ; - io.netty.buffer.CycleArenaAllocator::newHeapBuffer@14 (line 173)
+                                                                       ; - io.netty.buffer.AbstractByteBufAllocator::heapBuffer@21 (line 149)
+                                                                       ; - io.netty.buffer.AbstractByteBufAllocator::heapBuffer@4 (line 140)
+                                                                       ; - io.github.neoionet.netty.microbenchmark.CycleScopedAllocBenchmark::cycle@78 (line 87)
+             0x00007f3b2461b60f:   cmp    $0x40000,%r9d
+   0.48%     0x00007f3b2461b616:   jg     0x00007f3b2461c3c8           ;*if_icmple {reexecute=0 rethrow=0 return_oop=0}
+                                                                       ; - io.netty.buffer.CycleArenaAllocator$Space::allocate@62 (line 422)
+                                                                       ; - io.netty.buffer.CycleArenaAllocator::newHeapBuffer@14 (line 173)
+                                                                       ; - io.netty.buffer.AbstractByteBufAllocator::heapBuffer@21 (line 149)
+                                                                       ; - io.netty.buffer.AbstractByteBufAllocator::heapBuffer@4 (line 140)
+                                                                       ; - io.github.neoionet.netty.microbenchmark.CycleScopedAllocBenchmark::cycle@78 (line 87)
+             0x00007f3b2461b61c:   mov    0xd0(%r10),%esi              ;*getfield freeTop {reexecute=0 rethrow=0 return_oop=0}
+                                                                       ; - io.netty.buffer.CycleArenaAllocator$Space::allocate@73 (line 425)
+                                                                       ; - io.netty.buffer.CycleArenaAllocator::newHeapBuffer@14 (line 173)
+                                                                       ; - io.netty.buffer.AbstractByteBufAllocator::heapBuffer@21 (line 149)
+                                                                       ; - io.netty.buffer.AbstractByteBufAllocator::heapBuffer@4 (line 140)
+                                                                       ; - io.github.neoionet.netty.microbenchmark.CycleScopedAllocBenchmark::cycle@78 (line 87)
+   0.07%     0x00007f3b2461b623:   lea    -0x1(%rsi),%edi
+   0.13%     0x00007f3b2461b626:   test   %edi,%edi
+   0.20%     0x00007f3b2461b628:   jl     0x00007f3b2461c410           ;*ifge {reexecute=0 rethrow=0 return_oop=0}
+                                                                       ; - io.netty.buffer.CycleArenaAllocator$Space::allocate@82 (line 426)
+                                                                       ; - io.netty.buffer.CycleArenaAllocator::newHeapBuffer@14 (line 173)
+                                                                       ; - io.netty.buffer.AbstractByteBufAllocator::heapBuffer@21 (line 149)
+                                                                       ; - io.netty.buffer.AbstractByteBufAllocator::heapBuffer@4 (line 140)
+                                                                       ; - io.github.neoionet.netty.microbenchmark.CycleScopedAllocBenchmark::cycle@78 (line 87)
+             0x00007f3b2461b62e:   mov    %edi,0xd0(%r10)              ;*putfield freeTop {reexecute=0 rethrow=0 return_oop=0}
+                                                                       ; - io.netty.buffer.CycleArenaAllocator$Space::allocate@99 (line 429)
+                                                                       ; - io.netty.buffer.CycleArenaAllocator::newHeapBuffer@14 (line 173)
+                                                                       ; - io.netty.buffer.AbstractByteBufAllocator::heapBuffer@21 (line 149)
+                                                                       ; - io.netty.buffer.AbstractByteBufAllocator::heapBuffer@4 (line 140)
+                                                                       ; - io.github.neoionet.netty.microbenchmark.CycleScopedAllocBenchmark::cycle@78 (line 87)
+   0.22%     0x00007f3b2461b635:   mov    %r9d,0xc8(%r10)              ;*putfield curBump {reexecute=0 rethrow=0 return_oop=0}
+                                                                       ; - io.netty.buffer.CycleArenaAllocator$Space::allocate@105 (line 430)
+                                                                       ; - io.netty.buffer.CycleArenaAllocator::newHeapBuffer@14 (line 173)
+                                                                       ; - io.netty.buffer.AbstractByteBufAllocator::heapBuffer@21 (line 149)
+                                                                       ; - io.netty.buffer.AbstractByteBufAllocator::heapBuffer@4 (line 140)
+                                                                       ; - io.github.neoionet.netty.microbenchmark.CycleScopedAllocBenchmark::cycle@78 (line 87)
+   0.04%     0x00007f3b2461b63c:   mov    0xf0(%r10),%r8d              ;*getfield allocs {reexecute=0 rethrow=0 return_oop=0}
+                                                                       ; - io.netty.buffer.CycleArenaAllocator$Space::allocate@109 (line 431)
+                                                                       ; - io.netty.buffer.CycleArenaAllocator::newHeapBuffer@14 (line 173)
+                                                                       ; - io.netty.buffer.AbstractByteBufAllocator::heapBuffer@21 (line 149)
+                                                                       ; - io.netty.buffer.AbstractByteBufAllocator::heapBuffer@4 (line 140)
+                                                                       ; - io.github.neoionet.netty.microbenchmark.CycleScopedAllocBenchmark::cycle@78 (line 87)
+   0.07%     0x00007f3b2461b643:   mov    0xc4(%r10),%r9d              ;*getfield curId {reexecute=0 rethrow=0 return_oop=0}
+                                                                       ; - io.netty.buffer.CycleArenaAllocator$Space::allocate@113 (line 431)
+                                                                       ; - io.netty.buffer.CycleArenaAllocator::newHeapBuffer@14 (line 173)
+                                                                       ; - io.netty.buffer.AbstractByteBufAllocator::heapBuffer@21 (line 149)
+                                                                       ; - io.netty.buffer.AbstractByteBufAllocator::heapBuffer@4 (line 140)
+                                                                       ; - io.github.neoionet.netty.microbenchmark.CycleScopedAllocBenchmark::cycle@78 (line 87)
+   0.02%     0x00007f3b2461b64a:   mov    0xc(%r12,%r8,8),%ecx         ; implicit exception: dispatches to 0x00007f3b2461ca78
+                                                                       ;*iaload {reexecute=0 rethrow=0 return_oop=0}
+                                                                       ; - io.netty.buffer.CycleArenaAllocator$Space::allocate@117 (line 431)
+                                                                       ; - io.netty.buffer.CycleArenaAllocator::newHeapBuffer@14 (line 173)
+                                                                       ; - io.netty.buffer.AbstractByteBufAllocator::heapBuffer@21 (line 149)
+                                                                       ; - io.netty.buffer.AbstractByteBufAllocator::heapBuffer@4 (line 140)
+                                                                       ; - io.github.neoionet.netty.microbenchmark.CycleScopedAllocBenchmark::cycle@78 (line 87)
+   1.79%     0x00007f3b2461b64f:   cmp    %ecx,%r9d
+             0x00007f3b2461b652:   jae    0x00007f3b2461bfa4
+             0x00007f3b2461b658:   mov    0x114(%r10),%ebx             ;*getfield free {reexecute=0 rethrow=0 return_oop=0}
+                                                                       ; - io.netty.buffer.CycleArenaAllocator$Space::allocate@126 (line 432)
+                                                                       ; - io.netty.buffer.CycleArenaAllocator::newHeapBuffer@14 (line 173)
+                                                                       ; - io.netty.buffer.AbstractByteBufAllocator::heapBuffer@21 (line 149)
+                                                                       ; - io.netty.buffer.AbstractByteBufAllocator::heapBuffer@4 (line 140)
+                                                                       ; - io.github.neoionet.netty.microbenchmark.CycleScopedAllocBenchmark::cycle@78 (line 87)
+   0.02%     0x00007f3b2461b65f:   shl    $0x3,%r8
+   0.02%     0x00007f3b2461b663:   incl   0x10(%r8,%r9,4)              ;*iastore {reexecute=0 rethrow=0 return_oop=0}
+                                                                       ; - io.netty.buffer.CycleArenaAllocator$Space::allocate@120 (line 431)
+                                                                       ; - io.netty.buffer.CycleArenaAllocator::newHeapBuffer@14 (line 173)
+                                                                       ; - io.netty.buffer.AbstractByteBufAllocator::heapBuffer@21 (line 149)
+                                                                       ; - io.netty.buffer.AbstractByteBufAllocator::heapBuffer@4 (line 140)
+                                                                       ; - io.github.neoionet.netty.microbenchmark.CycleScopedAllocBenchmark::cycle@78 (line 87)
+   0.78%     0x00007f3b2461b668:   mov    0xc(%r12,%rbx,8),%ecx        ; implicit exception: dispatches to 0x00007f3b2461ca90
+   0.52%     0x00007f3b2461b66d:   mov    0x110(%r10),%edx             ;*getfield objects {reexecute=0 rethrow=0 return_oop=0}
+                                                                       ; - io.netty.buffer.CycleArenaAllocator$Space::allocate@122 (line 432)
+                                                                       ; - io.netty.buffer.CycleArenaAllocator::newHeapBuffer@14 (line 173)
+                                                                       ; - io.netty.buffer.AbstractByteBufAllocator::heapBuffer@21 (line 149)
+                                                                       ; - io.netty.buffer.AbstractByteBufAllocator::heapBuffer@4 (line 140)
+                                                                       ; - io.github.neoionet.netty.microbenchmark.CycleScopedAllocBenchmark::cycle@78 (line 87)
+   0.41%     0x00007f3b2461b674:   cmp    %ecx,%edi
+             0x00007f3b2461b676:   jae    0x00007f3b2461bfec
+             0x00007f3b2461b67c:   lea    (%r12,%rbx,8),%r8
+             0x00007f3b2461b680:   mov    0xc(%r8,%rsi,4),%r8d         ;*iaload {reexecute=0 rethrow=0 return_oop=0}
+                                                                       ; - io.netty.buffer.CycleArenaAllocator$Space::allocate@131 (line 432)
+                                                                       ; - io.netty.buffer.CycleArenaAllocator::newHeapBuffer@14 (line 173)
+                                                                       ; - io.netty.buffer.AbstractByteBufAllocator::heapBuffer@21 (line 149)
+                                                                       ; - io.netty.buffer.AbstractByteBufAllocator::heapBuffer@4 (line 140)
+                                                                       ; - io.github.neoionet.netty.microbenchmark.CycleScopedAllocBenchmark::cycle@78 (line 87)
+   0.44%     0x00007f3b2461b685:   mov    0xc(%r12,%rdx,8),%ecx        ; implicit exception: dispatches to 0x00007f3b2461caa8
+   0.44%     0x00007f3b2461b68a:   cmp    %ecx,%r8d
+   0.24%     0x00007f3b2461b68d:   jae    0x00007f3b2461c044
+             0x00007f3b2461b693:   lea    (%r12,%rdx,8),%rcx
+             0x00007f3b2461b697:   mov    0x10(%rcx,%r8,4),%ebx        ;*aaload {reexecute=0 rethrow=0 return_oop=0}
+                                                                       ; - io.netty.buffer.CycleArenaAllocator$Space::allocate@132 (line 432)
+                                                                       ; - io.netty.buffer.CycleArenaAllocator::newHeapBuffer@14 (line 173)
+                                                                       ; - io.netty.buffer.AbstractByteBufAllocator::heapBuffer@21 (line 149)
+                                                                       ; - io.netty.buffer.AbstractByteBufAllocator::heapBuffer@4 (line 140)
+                                                                       ; - io.github.neoionet.netty.microbenchmark.CycleScopedAllocBenchmark::cycle@78 (line 87)
+   3.97%     0x00007f3b2461b69c:   mov    0x44(%r12,%rbx,8),%ecx       ; implicit exception: dispatches to 0x00007f3b2461cac0
+                                                                       ;*getfield space {reexecute=0 rethrow=0 return_oop=0}
+                                                                       ; - io.netty.buffer.CycleArenaAllocator$ArenaBuf::init@21 (line 872)
+                                                                       ; - io.netty.buffer.CycleArenaAllocator$Space::allocate@145 (line 433)
+                                                                       ; - io.netty.buffer.CycleArenaAllocator::newHeapBuffer@14 (line 173)
+                                                                       ; - io.netty.buffer.AbstractByteBufAllocator::heapBuffer@21 (line 149)
+                                                                       ; - io.netty.buffer.AbstractByteBufAllocator::heapBuffer@4 (line 140)
+                                                                       ; - io.github.neoionet.netty.microbenchmark.CycleScopedAllocBenchmark::cycle@78 (line 87)
+   4.18%     0x00007f3b2461b6a1:   mov    0x30(%rsp),%r13d
+             0x00007f3b2461b6a6:   mov    %r13d,0x34(%r12,%rbx,8)      ;*putfield length {reexecute=0 rethrow=0 return_oop=0}
+                                                                       ; - io.netty.buffer.CycleArenaAllocator$ArenaBuf::init@12 (line 870)
+                                                                       ; - io.netty.buffer.CycleArenaAllocator$Space::allocate@145 (line 433)
+                                                                       ; - io.netty.buffer.CycleArenaAllocator::newHeapBuffer@14 (line 173)
+                                                                       ; - io.netty.buffer.AbstractByteBufAllocator::heapBuffer@21 (line 149)
+                                                                       ; - io.netty.buffer.AbstractByteBufAllocator::heapBuffer@4 (line 140)
+                                                                       ; - io.github.neoionet.netty.microbenchmark.CycleScopedAllocBenchmark::cycle@78 (line 87)
+   2.24%     0x00007f3b2461b6ab:   mov    %ebp,0x30(%r12,%rbx,8)       ;*putfield start {reexecute=0 rethrow=0 return_oop=0}
+                                                                       ; - io.netty.buffer.CycleArenaAllocator$ArenaBuf::init@7 (line 869)
+                                                                       ; - io.netty.buffer.CycleArenaAllocator$Space::allocate@145 (line 433)
+                                                                       ; - io.netty.buffer.CycleArenaAllocator::newHeapBuffer@14 (line 173)
+                                                                       ; - io.netty.buffer.AbstractByteBufAllocator::heapBuffer@21 (line 149)
+                                                                       ; - io.netty.buffer.AbstractByteBufAllocator::heapBuffer@4 (line 140)
+                                                                       ; - io.github.neoionet.netty.microbenchmark.CycleScopedAllocBenchmark::cycle@78 (line 87)
+   1.98%     0x00007f3b2461b6b0:   mov    %r9d,0x2c(%r12,%rbx,8)       ;*putfield blockId {reexecute=0 rethrow=0 return_oop=0}
+                                                                       ; - io.netty.buffer.CycleArenaAllocator$ArenaBuf::init@2 (line 868)
+                                                                       ; - io.netty.buffer.CycleArenaAllocator$Space::allocate@145 (line 433)
+                                                                       ; - io.netty.buffer.CycleArenaAllocator::newHeapBuffer@14 (line 173)
+                                                                       ; - io.netty.buffer.AbstractByteBufAllocator::heapBuffer@21 (line 149)
+                                                                       ; - io.netty.buffer.AbstractByteBufAllocator::heapBuffer@4 (line 140)
+                                                                       ; - io.github.neoionet.netty.microbenchmark.CycleScopedAllocBenchmark::cycle@78 (line 87)
+   0.28%     0x00007f3b2461b6b5:   movl   $0x1,0x38(%r12,%rbx,8)       ;*putfield refCnt {reexecute=0 rethrow=0 return_oop=0}
+                                                                       ; - io.netty.buffer.CycleArenaAllocator$ArenaBuf::init@17 (line 871)
+                                                                       ; - io.netty.buffer.CycleArenaAllocator$Space::allocate@145 (line 433)
+                                                                       ; - io.netty.buffer.CycleArenaAllocator::newHeapBuffer@14 (line 173)
+                                                                       ; - io.netty.buffer.AbstractByteBufAllocator::heapBuffer@21 (line 149)
+                                                                       ; - io.netty.buffer.AbstractByteBufAllocator::heapBuffer@4 (line 140)
+                                                                       ; - io.github.neoionet.netty.microbenchmark.CycleScopedAllocBenchmark::cycle@78 (line 87)
+                                                                       ;   {no_reloc}
+   1.07%     0x00007f3b2461b6be:   mov    0x10c(%r12,%rcx,8),%edi      ; implicit exception: dispatches to 0x00007f3b2461cadc
+                                                                       ;*getfield curMemory {reexecute=0 rethrow=0 return_oop=0}
+                                                                       ; - io.netty.buffer.CycleArenaAllocator$ArenaBuf::init@24 (line 872)
+                                                                       ; - io.netty.buffer.CycleArenaAllocator$Space::allocate@145 (line 433)
+                                                                       ; - io.netty.buffer.CycleArenaAllocator::newHeapBuffer@14 (line 173)
+                                                                       ; - io.netty.buffer.AbstractByteBufAllocator::heapBuffer@21 (line 149)
+                                                                       ; - io.netty.buffer.AbstractByteBufAllocator::heapBuffer@4 (line 140)
+                                                                       ; - io.github.neoionet.netty.microbenchmark.CycleScopedAllocBenchmark::cycle@78 (line 87)
+   5.19%     0x00007f3b2461b6c6:   mov    0x4c(%r12,%rbx,8),%r14d      ;*getfield memory {reexecute=0 rethrow=0 return_oop=0}
+                                                                       ; - io.netty.buffer.CycleArenaAllocator$ArenaBuf::init@30 (line 873)
+                                                                       ; - io.netty.buffer.CycleArenaAllocator$Space::allocate@145 (line 433)
+                                                                       ; - io.netty.buffer.CycleArenaAllocator::newHeapBuffer@14 (line 173)
+                                                                       ; - io.netty.buffer.AbstractByteBufAllocator::heapBuffer@21 (line 149)
+                                                                       ; - io.netty.buffer.AbstractByteBufAllocator::heapBuffer@4 (line 140)
+                                                                       ; - io.github.neoionet.netty.microbenchmark.CycleScopedAllocBenchmark::cycle@78 (line 87)
+   1.90%     0x00007f3b2461b6cb:   cmp    %edi,%r14d
+   0.07%     0x00007f3b2461b6ce:   jne    0x00007f3b2461c45c           ;*if_acmpeq {reexecute=0 rethrow=0 return_oop=0}
+                                                                       ; - io.netty.buffer.CycleArenaAllocator$ArenaBuf::init@35 (line 873)
+                                                                       ; - io.netty.buffer.CycleArenaAllocator$Space::allocate@145 (line 433)
+                                                                       ; - io.netty.buffer.CycleArenaAllocator::newHeapBuffer@14 (line 173)
+                                                                       ; - io.netty.buffer.AbstractByteBufAllocator::heapBuffer@21 (line 149)
+                                                                       ; - io.netty.buffer.AbstractByteBufAllocator::heapBuffer@4 (line 140)
+                                                                       ; - io.github.neoionet.netty.microbenchmark.CycleScopedAllocBenchmark::cycle@78 (line 87)
+             0x00007f3b2461b6d4:   mov    %ebp,%r11d
+             0x00007f3b2461b6d7:   and    0xc0(%r12,%rcx,8),%r11d
+   1.68%     0x00007f3b2461b6df:   mov    %r12d,0x18(%r12,%rbx,8)      ;*putfield markedWriterIndex {reexecute=0 rethrow=0 return_oop=0}
+                                                                       ; - io.netty.buffer.AbstractByteBuf::resetForReuse@22 (line 105)
+                                                                       ; - io.netty.buffer.CycleArenaAllocator$ArenaBuf::init@69 (line 877)
+                                                                       ; - io.netty.buffer.CycleArenaAllocator$Space::allocate@145 (line 433)
+                                                                       ; - io.netty.buffer.CycleArenaAllocator::newHeapBuffer@14 (line 173)
+                                                                       ; - io.netty.buffer.AbstractByteBufAllocator::heapBuffer@21 (line 149)
+                                                                       ; - io.netty.buffer.AbstractByteBufAllocator::heapBuffer@4 (line 140)
+                                                                       ; - io.github.neoionet.netty.microbenchmark.CycleScopedAllocBenchmark::cycle@78 (line 87)
+   0.20%     0x00007f3b2461b6e4:   mov    %r12d,0x14(%r12,%rbx,8)      ;*putfield markedReaderIndex {reexecute=0 rethrow=0 return_oop=0}
+                                                                       ; - io.netty.buffer.AbstractByteBuf::resetForReuse@17 (line 104)
+                                                                       ; - io.netty.buffer.CycleArenaAllocator$ArenaBuf::init@69 (line 877)
+                                                                       ; - io.netty.buffer.CycleArenaAllocator$Space::allocate@145 (line 433)
+                                                                       ; - io.netty.buffer.CycleArenaAllocator::newHeapBuffer@14 (line 173)
+                                                                       ; - io.netty.buffer.AbstractByteBufAllocator::heapBuffer@21 (line 149)
+                                                                       ; - io.netty.buffer.AbstractByteBufAllocator::heapBuffer@4 (line 140)
+                                                                       ; - io.github.neoionet.netty.microbenchmark.CycleScopedAllocBenchmark::cycle@78 (line 87)
+   0.04%     0x00007f3b2461b6e9:   mov    %r12d,0x10(%r12,%rbx,8)      ;*putfield writerIndex {reexecute=0 rethrow=0 return_oop=0}
+                                                                       ; - io.netty.buffer.AbstractByteBuf::resetForReuse@12 (line 103)
+                                                                       ; - io.netty.buffer.CycleArenaAllocator$ArenaBuf::init@69 (line 877)
+                                                                       ; - io.netty.buffer.CycleArenaAllocator$Space::allocate@145 (line 433)
+                                                                       ; - io.netty.buffer.CycleArenaAllocator::newHeapBuffer@14 (line 173)
+                                                                       ; - io.netty.buffer.AbstractByteBufAllocator::heapBuffer@21 (line 149)
+                                                                       ; - io.netty.buffer.AbstractByteBufAllocator::heapBuffer@4 (line 140)
+                                                                       ; - io.github.neoionet.netty.microbenchmark.CycleScopedAllocBenchmark::cycle@78 (line 87)
+   0.09%     0x00007f3b2461b6ee:   movl   $0x7fffffff,0x1c(%r12,%rbx,8);*putfield maxCapacity {reexecute=0 rethrow=0 return_oop=0}
+                                                                       ; - io.netty.buffer.AbstractByteBuf::resetForReuse@2 (line 101)
+                                                                       ; - io.netty.buffer.CycleArenaAllocator$ArenaBuf::init@69 (line 877)
+                                                                       ; - io.netty.buffer.CycleArenaAllocator$Space::allocate@145 (line 433)
+                                                                       ; - io.netty.buffer.CycleArenaAllocator::newHeapBuffer@14 (line 173)
+                                                                       ; - io.netty.buffer.AbstractByteBufAllocator::heapBuffer@21 (line 149)
+                                                                       ; - io.netty.buffer.AbstractByteBufAllocator::heapBuffer@4 (line 140)
+                                                                       ; - io.github.neoionet.netty.microbenchmark.CycleScopedAllocBenchmark::cycle@78 (line 87)
+   0.65%     0x00007f3b2461b6f7:   mov    %r12d,0xc(%r12,%rbx,8)       ;*putfield readerIndex {reexecute=0 rethrow=0 return_oop=0}
+                                                                       ; - io.netty.buffer.AbstractByteBuf::resetForReuse@7 (line 102)
+                                                                       ; - io.netty.buffer.CycleArenaAllocator$ArenaBuf::init@69 (line 877)
+                                                                       ; - io.netty.buffer.CycleArenaAllocator$Space::allocate@145 (line 433)
+                                                                       ; - io.netty.buffer.CycleArenaAllocator::newHeapBuffer@14 (line 173)
+                                                                       ; - io.netty.buffer.AbstractByteBufAllocator::heapBuffer@21 (line 149)
+                                                                       ; - io.netty.buffer.AbstractByteBufAllocator::heapBuffer@4 (line 140)
+                                                                       ; - io.github.neoionet.netty.microbenchmark.CycleScopedAllocBenchmark::cycle@78 (line 87)
+             0x00007f3b2461b6fc:   movslq %r11d,%r10
+   1.70%     0x00007f3b2461b6ff:   add    0x10(%r12,%rcx,8),%r10
+   9.41%     0x00007f3b2461b704:   mov    %r10,0x20(%r12,%rbx,8)       ;*putfield address {reexecute=0 rethrow=0 return_oop=0}
+                                                                       ; - io.netty.buffer.CycleArenaAllocator$ArenaBuf::init@63 (line 876)
+                                                                       ; - io.netty.buffer.CycleArenaAllocator$Space::allocate@145 (line 433)
+                                                                       ; - io.netty.buffer.CycleArenaAllocator::newHeapBuffer@14 (line 173)
+                                                                       ; - io.netty.buffer.AbstractByteBufAllocator::heapBuffer@21 (line 149)
+                                                                       ; - io.netty.buffer.AbstractByteBufAllocator::heapBuffer@4 (line 140)
+                                                                       ; - io.github.neoionet.netty.microbenchmark.CycleScopedAllocBenchmark::cycle@78 (line 87)
+   0.09%     0x00007f3b2461b709:   cmp    $0x1,%r13d
+   0.20%     0x00007f3b2461b70d:   jl     0x00007f3b2461c1ac           ;*if_icmpgt {reexecute=0 rethrow=0 return_oop=0}
+                                                                       ; - io.netty.buffer.AbstractByteBuf::ensureWritable0@23 (line 300)
+                                                                       ; - io.netty.buffer.AbstractByteBuf::writeByte@2 (line 1003)
+                                                                       ; - io.github.neoionet.netty.microbenchmark.CycleScopedAllocBenchmark::cycle@89 (line 88)
+             0x00007f3b2461b713:   movl   $0x1,0x10(%r12,%rbx,8)       ;*putfield writerIndex {reexecute=0 rethrow=0 return_oop=0}
+                                                                       ; - io.netty.buffer.AbstractByteBuf::writeByte@14 (line 1004)
+                                                                       ; - io.github.neoionet.netty.microbenchmark.CycleScopedAllocBenchmark::cycle@89 (line 88)
+   0.02%     0x00007f3b2461b71c:   test   %r14d,%r14d
+             0x00007f3b2461b71f:   je     0x00007f3b2461c4b0           ;*ifnull {reexecute=0 rethrow=0 return_oop=0}
+                                                                       ; - io.netty.buffer.CycleArenaAllocator$ArenaBuf::_setByte@6 (line 1211)
+                                                                       ; - io.netty.buffer.AbstractByteBuf::writeByte@18 (line 1004)
+                                                                       ; - io.github.neoionet.netty.microbenchmark.CycleScopedAllocBenchmark::cycle@89 (line 88)
+             0x00007f3b2461b725:   mov    0x20(%rsp),%r13
+   0.15%     0x00007f3b2461b72a:   mov    0x10(%rsp),%r11d
+   0.17%     0x00007f3b2461b72f:   lea    0x10(%r13,%r11,4),%r13       ;*invokestatic currentThread {reexecute=0 rethrow=0 return_oop=0}
+                                                                       ; - io.netty.util.internal.InternalThreadLocalMap::get@0 (line 111)
+                                                                       ; - io.netty.util.concurrent.FastThreadLocal::get@0 (line 137)
+                                                                       ; - io.netty.buffer.CycleArenaAllocator::newHeapBuffer@4 (line 172)
+                                                                       ; - io.netty.buffer.AbstractByteBufAllocator::heapBuffer@21 (line 149)
+                                                                       ; - io.netty.buffer.AbstractByteBufAllocator::heapBuffer@4 (line 140)
+                                                                       ; - io.github.neoionet.netty.microbenchmark.CycleScopedAllocBenchmark::cycle@78 (line 87)
+   2.59%     0x00007f3b2461b734:   cmpb   $0x0,0x40(%r15)
+   0.02%     0x00007f3b2461b739:   jne    0x00007f3b2461b91e
+             0x00007f3b2461b73f:   mov    %ebx,0x0(%r13)               ;*aastore {reexecute=0 rethrow=0 return_oop=0}
+                                                                       ; - io.github.neoionet.netty.microbenchmark.CycleScopedAllocBenchmark::cycle@98 (line 89)
+   2.59%     0x00007f3b2461b743:   mov    0x10(%rsp),%r10d
+   5.05%     0x00007f3b2461b748:   inc    %r10d                        ;*iinc {reexecute=0 rethrow=0 return_oop=0}
+                                                                       ; - io.github.neoionet.netty.microbenchmark.CycleScopedAllocBenchmark::cycle@99 (line 84)
+   1.00%     0x00007f3b2461b74b:   mov    %r10d,0x10(%rsp)
+             0x00007f3b2461b750:   movslq %ebp,%r10
+   0.52%     0x00007f3b2461b753:   lea    (%r12,%rbx,8),%r11
+             0x00007f3b2461b757:   lea    (%r12,%r14,8),%r8
+   0.02%     0x00007f3b2461b75b:   mov    0x30(%rsp),%ebx
+   0.39%     0x00007f3b2461b75f:   mov    %bl,0x10(%r8,%r10,1)         ;*invokevirtual putByte {reexecute=0 rethrow=0 return_oop=0}
+                                                                       ; - sun.misc.Unsafe::putByte@7 (line 237)
+                                                                       ; - io.netty.util.internal.PlatformDependent0::putByte@11 (line 951)
+                                                                       ; - io.netty.util.internal.PlatformDependent::putByte@3 (line 991)
+                                                                       ; - io.netty.buffer.UnsafeByteBufUtil::setByte@4 (line 348)
+                                                                       ; - io.netty.buffer.CycleArenaAllocator$ArenaBuf::_setByte@23 (line 1211)
+                                                                       ; - io.netty.buffer.AbstractByteBuf::writeByte@18 (line 1004)
+                                                                       ; - io.github.neoionet.netty.microbenchmark.CycleScopedAllocBenchmark::cycle@89 (line 88)
+   0.15%     0x00007f3b2461b764:   mov    %r11,%r10
+             0x00007f3b2461b767:   mov    %r13,%r11
+   0.39%     0x00007f3b2461b76a:   xor    %r11,%r10
+             0x00007f3b2461b76d:   shr    $0x18,%r10
+   0.46%     0x00007f3b2461b771:   test   %r10,%r10
+          ╭  0x00007f3b2461b774:   je     0x00007f3b2461b790
+          │  0x00007f3b2461b776:   shr    $0x9,%r11
+          │  0x00007f3b2461b77a:   movabs $0x7f3b15a00000,%rdi
+          │  0x00007f3b2461b784:   add    %r11,%rdi
+          │  0x00007f3b2461b787:   cmpb   $0x2,(%rdi)
+          │  0x00007f3b2461b78a:   jne    0x00007f3b2461b955           ;*aload {reexecute=0 rethrow=0 return_oop=0}
+          │                                                            ; - io.github.neoionet.netty.microbenchmark.CycleScopedAllocBenchmark::cycle@27 (line 85)
+          ↘  0x00007f3b2461b790:   mov    0x10(%rsp),%r10d
+   0.02%     0x00007f3b2461b795:   cmp    0x14(%rsp),%r10d
+   0.33%     0x00007f3b2461b79a:   jl     0x00007f3b2461b510           ;*invokestatic currentThread {reexecute=0 rethrow=0 return_oop=0}
+....................................................................................................
+  66.21%  <total for region 1>
+
+....[Hottest Region 2]..............................................................................
+c2, level 4, io.github.neoionet.netty.microbenchmark.CycleScopedAllocBenchmark::cycle, version 3, compile id 1397 
+
+                                                                       ; - io.netty.util.concurrent.FastThreadLocal::get@0 (line 137)
+                                                                       ; - io.netty.buffer.CycleArenaAllocator::newHeapBuffer@4 (line 172)
+                                                                       ; - io.netty.buffer.AbstractByteBufAllocator::heapBuffer@21 (line 149)
+                                                                       ; - io.netty.buffer.AbstractByteBufAllocator::heapBuffer@4 (line 140)
+                                                                       ; - io.github.neoionet.netty.microbenchmark.CycleScopedAllocBenchmark::cycle@78 (line 87)
+             0x00007f3b2461b99d:   mov    %r10,0x48(%r15)              ;*aastore {reexecute=0 rethrow=0 return_oop=0}
+                                                                       ; - io.github.neoionet.netty.microbenchmark.CycleScopedAllocBenchmark::cycle@98 (line 89)
+             0x00007f3b2461b9a1:   jmp    0x00007f3b2461b790
+             0x00007f3b2461b9a6:   data16 nopw 0x0(%rax,%rax,1)
+          ↗  0x00007f3b2461b9b0:   mov    %r13,%rbx
+   0.13%  │  0x00007f3b2461b9b3:   mov    0x28(%rsp),%r9
+          │  0x00007f3b2461b9b8:   mov    0x30(%rsp),%r13d
+          │  0x00007f3b2461b9bd:   mov    (%rsp),%esi
+   0.13%  │  0x00007f3b2461b9c0:   mov    0x4(%rsp),%edx               ;*aload_1 {reexecute=0 rethrow=0 return_oop=0}
+          │                                                            ; - io.github.neoionet.netty.microbenchmark.CycleScopedAllocBenchmark::cycle@177 (line 100)
+   0.26%  │  0x00007f3b2461b9c4:   mov    0x10(%r8,%rbp,4),%r10d       ;*aaload {reexecute=0 rethrow=0 return_oop=0}
+          │                                                            ; - io.github.neoionet.netty.microbenchmark.CycleScopedAllocBenchmark::cycle@181 (line 100)
+   0.57%  │  0x00007f3b2461b9c9:   mov    0x8(%r12,%r10,8),%ecx        ; implicit exception: dispatches to 0x00007f3b2461caf4
+   0.28%  │  0x00007f3b2461b9ce:   cmp    $0x10a1948,%ecx              ;   {metadata(&apos;io/netty/buffer/CycleArenaAllocator$ArenaBuf&apos;)}
+   0.09%  │  0x00007f3b2461b9d4:   jne    0x00007f3b2461c184
+          │  0x00007f3b2461b9da:   lea    (%r12,%r10,8),%r11           ;*invokevirtual readByte {reexecute=0 rethrow=0 return_oop=0}
+          │                                                            ; - io.github.neoionet.netty.microbenchmark.CycleScopedAllocBenchmark::cycle@182 (line 100)
+   0.24%  │  0x00007f3b2461b9de:   mov    0x38(%r11),%r10d             ;*getfield refCnt {reexecute=0 rethrow=0 return_oop=0}
+          │                                                            ; - io.netty.buffer.CycleArenaAllocator$ArenaBuf::refCnt@1 (line 895)
+          │                                                            ; - io.netty.buffer.ByteBuf::isAccessible@1 (line 2506)
+          │                                                            ; - io.netty.buffer.AbstractByteBuf::ensureAccessible@7 (line 1491)
+          │                                                            ; - io.netty.buffer.AbstractByteBuf::checkReadableBytes0@1 (line 1478)
+          │                                                            ; - io.netty.buffer.AbstractByteBuf::readByte@2 (line 749)
+          │                                                            ; - io.github.neoionet.netty.microbenchmark.CycleScopedAllocBenchmark::cycle@182 (line 100)
+   0.02%  │  0x00007f3b2461b9e2:   test   %r10d,%r10d
+          │  0x00007f3b2461b9e5:   je     0x00007f3b2461c4ec           ;*ifeq {reexecute=0 rethrow=0 return_oop=0}
+          │                                                            ; - io.netty.buffer.ByteBuf::isAccessible@4 (line 2506)
+          │                                                            ; - io.netty.buffer.AbstractByteBuf::ensureAccessible@7 (line 1491)
+          │                                                            ; - io.netty.buffer.AbstractByteBuf::checkReadableBytes0@1 (line 1478)
+          │                                                            ; - io.netty.buffer.AbstractByteBuf::readByte@2 (line 749)
+          │                                                            ; - io.github.neoionet.netty.microbenchmark.CycleScopedAllocBenchmark::cycle@182 (line 100)
+          │  0x00007f3b2461b9eb:   mov    %esi,(%rsp)
+          │  0x00007f3b2461b9ee:   mov    %r13d,0x30(%rsp)
+   0.11%  │  0x00007f3b2461b9f3:   mov    %r9,0x28(%rsp)
+   0.33%  │  0x00007f3b2461b9f8:   mov    %rbx,%r13
+   0.13%  │  0x00007f3b2461b9fb:   mov    0x10(%r11),%ecx
+   0.07%  │  0x00007f3b2461b9ff:   mov    0xc(%r11),%r9d               ;*getfield readerIndex {reexecute=0 rethrow=0 return_oop=0}
+          │                                                            ; - io.netty.buffer.AbstractByteBuf::checkReadableBytes0@11 (line 1479)
+          │                                                            ; - io.netty.buffer.AbstractByteBuf::readByte@2 (line 749)
+          │                                                            ; - io.github.neoionet.netty.microbenchmark.CycleScopedAllocBenchmark::cycle@182 (line 100)
+   0.15%  │  0x00007f3b2461ba03:   dec    %ecx                         ;*isub {reexecute=0 rethrow=0 return_oop=0}
+          │                                                            ; - io.netty.buffer.AbstractByteBuf::checkReadableBytes0@19 (line 1479)
+          │                                                            ; - io.netty.buffer.AbstractByteBuf::readByte@2 (line 749)
+          │                                                            ; - io.github.neoionet.netty.microbenchmark.CycleScopedAllocBenchmark::cycle@182 (line 100)
+   0.33%  │  0x00007f3b2461ba05:   cmp    %ecx,%r9d
+          │  0x00007f3b2461ba08:   jg     0x00007f3b2461c51c           ;*if_icmple {reexecute=0 rethrow=0 return_oop=0}
+          │                                                            ; - io.netty.buffer.AbstractByteBuf::checkReadableBytes0@20 (line 1479)
+          │                                                            ; - io.netty.buffer.AbstractByteBuf::readByte@2 (line 749)
+          │                                                            ; - io.github.neoionet.netty.microbenchmark.CycleScopedAllocBenchmark::cycle@182 (line 100)
+          │  0x00007f3b2461ba0e:   mov    0x4c(%r11),%ecx              ;*getfield memory {reexecute=0 rethrow=0 return_oop=0}
+          │                                                            ; - io.netty.buffer.CycleArenaAllocator$ArenaBuf::_getByte@1 (line 1202)
+          │                                                            ; - io.netty.buffer.AbstractByteBuf::readByte@12 (line 751)
+          │                                                            ; - io.github.neoionet.netty.microbenchmark.CycleScopedAllocBenchmark::cycle@182 (line 100)
+   0.09%  │  0x00007f3b2461ba12:   test   %ecx,%ecx
+          │  0x00007f3b2461ba14:   je     0x00007f3b2461c544           ;*ifnull {reexecute=0 rethrow=0 return_oop=0}
+          │                                                            ; - io.netty.buffer.CycleArenaAllocator$ArenaBuf::_getByte@6 (line 1202)
+          │                                                            ; - io.netty.buffer.AbstractByteBuf::readByte@12 (line 751)
+          │                                                            ; - io.github.neoionet.netty.microbenchmark.CycleScopedAllocBenchmark::cycle@182 (line 100)
+          │  0x00007f3b2461ba1a:   mov    0x48(%r11),%ebx              ;*getfield owner {reexecute=0 rethrow=0 return_oop=0}
+          │                                                            ; - io.netty.buffer.CycleArenaAllocator$ArenaBuf::release@4 (line 936)
+          │                                                            ; - io.github.neoionet.netty.microbenchmark.CycleScopedAllocBenchmark::cycle@192 (line 101)
+   0.02%  │  0x00007f3b2461ba1e:   mov    0x30(%r11),%esi              ;*getfield start {reexecute=0 rethrow=0 return_oop=0}
+          │                                                            ; - io.netty.buffer.CycleArenaAllocator$ArenaBuf::_getByte@17 (line 1202)
+          │                                                            ; - io.netty.buffer.AbstractByteBuf::readByte@12 (line 751)
+          │                                                            ; - io.github.neoionet.netty.microbenchmark.CycleScopedAllocBenchmark::cycle@182 (line 100)
+   0.17%  │  0x00007f3b2461ba22:   add    %r9d,%esi
+   0.41%  │  0x00007f3b2461ba25:   inc    %r9d
+   0.07%  │  0x00007f3b2461ba28:   mov    %r9d,0xc(%r11)               ;*putfield readerIndex {reexecute=0 rethrow=0 return_oop=0}
+          │                                                            ; - io.netty.buffer.AbstractByteBuf::readByte@20 (line 752)
+          │                                                            ; - io.github.neoionet.netty.microbenchmark.CycleScopedAllocBenchmark::cycle@182 (line 100)
+   0.20%  │  0x00007f3b2461ba2c:   movslq %esi,%r9
+   0.94%  │  0x00007f3b2461ba2f:   shl    $0x3,%rcx
+   0.17%  │  0x00007f3b2461ba33:   movsbl 0x10(%rcx,%r9,1),%r9d        ;*invokevirtual getByte {reexecute=0 rethrow=0 return_oop=0}
+          │                                                            ; - sun.misc.Unsafe::getByte@5 (line 231)
+          │                                                            ; - io.netty.util.internal.PlatformDependent0::getByte@10 (line 902)
+          │                                                            ; - io.netty.util.internal.PlatformDependent::getByte@8 (line 847)
+          │                                                            ; - io.netty.buffer.UnsafeByteBufUtil::getByte@2 (line 233)
+          │                                                            ; - io.netty.buffer.CycleArenaAllocator$ArenaBuf::_getByte@22 (line 1202)
+          │                                                            ; - io.netty.buffer.AbstractByteBuf::readByte@12 (line 751)
+          │                                                            ; - io.github.neoionet.netty.microbenchmark.CycleScopedAllocBenchmark::cycle@182 (line 100)
+   3.92%  │  0x00007f3b2461ba39:   mov    %rbx,%rcx
+          │  0x00007f3b2461ba3c:   shl    $0x3,%rcx                    ;*invokestatic consumeCompiler {reexecute=0 rethrow=0 return_oop=0}
+          │                                                            ; - org.openjdk.jmh.infra.Blackhole::consume@7 (line 336)
+          │                                                            ; - io.github.neoionet.netty.microbenchmark.CycleScopedAllocBenchmark::cycle@185 (line 100)
+          │  0x00007f3b2461ba40:   cmp    %rcx,%r14
+          │  0x00007f3b2461ba43:   jne    0x00007f3b2461c56c           ;*if_acmpeq {reexecute=0 rethrow=0 return_oop=0}
+          │                                                            ; - io.netty.buffer.CycleArenaAllocator$ArenaBuf::release@7 (line 936)
+          │                                                            ; - io.github.neoionet.netty.microbenchmark.CycleScopedAllocBenchmark::cycle@192 (line 101)
+          │  0x00007f3b2461ba49:   test   %r10d,%r10d
+   0.15%  │  0x00007f3b2461ba4c:   jle    0x00007f3b2461c594           ;*ifgt {reexecute=0 rethrow=0 return_oop=0}
+          │                                                            ; - io.netty.buffer.CycleArenaAllocator$ArenaBuf::release@23 (line 940)
+          │                                                            ; - io.github.neoionet.netty.microbenchmark.CycleScopedAllocBenchmark::cycle@192 (line 101)
+          │  0x00007f3b2461ba52:   lea    -0x1(%r10),%r9d
+   0.04%  │  0x00007f3b2461ba56:   mov    %r9d,0x38(%r11)              ;*putfield refCnt {reexecute=0 rethrow=0 return_oop=0}
+          │                                                            ; - io.netty.buffer.CycleArenaAllocator$ArenaBuf::release@40 (line 943)
+          │                                                            ; - io.github.neoionet.netty.microbenchmark.CycleScopedAllocBenchmark::cycle@192 (line 101)
+   0.02%  │  0x00007f3b2461ba5a:   cmp    $0x1,%r10d
+          │  0x00007f3b2461ba5e:   jne    0x00007f3b2461c5b4           ;*if_icmpeq {reexecute=0 rethrow=0 return_oop=0}
+          │                                                            ; - io.netty.buffer.CycleArenaAllocator$ArenaBuf::release@45 (line 944)
+          │                                                            ; - io.github.neoionet.netty.microbenchmark.CycleScopedAllocBenchmark::cycle@192 (line 101)
+          │  0x00007f3b2461ba64:   mov    0x44(%r11),%ebx              ;*getfield space {reexecute=0 rethrow=0 return_oop=0}
+          │                                                            ; - io.netty.buffer.CycleArenaAllocator$ArenaBuf::release@51 (line 947)
+          │                                                            ; - io.github.neoionet.netty.microbenchmark.CycleScopedAllocBenchmark::cycle@192 (line 101)
+   0.02%  │  0x00007f3b2461ba68:   mov    0xf4(%r12,%rbx,8),%ecx       ; implicit exception: dispatches to 0x00007f3b2461cb0c
+          │                                                            ;*getfield frees {reexecute=0 rethrow=0 return_oop=0}
+          │                                                            ; - io.netty.buffer.CycleArenaAllocator$ArenaBuf::release@61 (line 949)
+          │                                                            ; - io.github.neoionet.netty.microbenchmark.CycleScopedAllocBenchmark::cycle@192 (line 101)
+   0.41%  │  0x00007f3b2461ba70:   mov    0x2c(%r11),%r10d             ;*getfield blockId {reexecute=0 rethrow=0 return_oop=0}
+          │                                                            ; - io.netty.buffer.CycleArenaAllocator$ArenaBuf::release@56 (line 948)
+          │                                                            ; - io.github.neoionet.netty.microbenchmark.CycleScopedAllocBenchmark::cycle@192 (line 101)
+   0.72%  │  0x00007f3b2461ba74:   mov    0xc(%r12,%rcx,8),%r9d        ; implicit exception: dispatches to 0x00007f3b2461cb24
+          │                                                            ;*iaload {reexecute=0 rethrow=0 return_oop=0}
+          │                                                            ; - io.netty.buffer.CycleArenaAllocator$ArenaBuf::release@66 (line 949)
+          │                                                            ; - io.github.neoionet.netty.microbenchmark.CycleScopedAllocBenchmark::cycle@192 (line 101)
+   4.03%  │  0x00007f3b2461ba79:   cmp    %r9d,%r10d
+          │  0x00007f3b2461ba7c:   jae    0x00007f3b2461c118
+          │  0x00007f3b2461ba82:   mov    %edx,0x4(%rsp)
+          │  0x00007f3b2461ba86:   mov    %r8,%rdx
+          │  0x00007f3b2461ba89:   mov    0x28(%r11),%edi              ;*getfield index {reexecute=0 rethrow=0 return_oop=0}
+          │                                                            ; - io.netty.buffer.CycleArenaAllocator$ArenaBuf::release@86 (line 950)
+          │                                                            ; - io.github.neoionet.netty.microbenchmark.CycleScopedAllocBenchmark::cycle@192 (line 101)
+          │  0x00007f3b2461ba8d:   mov    0xd0(%r12,%rbx,8),%r8d       ;*getfield freeTop {reexecute=0 rethrow=0 return_oop=0}
+          │                                                            ; - io.netty.buffer.CycleArenaAllocator$ArenaBuf::release@76 (line 950)
+          │                                                            ; - io.github.neoionet.netty.microbenchmark.CycleScopedAllocBenchmark::cycle@192 (line 101)
+   0.02%  │  0x00007f3b2461ba95:   mov    0x114(%r12,%rbx,8),%eax      ;*getfield free {reexecute=0 rethrow=0 return_oop=0}
+          │                                                            ; - io.netty.buffer.CycleArenaAllocator$ArenaBuf::release@71 (line 950)
+          │                                                            ; - io.github.neoionet.netty.microbenchmark.CycleScopedAllocBenchmark::cycle@192 (line 101)
+          │  0x00007f3b2461ba9d:   lea    0x1(%r8),%r9d
+   0.02%  │  0x00007f3b2461baa1:   mov    %r9d,0xd0(%r12,%rbx,8)       ;*putfield freeTop {reexecute=0 rethrow=0 return_oop=0}
+          │                                                            ; - io.netty.buffer.CycleArenaAllocator$ArenaBuf::release@82 (line 950)
+          │                                                            ; - io.github.neoionet.netty.microbenchmark.CycleScopedAllocBenchmark::cycle@192 (line 101)
+   0.28%  │  0x00007f3b2461baa9:   lea    (%r12,%rcx,8),%r9
+   1.53%  │  0x00007f3b2461baad:   incl   0x10(%r9,%r10,4)             ;*iastore {reexecute=0 rethrow=0 return_oop=0}
+          │                                                            ; - io.netty.buffer.CycleArenaAllocator$ArenaBuf::release@69 (line 949)
+          │                                                            ; - io.github.neoionet.netty.microbenchmark.CycleScopedAllocBenchmark::cycle@192 (line 101)
+   1.26%  │  0x00007f3b2461bab2:   mov    0xc(%r12,%rax,8),%r9d        ; implicit exception: dispatches to 0x00007f3b2461cb3c
+   0.65%  │  0x00007f3b2461bab7:   cmp    %r9d,%r8d
+          │  0x00007f3b2461baba:   jae    0x00007f3b2461c148
+          │  0x00007f3b2461bac0:   lea    (%r12,%rax,8),%r9
+   0.02%  │  0x00007f3b2461bac4:   mov    %edi,0x10(%r9,%r8,4)         ;*iastore {reexecute=0 rethrow=0 return_oop=0}
+          │                                                            ; - io.netty.buffer.CycleArenaAllocator$ArenaBuf::release@89 (line 950)
+          │                                                            ; - io.github.neoionet.netty.microbenchmark.CycleScopedAllocBenchmark::cycle@192 (line 101)
+   0.72%  │  0x00007f3b2461bac9:   cmp    $0x8,%r10d
+   0.02%  │  0x00007f3b2461bacd:   je     0x00007f3b2461c5d4           ;*invokestatic currentThread {reexecute=0 rethrow=0 return_oop=0}
+          │                                                            ; - io.netty.util.internal.InternalThreadLocalMap::get@0 (line 111)
+          │                                                            ; - io.netty.util.concurrent.FastThreadLocal::get@0 (line 137)
+          │                                                            ; - io.netty.buffer.CycleArenaAllocator::newHeapBuffer@4 (line 172)
+          │                                                            ; - io.netty.buffer.AbstractByteBufAllocator::heapBuffer@21 (line 149)
+          │                                                            ; - io.netty.buffer.AbstractByteBufAllocator::heapBuffer@4 (line 140)
+          │                                                            ; - io.github.neoionet.netty.microbenchmark.CycleScopedAllocBenchmark::cycle@78 (line 87)
+          │                                                            ;   {no_reloc}
+          │  0x00007f3b2461bad3:   cmpb   $0x0,0x40(%r15)
+          │  0x00007f3b2461bad8:   jne    0x00007f3b2461bb5e
+   0.04%  │  0x00007f3b2461bade:   mov    %rdx,%r8
+   0.48%  │  0x00007f3b2461bae1:   mov    %r12d,0x10(%r8,%rbp,4)       ;*aastore {reexecute=0 rethrow=0 return_oop=0}
+          │                                                            ; - io.github.neoionet.netty.microbenchmark.CycleScopedAllocBenchmark::cycle@200 (line 102)
+   0.68%  │  0x00007f3b2461bae6:   inc    %ebp                         ;*iinc {reexecute=0 rethrow=0 return_oop=0}
+          │                                                            ; - io.github.neoionet.netty.microbenchmark.CycleScopedAllocBenchmark::cycle@201 (line 99)
+   0.17%  │  0x00007f3b2461bae8:   cmp    0xc(%rsp),%ebp
+   0.28%  ╰  0x00007f3b2461baec:   jl     0x00007f3b2461b9b0           ;*invokestatic currentThread {reexecute=0 rethrow=0 return_oop=0}
+                                                                       ; - io.netty.util.internal.InternalThreadLocalMap::get@0 (line 111)
+                                                                       ; - io.netty.util.concurrent.FastThreadLocal::get@0 (line 137)
+                                                                       ; - io.netty.buffer.CycleArenaAllocator::newHeapBuffer@4 (line 172)
+                                                                       ; - io.netty.buffer.AbstractByteBufAllocator::heapBuffer@21 (line 149)
+                                                                       ; - io.netty.buffer.AbstractByteBufAllocator::heapBuffer@4 (line 140)
+                                                                       ; - io.github.neoionet.netty.microbenchmark.CycleScopedAllocBenchmark::cycle@78 (line 87)
+             0x00007f3b2461baf2:   mov    0x458(%r15),%r10             ; ImmutableOopMap {r8=Oop r13=Oop r14=Oop [40]=Oop [48]=NarrowOop }
+                                                                       ;*goto {reexecute=1 rethrow=0 return_oop=0}
+                                                                       ; - (reexecute) io.github.neoionet.netty.microbenchmark.CycleScopedAllocBenchmark::cycle@204 (line 99)
+             0x00007f3b2461baf9:   test   %eax,(%r10)                  ;*goto {reexecute=0 rethrow=0 return_oop=0}
+....................................................................................................
+  20.41%  <total for region 2>
+
+....[Hottest Regions]...............................................................................
+  66.21%         c2, level 4  io.github.neoionet.netty.microbenchmark.CycleScopedAllocBenchmark::cycle, version 3, compile id 1397 
+  20.41%         c2, level 4  io.github.neoionet.netty.microbenchmark.CycleScopedAllocBenchmark::cycle, version 3, compile id 1397 
+   1.24%           libc.so.6  __internal_syscall_cancel 
+   0.85%           libjvm.so  os::current_thread_id() 
+   0.78%   [kernel.kallsyms]  __perf_event_task_sched_in 
+   0.54%         c2, level 4  io.github.neoionet.netty.microbenchmark.CycleScopedAllocBenchmark::cycle, version 3, compile id 1397 
+   0.39%         c2, level 4  io.github.neoionet.netty.microbenchmark.CycleScopedAllocBenchmark::cycle, version 3, compile id 1397 
+   0.35%   [kernel.kallsyms]  entry_SYSRETQ_unsafe_stack 
+   0.33%                      <unknown> 
+   0.26%           libjvm.so  ElfSymbolTable::lookup(unsigned char*, int*, int*, int*, ElfFuncDescTable*) 
+   0.26%           libjvm.so  os::pd_write(int, void const*, unsigned long) 
+   0.20%   [kernel.kallsyms]  entry_SYSCALL_64 
+   0.17%   [kernel.kallsyms]  entry_SYSCALL_64_after_hwframe 
+   0.17%         c2, level 4  io.github.neoionet.netty.microbenchmark.CycleScopedAllocBenchmark::cycle, version 3, compile id 1397 
+   0.15%         c2, level 4  io.github.neoionet.netty.microbenchmark.CycleScopedAllocBenchmark::cycle, version 3, compile id 1397 
+   0.15%         c2, level 4  io.github.neoionet.netty.microbenchmark.jmh_generated.CycleScopedAllocBenchmark_cycleHeap_jmhTest::cycleHeap_avgt_jmhStub, version 5, compile id 1414 
+   0.13%   [kernel.kallsyms]  entry_SYSCALL_64_safe_stack 
+   0.13%                      <unknown> 
+   0.13%   [kernel.kallsyms]  copy_page_from_iter 
+   0.13%         c2, level 4  io.github.neoionet.netty.microbenchmark.CycleScopedAllocBenchmark::cycle, version 3, compile id 1397 
+   6.91%  <...other 211 warm regions...>
+....................................................................................................
+  99.91%  <totals>
+
+....[Hottest Methods (after inlining)]..............................................................
+  88.50%         c2, level 4  io.github.neoionet.netty.microbenchmark.CycleScopedAllocBenchmark::cycle, version 3, compile id 1397 
+   1.24%           libc.so.6  __internal_syscall_cancel 
+   1.07%                      <unknown> 
+   0.85%           libjvm.so  os::current_thread_id() 
+   0.78%   [kernel.kallsyms]  __perf_event_task_sched_in 
+   0.37%   [kernel.kallsyms]  anon_pipe_write 
+   0.35%   [kernel.kallsyms]  entry_SYSRETQ_unsafe_stack 
+   0.26%           libjvm.so  os::pd_write(int, void const*, unsigned long) 
+   0.26%           libjvm.so  ElfSymbolTable::lookup(unsigned char*, int*, int*, int*, ElfFuncDescTable*) 
+   0.20%   [kernel.kallsyms]  entry_SYSCALL_64 
+   0.20%   [kernel.kallsyms]  copy_page_from_iter 
+   0.17%   [kernel.kallsyms]  __task_pid_nr_ns 
+   0.17%   [kernel.kallsyms]  avc_lookup 
+   0.17%   [kernel.kallsyms]  entry_SYSCALL_64_after_hwframe 
+   0.15%         c2, level 4  io.github.neoionet.netty.microbenchmark.jmh_generated.CycleScopedAllocBenchmark_cycleHeap_jmhTest::cycleHeap_avgt_jmhStub, version 5, compile id 1414 
+   0.15%   [kernel.kallsyms]  vfs_write 
+   0.13%   [kernel.kallsyms]  do_syscall_64 
+   0.13%           libjvm.so  fileStream::write(char const*, unsigned long) 
+   0.13%   [kernel.kallsyms]  entry_SYSCALL_64_safe_stack 
+   0.11%   [kernel.kallsyms]  ksys_write 
+   4.51%  <...other 148 warm methods...>
+....................................................................................................
+  99.91%  <totals>
+
+....[Distribution by Source]........................................................................
+  88.65%         c2, level 4
+   5.27%   [kernel.kallsyms]
+   2.81%           libjvm.so
+   1.85%           libc.so.6
+   1.07%                    
+   0.11%      hsdis-amd64.so
+   0.11%         interpreter
+   0.02%         c1, level 3
+   0.02%     perf-932544.map
+....................................................................................................
+  99.91%  <totals>
+
+
+
+# Run complete. Total time: 00:00:24
+
+REMEMBER: The numbers below are just data. To gain reusable insights, you need to follow up on
+why the numbers are the way they are. Use profilers (see -prof, -lprof), design factorial
+experiments, perform baseline and negative tests that provide experimental control, make sure
+the benchmarking environment is safe on JVM/OS/HW level, ask for reviews from the domain experts.
+Do not assume the numbers tell you what you want them to tell.
+
+NOTE: Current JVM experimentally supports Compiler Blackholes, and they are in use. Please exercise
+extra caution when trusting the results, look into the generated code to check the benchmark still
+works, and factor in a small probability of new VM bugs. Additionally, while comparisons between
+different JVMs are already problematic, the performance difference caused by different Blackhole
+modes can be very significant. Please make sure you use the consistent Blackhole mode for comparisons.
+
+Benchmark                                (allocatorType)  (k)  (releaseOrder)  (sizes)  Mode  Cnt     Score   Error  Units
+CycleScopedAllocBenchmark.cycleHeap                ARENA   64            FIFO    SMALL  avgt    5  1827.844 ± 2.231  ns/op
+CycleScopedAllocBenchmark.cycleHeap:asm            ARENA   64            FIFO    SMALL  avgt            NaN            ---

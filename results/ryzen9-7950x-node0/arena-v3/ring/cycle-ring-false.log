@@ -1,0 +1,209 @@
+# JMH version: 1.37
+# VM version: JDK 21, Java HotSpot(TM) 64-Bit Server VM, 21+35-LTS-2513
+# VM invoker: /home/forked_franz/.sdkman/candidates/java/21-oracle/bin/java
+# VM options: -server -dsa -da -XX:InitialRAMPercentage=40.0 -XX:MaxRAMPercentage=40.0 -Dio.netty.leakDetection.level=disabled -Djmh.executor=CUSTOM -Djmh.executor.class=io.github.neoionet.netty.microbenchmark.executor.FastThreadLocalThreadHarnessExecutor -XX:MaxRAM=60g -Darena.ring=false
+# Blackhole mode: compiler (auto-detected, use -Djmh.blackhole.autoDetect=false to disable)
+# Warmup: 10 iterations, 1 s each
+# Measurement: 10 iterations, 1 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Average time, time/op
+# Benchmark: io.github.neoionet.netty.microbenchmark.CycleScopedAllocBenchmark.cycleDirect
+# Parameters: (allocatorType = ARENA, k = 64, releaseOrder = FIFO, sizes = SMALL)
+
+# Run progress: 0.00% complete, ETA 00:02:00
+# Fork: 1 of 3
+# Warmup Iteration   1: 1598.274 ns/op
+# Warmup Iteration   2: 1415.223 ns/op
+# Warmup Iteration   3: 1414.580 ns/op
+# Warmup Iteration   4: 1413.614 ns/op
+# Warmup Iteration   5: 1415.577 ns/op
+# Warmup Iteration   6: 1413.915 ns/op
+# Warmup Iteration   7: 1414.986 ns/op
+# Warmup Iteration   8: 1413.823 ns/op
+# Warmup Iteration   9: 1414.029 ns/op
+# Warmup Iteration  10: 1412.906 ns/op
+Iteration   1: 1414.422 ns/op
+Iteration   2: 1414.379 ns/op
+Iteration   3: 1415.788 ns/op
+Iteration   4: 1414.681 ns/op
+Iteration   5: 1414.718 ns/op
+Iteration   6: 1415.580 ns/op
+Iteration   7: 1414.365 ns/op
+Iteration   8: 1415.721 ns/op
+Iteration   9: 1414.965 ns/op
+Iteration  10: ARENATELE blockSize=262144 maxBlocks=8 cap=8192 maxObjects=16384 debug=false ring=false ringStats=false arenaHeap=0 arenaDirect=899765824 delegateHeap=0 delegateDirect=0 arenaShare=100.00% blocksHeap=1 blocksDirect=1 pinned=0 reusable=0 maxPinnedHeap=0 maxPinnedDirect=0 blockReuses=0 blockGrowths=0 blockSwitches=0 ringWraps=0 ringResets=0 ringScans=0 ringStalls=0 stallBytes=0 strandedBytes=0 strandedShare=n/a holes<=256=0 holes<=1k=0 holes<=4k=0 holes<=8k=0 holes>8k=0 hooks=14058841 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=0 reallocMoved=0 reallocDelegated=0 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=64 bytesHeap=0 bytesDirect=215943797760 liveHeap=0 liveDirect=0
+ARENALOOP thread=io.github.neoionet.netty.microbenchmark.CycleScopedAllocBenchmark.cycleDirect-1-1 arenaHeap=0 arenaDirect=899765824 delegateHeap=0 delegateDirect=0 arenaShare=100.00% blocksHeap=1 blocksDirect=1 pinned=0 reusable=0 maxPinnedHeap=0 maxPinnedDirect=0 blockReuses=0 blockGrowths=0 blockSwitches=0 ringWraps=0 ringResets=0 ringScans=0 ringStalls=0 stallBytes=0 strandedBytes=0 strandedShare=n/a holes<=256=0 holes<=1k=0 holes<=4k=0 holes<=8k=0 holes>8k=0 hooks=14058841 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=0 reallocMoved=0 reallocDelegated=0 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=64 bytesHeap=0 bytesDirect=215943797760 liveHeap=0 liveDirect=0
+1413.311 ns/op
+
+# Run progress: 16.67% complete, ETA 00:01:42
+# Fork: 2 of 3
+# Warmup Iteration   1: 1623.003 ns/op
+# Warmup Iteration   2: 1436.824 ns/op
+# Warmup Iteration   3: 1428.731 ns/op
+# Warmup Iteration   4: 1429.005 ns/op
+# Warmup Iteration   5: 1428.925 ns/op
+# Warmup Iteration   6: 1426.424 ns/op
+# Warmup Iteration   7: 1427.312 ns/op
+# Warmup Iteration   8: 1428.818 ns/op
+# Warmup Iteration   9: 1434.537 ns/op
+# Warmup Iteration  10: 1427.649 ns/op
+Iteration   1: 1427.143 ns/op
+Iteration   2: 1427.562 ns/op
+Iteration   3: 1431.655 ns/op
+Iteration   4: 1427.195 ns/op
+Iteration   5: 1428.305 ns/op
+Iteration   6: 1427.331 ns/op
+Iteration   7: 1427.322 ns/op
+Iteration   8: 1427.229 ns/op
+Iteration   9: 1428.245 ns/op
+Iteration  10: ARENATELE blockSize=262144 maxBlocks=8 cap=8192 maxObjects=16384 debug=false ring=false ringStats=false arenaHeap=0 arenaDirect=890570944 delegateHeap=0 delegateDirect=0 arenaShare=100.00% blocksHeap=1 blocksDirect=1 pinned=0 reusable=0 maxPinnedHeap=0 maxPinnedDirect=0 blockReuses=0 blockGrowths=0 blockSwitches=0 ringWraps=0 ringResets=0 ringScans=0 ringStalls=0 stallBytes=0 strandedBytes=0 strandedShare=n/a holes<=256=0 holes<=1k=0 holes<=4k=0 holes<=8k=0 holes>8k=0 hooks=13915171 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=0 reallocMoved=0 reallocDelegated=0 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=64 bytesHeap=0 bytesDirect=213737026560 liveHeap=0 liveDirect=0
+ARENALOOP thread=io.github.neoionet.netty.microbenchmark.CycleScopedAllocBenchmark.cycleDirect-1-1 arenaHeap=0 arenaDirect=890570944 delegateHeap=0 delegateDirect=0 arenaShare=100.00% blocksHeap=1 blocksDirect=1 pinned=0 reusable=0 maxPinnedHeap=0 maxPinnedDirect=0 blockReuses=0 blockGrowths=0 blockSwitches=0 ringWraps=0 ringResets=0 ringScans=0 ringStalls=0 stallBytes=0 strandedBytes=0 strandedShare=n/a holes<=256=0 holes<=1k=0 holes<=4k=0 holes<=8k=0 holes>8k=0 hooks=13915171 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=0 reallocMoved=0 reallocDelegated=0 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=64 bytesHeap=0 bytesDirect=213737026560 liveHeap=0 liveDirect=0
+1427.626 ns/op
+
+# Run progress: 33.33% complete, ETA 00:01:21
+# Fork: 3 of 3
+# Warmup Iteration   1: 1670.632 ns/op
+# Warmup Iteration   2: 2191.980 ns/op
+# Warmup Iteration   3: 1476.366 ns/op
+# Warmup Iteration   4: 1473.714 ns/op
+# Warmup Iteration   5: 1473.972 ns/op
+# Warmup Iteration   6: 1474.240 ns/op
+# Warmup Iteration   7: 1474.878 ns/op
+# Warmup Iteration   8: 1476.832 ns/op
+# Warmup Iteration   9: 1475.560 ns/op
+# Warmup Iteration  10: 1473.822 ns/op
+Iteration   1: 1474.071 ns/op
+Iteration   2: 1474.202 ns/op
+Iteration   3: 1475.094 ns/op
+Iteration   4: 1474.420 ns/op
+Iteration   5: 1473.869 ns/op
+Iteration   6: 1474.888 ns/op
+Iteration   7: 1476.792 ns/op
+Iteration   8: 1475.107 ns/op
+Iteration   9: 1474.424 ns/op
+Iteration  10: ARENATELE blockSize=262144 maxBlocks=8 cap=8192 maxObjects=16384 debug=false ring=false ringStats=false arenaHeap=0 arenaDirect=848705600 delegateHeap=0 delegateDirect=0 arenaShare=100.00% blocksHeap=1 blocksDirect=1 pinned=0 reusable=0 maxPinnedHeap=0 maxPinnedDirect=0 blockReuses=0 blockGrowths=0 blockSwitches=0 ringWraps=0 ringResets=0 ringScans=0 ringStalls=0 stallBytes=0 strandedBytes=0 strandedShare=n/a holes<=256=0 holes<=1k=0 holes<=4k=0 holes<=8k=0 holes>8k=0 hooks=13261025 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=0 reallocMoved=0 reallocDelegated=0 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=64 bytesHeap=0 bytesDirect=203689344000 liveHeap=0 liveDirect=0
+ARENALOOP thread=io.github.neoionet.netty.microbenchmark.CycleScopedAllocBenchmark.cycleDirect-1-1 arenaHeap=0 arenaDirect=848705600 delegateHeap=0 delegateDirect=0 arenaShare=100.00% blocksHeap=1 blocksDirect=1 pinned=0 reusable=0 maxPinnedHeap=0 maxPinnedDirect=0 blockReuses=0 blockGrowths=0 blockSwitches=0 ringWraps=0 ringResets=0 ringScans=0 ringStalls=0 stallBytes=0 strandedBytes=0 strandedShare=n/a holes<=256=0 holes<=1k=0 holes<=4k=0 holes<=8k=0 holes>8k=0 hooks=13261025 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=0 reallocMoved=0 reallocDelegated=0 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=64 bytesHeap=0 bytesDirect=203689344000 liveHeap=0 liveDirect=0
+1474.570 ns/op
+
+
+Result "io.github.neoionet.netty.microbenchmark.CycleScopedAllocBenchmark.cycleDirect":
+  1439.166 ±(99.9%) 17.494 ns/op [Average]
+  (min, avg, max) = (1413.311, 1439.166, 1476.792), stdev = 26.183
+  CI (99.9%): [1421.672, 1456.659] (assumes normal distribution)
+
+
+# JMH version: 1.37
+# VM version: JDK 21, Java HotSpot(TM) 64-Bit Server VM, 21+35-LTS-2513
+# VM invoker: /home/forked_franz/.sdkman/candidates/java/21-oracle/bin/java
+# VM options: -server -dsa -da -XX:InitialRAMPercentage=40.0 -XX:MaxRAMPercentage=40.0 -Dio.netty.leakDetection.level=disabled -Djmh.executor=CUSTOM -Djmh.executor.class=io.github.neoionet.netty.microbenchmark.executor.FastThreadLocalThreadHarnessExecutor -XX:MaxRAM=60g -Darena.ring=false
+# Blackhole mode: compiler (auto-detected, use -Djmh.blackhole.autoDetect=false to disable)
+# Warmup: 10 iterations, 1 s each
+# Measurement: 10 iterations, 1 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Average time, time/op
+# Benchmark: io.github.neoionet.netty.microbenchmark.CycleScopedAllocBenchmark.cycleHeap
+# Parameters: (allocatorType = ARENA, k = 64, releaseOrder = FIFO, sizes = SMALL)
+
+# Run progress: 50.00% complete, ETA 00:01:01
+# Fork: 1 of 3
+# Warmup Iteration   1: 1908.036 ns/op
+# Warmup Iteration   2: 1688.139 ns/op
+# Warmup Iteration   3: 1688.620 ns/op
+# Warmup Iteration   4: 1690.314 ns/op
+# Warmup Iteration   5: 1690.464 ns/op
+# Warmup Iteration   6: 1691.830 ns/op
+# Warmup Iteration   7: 1693.489 ns/op
+# Warmup Iteration   8: 1693.796 ns/op
+# Warmup Iteration   9: 1691.118 ns/op
+# Warmup Iteration  10: 1691.849 ns/op
+Iteration   1: 1691.248 ns/op
+Iteration   2: 1691.277 ns/op
+Iteration   3: 1691.302 ns/op
+Iteration   4: 1690.638 ns/op
+Iteration   5: 1691.122 ns/op
+Iteration   6: 1693.810 ns/op
+Iteration   7: 1694.731 ns/op
+Iteration   8: 1688.826 ns/op
+Iteration   9: 1691.425 ns/op
+Iteration  10: ARENATELE blockSize=262144 maxBlocks=8 cap=8192 maxObjects=16384 debug=false ring=false ringStats=false arenaHeap=752590784 arenaDirect=0 delegateHeap=0 delegateDirect=0 arenaShare=100.00% blocksHeap=1 blocksDirect=1 pinned=0 reusable=0 maxPinnedHeap=0 maxPinnedDirect=0 blockReuses=0 blockGrowths=0 blockSwitches=0 ringWraps=0 ringResets=0 ringScans=0 ringStalls=0 stallBytes=0 strandedBytes=0 strandedShare=n/a holes<=256=0 holes<=1k=0 holes<=4k=0 holes<=8k=0 holes>8k=0 hooks=11759231 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=0 reallocMoved=0 reallocDelegated=0 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=64 bytesHeap=180621788160 bytesDirect=0 liveHeap=0 liveDirect=0
+ARENALOOP thread=io.github.neoionet.netty.microbenchmark.CycleScopedAllocBenchmark.cycleHeap-1-1 arenaHeap=752590784 arenaDirect=0 delegateHeap=0 delegateDirect=0 arenaShare=100.00% blocksHeap=1 blocksDirect=1 pinned=0 reusable=0 maxPinnedHeap=0 maxPinnedDirect=0 blockReuses=0 blockGrowths=0 blockSwitches=0 ringWraps=0 ringResets=0 ringScans=0 ringStalls=0 stallBytes=0 strandedBytes=0 strandedShare=n/a holes<=256=0 holes<=1k=0 holes<=4k=0 holes<=8k=0 holes>8k=0 hooks=11759231 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=0 reallocMoved=0 reallocDelegated=0 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=64 bytesHeap=180621788160 bytesDirect=0 liveHeap=0 liveDirect=0
+1690.527 ns/op
+
+# Run progress: 66.67% complete, ETA 00:00:40
+# Fork: 2 of 3
+# Warmup Iteration   1: 1873.675 ns/op
+# Warmup Iteration   2: 1672.887 ns/op
+# Warmup Iteration   3: 1677.981 ns/op
+# Warmup Iteration   4: 1681.763 ns/op
+# Warmup Iteration   5: 1675.001 ns/op
+# Warmup Iteration   6: 1676.525 ns/op
+# Warmup Iteration   7: 1668.139 ns/op
+# Warmup Iteration   8: 1668.548 ns/op
+# Warmup Iteration   9: 1681.779 ns/op
+# Warmup Iteration  10: 1670.190 ns/op
+Iteration   1: 1676.801 ns/op
+Iteration   2: 1671.971 ns/op
+Iteration   3: 1671.301 ns/op
+Iteration   4: 1668.297 ns/op
+Iteration   5: 1668.164 ns/op
+Iteration   6: 1687.090 ns/op
+Iteration   7: 1667.671 ns/op
+Iteration   8: 1667.683 ns/op
+Iteration   9: 1671.258 ns/op
+Iteration  10: ARENATELE blockSize=262144 maxBlocks=8 cap=8192 maxObjects=16384 debug=false ring=false ringStats=false arenaHeap=760469760 arenaDirect=0 delegateHeap=0 delegateDirect=0 arenaShare=100.00% blocksHeap=1 blocksDirect=1 pinned=0 reusable=0 maxPinnedHeap=0 maxPinnedDirect=0 blockReuses=0 blockGrowths=0 blockSwitches=0 ringWraps=0 ringResets=0 ringScans=0 ringStalls=0 stallBytes=0 strandedBytes=0 strandedShare=n/a holes<=256=0 holes<=1k=0 holes<=4k=0 holes<=8k=0 holes>8k=0 hooks=11882340 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=0 reallocMoved=0 reallocDelegated=0 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=64 bytesHeap=182512742400 bytesDirect=0 liveHeap=0 liveDirect=0
+ARENALOOP thread=io.github.neoionet.netty.microbenchmark.CycleScopedAllocBenchmark.cycleHeap-1-1 arenaHeap=760469760 arenaDirect=0 delegateHeap=0 delegateDirect=0 arenaShare=100.00% blocksHeap=1 blocksDirect=1 pinned=0 reusable=0 maxPinnedHeap=0 maxPinnedDirect=0 blockReuses=0 blockGrowths=0 blockSwitches=0 ringWraps=0 ringResets=0 ringScans=0 ringStalls=0 stallBytes=0 strandedBytes=0 strandedShare=n/a holes<=256=0 holes<=1k=0 holes<=4k=0 holes<=8k=0 holes>8k=0 hooks=11882340 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=0 reallocMoved=0 reallocDelegated=0 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=64 bytesHeap=182512742400 bytesDirect=0 liveHeap=0 liveDirect=0
+1690.751 ns/op
+
+# Run progress: 83.33% complete, ETA 00:00:20
+# Fork: 3 of 3
+# Warmup Iteration   1: 1841.408 ns/op
+# Warmup Iteration   2: 1626.834 ns/op
+# Warmup Iteration   3: 1599.607 ns/op
+# Warmup Iteration   4: 1612.922 ns/op
+# Warmup Iteration   5: 1597.670 ns/op
+# Warmup Iteration   6: 1598.247 ns/op
+# Warmup Iteration   7: 1608.136 ns/op
+# Warmup Iteration   8: 1598.583 ns/op
+# Warmup Iteration   9: 1598.046 ns/op
+# Warmup Iteration  10: 1599.292 ns/op
+Iteration   1: 1610.267 ns/op
+Iteration   2: 1618.142 ns/op
+Iteration   3: 1599.535 ns/op
+Iteration   4: 1626.951 ns/op
+Iteration   5: 1598.201 ns/op
+Iteration   6: 1598.073 ns/op
+Iteration   7: 1599.166 ns/op
+Iteration   8: 1607.636 ns/op
+Iteration   9: 1601.652 ns/op
+Iteration  10: ARENATELE blockSize=262144 maxBlocks=8 cap=8192 maxObjects=16384 debug=false ring=false ringStats=false arenaHeap=792476480 arenaDirect=0 delegateHeap=0 delegateDirect=0 arenaShare=100.00% blocksHeap=1 blocksDirect=1 pinned=0 reusable=0 maxPinnedHeap=0 maxPinnedDirect=0 blockReuses=0 blockGrowths=0 blockSwitches=0 ringWraps=0 ringResets=0 ringScans=0 ringStalls=0 stallBytes=0 strandedBytes=0 strandedShare=n/a holes<=256=0 holes<=1k=0 holes<=4k=0 holes<=8k=0 holes>8k=0 hooks=12382445 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=0 reallocMoved=0 reallocDelegated=0 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=64 bytesHeap=190194355200 bytesDirect=0 liveHeap=0 liveDirect=0
+ARENALOOP thread=io.github.neoionet.netty.microbenchmark.CycleScopedAllocBenchmark.cycleHeap-1-1 arenaHeap=792476480 arenaDirect=0 delegateHeap=0 delegateDirect=0 arenaShare=100.00% blocksHeap=1 blocksDirect=1 pinned=0 reusable=0 maxPinnedHeap=0 maxPinnedDirect=0 blockReuses=0 blockGrowths=0 blockSwitches=0 ringWraps=0 ringResets=0 ringScans=0 ringStalls=0 stallBytes=0 strandedBytes=0 strandedShare=n/a holes<=256=0 holes<=1k=0 holes<=4k=0 holes<=8k=0 holes>8k=0 hooks=12382445 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=0 reallocMoved=0 reallocDelegated=0 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=64 bytesHeap=190194355200 bytesDirect=0 liveHeap=0 liveDirect=0
+1596.760 ns/op
+
+
+Result "io.github.neoionet.netty.microbenchmark.CycleScopedAllocBenchmark.cycleHeap":
+  1657.076 ±(99.9%) 25.659 ns/op [Average]
+  (min, avg, max) = (1596.760, 1657.076, 1694.731), stdev = 38.404
+  CI (99.9%): [1631.417, 1682.734] (assumes normal distribution)
+
+
+# Run complete. Total time: 00:02:02
+
+REMEMBER: The numbers below are just data. To gain reusable insights, you need to follow up on
+why the numbers are the way they are. Use profilers (see -prof, -lprof), design factorial
+experiments, perform baseline and negative tests that provide experimental control, make sure
+the benchmarking environment is safe on JVM/OS/HW level, ask for reviews from the domain experts.
+Do not assume the numbers tell you what you want them to tell.
+
+NOTE: Current JVM experimentally supports Compiler Blackholes, and they are in use. Please exercise
+extra caution when trusting the results, look into the generated code to check the benchmark still
+works, and factor in a small probability of new VM bugs. Additionally, while comparisons between
+different JVMs are already problematic, the performance difference caused by different Blackhole
+modes can be very significant. Please make sure you use the consistent Blackhole mode for comparisons.
+
+Benchmark                              (allocatorType)  (k)  (releaseOrder)  (sizes)  Mode  Cnt     Score    Error  Units
+CycleScopedAllocBenchmark.cycleDirect            ARENA   64            FIFO    SMALL  avgt   30  1439.166 ± 17.494  ns/op
+CycleScopedAllocBenchmark.cycleHeap              ARENA   64            FIFO    SMALL  avgt   30  1657.076 ± 25.659  ns/op
+
+Benchmark result is saved to /home/forked_franz/IdeaProjects/netty-bench/results/h2h-merged-x86-2026-09-22/arena-v3/ring/cycle-ring-false.json
