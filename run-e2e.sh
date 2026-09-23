@@ -13,6 +13,11 @@
 #   TRANSPORT=nio|epoll|io_uring  (passed to the server as -Dtransport; io_uring registers a provided
 #     buffer ring per worker loop, filled by the allocator under test, and sets the buffer-group-id
 #     and write-zero-copy-threshold child options - see lib/java/Transports.java and the README)
+#   BUFFER_RING=on|off  (io_uring only, default on)  off = no IoUringBufferRingConfig and no
+#     IO_URING_BUFFER_GROUP_ID: recv takes its buffer from the channel allocator.  Zero-copy writes,
+#     single issuer, multishot accept/poll are unchanged; multishot RECV is unreachable without a
+#     provided buffer ring, so off also means one-shot recv.
+#   BUFFER_RING_ALLOC=same|adaptive|builtin|slab  (io_uring, BUFFER_RING=on only) who fills the ring.
 #   CONNS (h1 64, h2 16)  STREAMS (h2 32)  LOAD_THREADS=4  BODY_SIZE=4096
 #   ARENA_MAX_BLOCKS (passed as -Darena.maxBlocks when set)  JVM_OPTS  SUT_PIN_CMD  LOADGEN_PIN_CMD
 #   LOGBACK_CONFIG (default e2e/logback-off.xml; set empty to keep the examples' own logging)
@@ -80,8 +85,11 @@ CP="$EXAMPLE_JAR:$MIMALLOC_JAR:$NATIVE_CP:$(cat "$DEP_CP_FILE")"
 E2E_CLASSES="$ROOT/target/e2e-classes"
 mkdir -p "$E2E_CLASSES"
 if [ "$ROOT/e2e/E2EServer.java" -nt "$E2E_CLASSES/E2EServer.class" ] \
-   || [ "$ROOT/lib/java/Transports.java" -nt "$E2E_CLASSES/Transports.class" ]; then
-    javac -nowarn -d "$E2E_CLASSES" -cp "$CP" "$ROOT/e2e/E2EServer.java" "$ROOT/lib/java/Transports.java"
+   || [ "$ROOT/lib/java/Transports.java" -nt "$E2E_CLASSES/Transports.class" ] \
+   || [ "$ROOT/lib/java/RegisteredSlabBufferRingAllocator.java" \
+        -nt "$E2E_CLASSES/RegisteredSlabBufferRingAllocator.class" ]; then
+    javac -nowarn -d "$E2E_CLASSES" -cp "$CP" "$ROOT/e2e/E2EServer.java" "$ROOT/lib/java/Transports.java" \
+        "$ROOT/lib/java/RegisteredSlabBufferRingAllocator.java"
 fi
 CP="$E2E_CLASSES:$CP"
 
@@ -121,6 +129,7 @@ for A in $ALLOCATORS; do
     # shellcheck disable=SC2206
     [ -n "$ARENA_PROPS" ] && ARENA_OPT+=($ARENA_PROPS)
     ARENA_OPT+=("-Dtransport=$TRANSPORT")
+    [ -n "${BUFFER_RING:-}" ] && ARENA_OPT+=("-DbufferRing=$BUFFER_RING")
     [ -n "${BUFFER_RING_ALLOC:-}" ] && ARENA_OPT+=("-DbufferRingAlloc=$BUFFER_RING_ALLOC")
     # shellcheck disable=SC2086
     $SUT_PIN_CMD java -cp "$CP" $JVM_OPTS "${ARENA_OPT[@]}" \
