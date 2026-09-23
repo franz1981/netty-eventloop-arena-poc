@@ -12,8 +12,12 @@ else: buffers that escape the cycle, cross threads, or arrive when the arena is 
 
 The PoC is `io.netty.buffer.CycleArenaAllocator`, in the `netty` submodule (branch
 `expt/event-loop-arena`). Sections 1-6 of the results were measured at `3dad84f578`; the submodule
-now points at `11adeba602` ("Use a block as a ring with variable-sized slots", ring reuse behind
-`-Darena.ring`, off by default). [RESULTS.md section 7](results/ryzen9-7950x-node0/RESULTS.md)
+now points at `52b19c8ebf`, two commits on top of `11adeba602` ("Use a block as a ring with
+variable-sized slots", ring reuse behind `-Darena.ring`, off by default): `14dbbe384b` sizes every
+slot as `max(8, align8(size))`, so a zero-byte request can neither land at the block end nor share a
+live-start bitmap bit with its neighbour, and `52b19c8ebf` adds **re-entry** - when a block's ring
+stalls, the allocator re-enters another non-empty block whose ring has room before growing or
+delegating (counter `ringReentries`). [RESULTS.md section 7](results/ryzen9-7950x-node0/RESULTS.md)
 (transports) was measured on `2b961262d6`, the same commit before its final amend: the amend changed
 only javadoc and the ring's default, and every section-7 run set `-Darena.ring` explicitly.
 `3dad84f578` is **v3**, a rewrite against
@@ -30,6 +34,9 @@ One arena per event-loop thread (`FastThreadLocal`), two spaces (heap, direct), 
 adaptive's own chunk allocators and never given back except by an explicit `trim()`. Allocation is a bump in the
 current block; release is a plain `int` decrement; reuse happens in exactly one place, the event loop's own
 end-of-iteration tail task, reached through the **public `endOfIteration()`**.
+With `-Darena.ring=true` (off by default) a block is also reused as a variable-slot ring: the tail bumps forward
+and wraps below the oldest live buffer start, without waiting for the block to drain. A stalled ring re-enters
+another block before growing or delegating.
 
 Every knob is a system property, read once in `CycleArenaAllocator`:
 
@@ -39,6 +46,8 @@ Every knob is a system property, read once in `CycleArenaAllocator`:
 | `-Darena.maxBlocks` | 8 | blocks per space; when none is reusable and the bound is reached, allocation delegates (`maxBlocks <= 32`: the masks are `int`s) |
 | `-Darena.cap` | 8192 | a request above it goes straight to adaptive, which keeps the bytes most likely to survive the iteration out of the arena |
 | `-Darena.maxObjects` | 16384 | bound on the per-space buffer-object pool; past it, allocation delegates |
+| `-Darena.ring` | false | reuse a block as a variable-slot ring, wrapping below the oldest live start, instead of waiting for it to drain. Off: it costs +29 instructions per allocate/release pair |
+| `-Darena.ringStats` | false | at every ring stall, measure what the ring leaves behind (`ringStalls`, `stallBytes`, `strandedBytes`, the hole histogram). One walk of the space's buffer objects plus a sort per stall: a run that reports these is not comparable with one that does not |
 | `-Darena.debug` | false | checks that no block is reused before a hook; folded away when false |
 | `-Darena.jfr.period` | 1000 | hooks per `ArenaIteration` / `ArenaAllocationSample` event |
 
@@ -192,6 +201,13 @@ counters, `trims` / `trimmedBlocks` / `leakedBlocks`, `objects`, bytes and live 
 `ARENALOOP` line per live arena (per event loop). It is called off the hot path: at shutdown, or from a benchmark's
 teardown.
 
+The ring adds four counters, all 0 unless `-Darena.ring=true`:
+
+* `ringWraps` - the tail hit the wall, live buffers remained, and it wrapped to 0 with the wall at the lowest live start.
+* `ringResets` - the tail hit the wall and the block held no live start at all, so it restarted at 0 in place.
+* `ringScans` - live-start bitmap scans: one per wrap decision, one per re-entry hint refresh. Cold path only.
+* `ringReentries` - a stalled ring re-entered another block at its best free window, instead of growing or delegating.
+
 ### JFR events
 
 Modelled on the JDK's TLAB events and emitted **only on cold boundaries** - a block switch, the
@@ -244,7 +260,7 @@ git clone --recurse-submodules https://github.com/franz1981/netty-eventloop-aren
 
 | submodule | repository | branch | pinned commit |
 |---|---|---|---|
-| `netty` | `https://github.com/franz1981/netty.git` | `expt/event-loop-arena` | `11adeba602` |
+| `netty` | `https://github.com/franz1981/netty.git` | `expt/event-loop-arena` | `52b19c8ebf` |
 | `netty-allocator` | `https://github.com/franz1981/netty-allocator.git` | `cycle-arena-bench` | `e9fa807` |
 
 Both branches are on GitHub at the pinned commits, so a fresh clone resolves them:
@@ -528,6 +544,18 @@ for the mimalloc port, sizes under the cap), and on request/response servers it 
 **What v3 measured, stated plainly: end-to-end throughput did not change.** The measured effect is
 the allocator's share of event-loop CPU samples and, on HTTP/1.1, instructions per request. The
 microbenchmark wins are the scope-aligned best case with the hook driven artificially.
+
+**On io_uring the arena is wrong only for the registered (provided) buffers**: with the buffer ring
+served by adaptive (`BUFFER_RING_ALLOC=adaptive`) the counters return to the nio shape - 4-8 blocks,
+no pinned blocks in the proxies, 0 confinement violations on W6b, and an allocator CPU share below
+adaptive's on h2. See
+[RESULTS.md section 8](results/ryzen9-7950x-node0/RESULTS.md#8-io_uring-is-the-arena-wrong-for-the-registered-buffers-or-wrong-measured-2026-09-23-2300-mhz-node-0).
+
+**The ring and re-entry** (`results/ryzen9-7950x-node0/arena-v3/ring/`): the ring costs +29
+instructions per allocate/release pair on the direct path and +8.6 on the cycle cell's heap column,
+which is why it stays off by default; re-entry lifts the hook-less E_COMMERCE arena share at 1024
+live from 73% to 88% - the share of requests under the 8 KiB cap - and cuts block switches from 260M
+to 9M.
 
 ### The lifecycle-topology study (adaptive allocator, seven pipelines)
 
