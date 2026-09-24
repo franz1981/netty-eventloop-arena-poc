@@ -102,7 +102,7 @@ visible immediately instead of corrupting memory.
 
 **Layout (D, decided during the PoC).** There is no block object on any path that runs per allocation, per
 release, per block switch or per hook. A block is an `int` id in `[0, maxBlocks)` and a column of flat
-per-space arrays: `int[] live`, `long[] base` (direct), `byte[][] mem` (heap), `ByteBuffer[] nio` (the source
+per-space arrays: `int[] allocs` and `int[] frees` (the pair that replaced the plan's `int[] live`; a block is empty iff they are equal), `long[] base` (direct), `byte[][] mem` (heap), `ByteBuffer[] nio` (the source
 the per-buffer views are duplicated from), `AbstractByteBuf[] roots` (the chunk, for the bulk paths and to
 give the memory back). Two `int` bit masks hold the rest: `allocatedMask` (slot holds a chunk) and
 `reusableMask` (bit i = block i was empty at the LAST hook and its bump is 0). The current block is flat
@@ -110,20 +110,20 @@ fields of the space - `curId`, `curBump`, `curMemory`, `curAddress` - so allocat
 fields and the `int[]` object stack, nothing else. There is no `bump[]` column: only the current block is
 ever bumped, and a block switched away from is never bumped again. Block switch is
 `id = numberOfTrailingZeros(reusableMask)`; a zero mask means grow if under `maxBlocks`, else delegate, and
-is also the latch that stops rescanning. The hook scans the `maxBlocks` live ints, resets the CURRENT
+is also the latch that stops rescanning. The hook scans the `maxBlocks` `allocs`/`frees` pairs, resets the CURRENT
 block's bump in place when it is empty (steady state on request/response: no switch ever happens) and
 rebuilds the mask; it touches no buffer object. A buffer holds an `int blockId`, not a block reference, so
 allocation writes ints and one `long` address; a HEAP buffer also keeps a `byte[] memory` field with a
 guarded store (`if (memory != cur) memory = cur`), because every get/set needs the array and an indirection
 through `roots[blockId]` on the data path is worse - that is the only reference store on a hot path and it
 is paid once per block switch, not once per allocation. A DIRECT buffer keeps a plain `long address` and no
-NIO root: views fetch `nio[blockId]` on demand. Release is `refCnt--`, `live[blockId]--`, push the object
+NIO root: views fetch `nio[blockId]` on demand. Release is `refCnt--`, `frees[blockId]++`, push the object
 index. The DELEGATED state is the column slot `maxBlocks`, so release needs no test on block identity
 before the decrement.
 
 **No in-band metadata (D).** Block memory holds user payload only: no per-allocation header, no per-block
 header, no free-list link written into the block, no fill on retire, nothing written to a block at reset.
-All bookkeeping is out of band, on the owner's own cache lines (the buffer objects, `int[] live`, the masks,
+All bookkeeping is out of band, on the owner's own cache lines (the buffer objects, the `allocs`/`frees` columns, the masks,
 the `int[]` object free stack, the flat cursor). Consequence: metadata is never derived from an address -
 the buffer carries its `int blockId`. Shape test: paint a block and check that allocate / grow / release /
 hook / trim leave every byte of it untouched.

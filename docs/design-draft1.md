@@ -1,4 +1,6 @@
-> **Draft 1, superseded** by [`design.md`](design.md) (draft 3, final). Kept for the review trail. Imported unchanged from `netty-bench/docs/event-loop-arena-design-draft1.md`.
+> **Draft 1, superseded** by [`design.md`](design.md), which describes the allocator as it was
+> implemented. Kept for the review trail, unchanged; it was imported from the maintainer's private
+> backlog (`netty-bench/docs/event-loop-arena-design-draft1.md`), which is not in this repository.
 
 # Event-loop arena for Netty: design plan (draft 1, 2026-09-22)
 

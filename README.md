@@ -281,8 +281,11 @@ submodule - the class has exactly one source of truth.
 
 Which commit measured which section of the results is recorded in
 [RESULTS.md](results/ryzen9-7950x-node0/RESULTS.md); `256c1d86bd` is `52b19c8ebf` plus the
-`-Darena.debugPinned` diagnostic mode, which is off by default and adds nothing to any path when it
-is off.
+`-Darena.debugPinned` diagnostic mode, which is off by default. When it is off its branches read a
+`static final false` and fold away; what it does add unconditionally is 10 bytes of bytecode to
+`ArenaBuf.init()`, taking it from 63 to 73, which is on the same side of both `MaxInlineSize` (35)
+and `FreqInlineSize` (325) as before. **That is a bytecode-size argument, not a measurement**: no
+A/B of `52b19c8ebf` against `256c1d86bd` was run.
 
 ### Build
 
