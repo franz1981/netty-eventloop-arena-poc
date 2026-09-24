@@ -6,8 +6,8 @@
 #   ./run-harness.sh [pattern] [live] [threads] ["ALLOC1 ALLOC2"] [-- extra JMH args]
 #   PATTERN=E_COMMERCE LIVE=4096 THREADS=32 ALLOCATORS="ADAPTIVE ARENA" ./run-harness.sh
 #
-# METHOD (default heapAllocation; the arena serves heap buffers only - directAllocation measures the
-# fallback), RW (enableReadWrite, default true).
+# METHOD (default heapAllocation; directAllocation exercises the arena's DIRECT space, which it has
+# served since the heap+direct build - it is not the fallback), RW (enableReadWrite, default true).
 # E_COMMERCE needs the file e-commerce.jfr in the working directory (see README).
 # Peak RSS is parsed out of the .data: the harness prints "cRSS-pRSS:[cur, peak]" per iteration.
 set -euo pipefail
