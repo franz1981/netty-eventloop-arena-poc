@@ -146,12 +146,73 @@ Two kernel/man findings worth keeping:
 
 ## 6. Measured
 
-RESULTS.md **§10** runs (i), (ii) and (iii) as the ring's allocator with the channel allocator held at
-`arena -Darena.ring=false`, plus adaptive everywhere as the control. §9 measures the other end of the
-question: io_uring with no buffer ring at all (`BUFFER_RING=off`).
+RESULTS.md **section 6** runs (i), (ii), (ii-a) and (iii) as the ring's allocator with the channel
+allocator held at `arena -Darena.ring=false`, plus adaptive everywhere as the control: two e2e cells
+(h1, h2; 20 s, one run each) and three topology cells (W1, W3, W5). Section 5 measures the other end
+of the question - io_uring with no buffer ring at all (`BUFFER_RING=off`) - and section 4 the split
+that separated "the arena is wrong for io_uring" from "the arena is wrong for the buffers the ring
+registers". What those runs found, with the numbers that carry it:
+
+**1. Nothing separates the candidates on throughput.** The five configurations span 0.7% on h1
+(126,840-127,572 req/s), 1.4% on h2 (370,529-375,775) and 3.5% on W1. One run per cell: this is a
+band, not a ranking.
+
+**2. The slab has the lowest allocator CPU in three of the four e2e columns.** Filter B of
+`tools/asprof-alloc-share.py` gives it 0.93% (h1) and 5.54% (h2) against the control's 2.05% /
+9.35%, and on h2 the lowest ring-allocator frame count too (0.46% against 1.22%). It is also the
+only candidate that allocates nothing after start-up, and that is measured rather than assumed:
+
+```
+h1  instances=8 regionBytes=16777216 slabAcquires=1306518 slabReleases=1306262 slabFallbacks=0 slabForeignReleases=0
+h2  instances=8 regionBytes=16777216 slabAcquires=3753605 slabReleases=3753349 slabFallbacks=0 slabForeignReleases=0
+```
+
+8 instances = one per worker loop; 16 MiB total (8 x 256 x 8 KiB); `slabAcquires == ringAllocs`, so
+every buffer the ring received came from a preallocated slot; `acquires - releases = 256` = the 32
+buffers per loop still parked in the ring at shutdown; `slabForeignReleases=0`, so in these
+workloads nothing released a ring buffer off its own loop and the Treiber stack's CAS was never
+contended. **It does not show the slab is faster** - the req/s spread is inside the noise of one run
+- and nothing here explains *why* its filter-B share is lower.
+
+**3. (i) and (ii) are indistinguishable, as predicted before the run** (h1 1.49% vs 1.69%, h2 6.31%
+vs 6.79%, and the same arena counters). Reading the code said they would be: both are
+`allocator.directBuffer(size)` over an `AdaptiveByteBufAllocator`. This is a confirmation, not a
+finding.
+
+**4. (ii-a) wins wherever the buffer SIZE matters.** On W3 (64 KiB HTTP/2 echo) it reaches 98.14%
+arena share and 19,009 req/s on a quarter of the `allocate()` calls (217,237 against 1,142,550),
+because `AdaptiveCalculator` grows the ring buffers towards 64 KiB and each CQE then carries more
+bytes. On W5 it is the only candidate that leaves **zero** blocks pinned. Fixed 8 KiB chunks - the
+slab included - cannot do that. **This is the one axis on which "not elastic" costs something
+measurable**, and it is a size policy, not an allocation strategy: a slab of larger or mixed-size
+chunks would close it, and was not tried.
+
+**5. "Not elastic" has a failure mode, and it fired.** W5 (the 256 KiB aggregator) is the one cell
+where the fixed slab ran dry: `slabAcquires=3,064,590` with **`slabFallbacks=4,077`** out of
+3,068,667 `allocate()` calls (0.13%), served by the fallback `UnpooledByteBufAllocator`. 256 chunks
+per loop were not enough headroom, and `depth=4` was picked before the run rather than tuned -
+nothing here says what the right value is. The counter exists precisely so that this cannot pass
+unnoticed.
+
+**What this section does not establish.** One run per cell, one session; absolute req/s is not
+comparable across sections. `slabForeignReleases=0` means the cross-loop path was never *taken* in
+these workloads - not that the slab handles the W6b cross-loop topology, which was not run. Nothing
+here measured locality or NUMA. No candidate was run with `IORING_REGISTER_BUFFERS`, because netty
+exposes no binding for it (section 4 above).
 
 Candidate **(iv)**, the FFM mimalloc allocator from `franz1981/netty-ffm-allocator`, was **not run**:
 it needs JDK 25 and the PoC's scripts run on whatever `java` is on `PATH`, which is JDK 21 here
 (`java version "21" 2023-09-19 LTS`). JDK 25 is installed on this box, but moving one cell to a
 different JDK would have made it incomparable with every other cell in the session, and the whole
 matrix is only ever compared within a run.
+
+## 7. What follows for the arena
+
+The arena is not a candidate here and should not be one. A provided-buffer-ring buffer is
+class D by construction (section 1, step 7 and requirement 2): its lifetime is decided by the
+kernel and by the pipeline that holds the slice, never by an event-loop iteration boundary. The
+measurement of that is RESULTS.md section 4: with the ring filled by the arena, 12-32 of the
+process's block maxima stay pinned and the arena's HTTP/1.1 allocator CPU share goes *above*
+adaptive's; give the ring its own allocator and the counters return to the nio shape. The
+recommendation that follows for io_uring as a whole, including the option of no arena there at all,
+is [`uring.md`](uring.md).

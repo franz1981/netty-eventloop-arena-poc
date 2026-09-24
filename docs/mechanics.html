@@ -52,7 +52,7 @@ button.primary{background:var(--live);color:#fff;border-color:var(--live)}
 </style>
 <div class="wrap">
 <h1>Arena Mechanics</h1>
-<p class="sub">One space of the per-event-loop arena, blocks drawn with 16 slots. Step through allocations, releases and end-of-iteration hooks and watch the bump, the counters, the mask and the pinned state.</p>
+<p class="sub">One space of the per-event-loop arena, blocks drawn with 16 slots. Step through allocations, releases and end-of-iteration hooks and watch the bump, the counters, the mask and the pinned state. This is the DEFAULT behaviour, <code>-Darena.ring=false</code>: a block is reused only at a hook. With <code>-Darena.ring=true</code> the tail also wraps inside a block below the oldest live start, and a stalled ring re-enters another block — not animated here.</p>
 <div class="ctl">
   <button id="prev">◀ Back</button>
   <button id="next" class="primary">Next ▶</button>
