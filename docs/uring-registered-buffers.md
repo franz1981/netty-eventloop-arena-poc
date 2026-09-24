@@ -9,7 +9,7 @@ on 2026-09-23. Anything I could not verify is labelled as such.
 
 Netty uses **provided buffer rings** (`IORING_REGISTER_PBUF_RING`), where the kernel picks the
 buffer. It does **not** use registered/fixed buffers (`IORING_REGISTER_BUFFERS`), where the
-application picks an index - see [§4](#4-io_uring_register_buffers-is-not-exposed).
+application picks an index - see [§4](#4-ioring_register_buffers-is-not-exposed).
 
 | # | step | code |
 |---|---|---|
