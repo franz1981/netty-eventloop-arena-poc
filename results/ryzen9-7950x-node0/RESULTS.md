@@ -13,251 +13,144 @@ Machine and settings:
 | frequency | fixed at 2300 MHz for the run, restored to 4300 MHz afterwards |
 | JDK | 21 (`21+35-LTS-2513`), `-XX:MaxRAM=60g` |
 | glibc / kernel | 2.42 / 7.1 (`7.1.13-100.fc43.x86_64`) |
-| date | 2026-09-22 |
-| code | sections 1-4: netty `dec589d0eb`; sections 2b and 5: the PoC build `26bd14b195`; **section 6 (v3): netty `3dad84f578`**, the pinned commit (`expt/event-loop-arena`). Harness = lao 1.2 + this PoC's benchmark commits, now `e9fa807` |
+| date | sections 1, 2 and appendix A: 2026-09-22; sections 3-6: 2026-09-23 |
+| code | section 1: netty `cfb23bcf63`, adaptive only (frozen classpath, see 1.1); **section 2 (v3): netty `3dad84f578`**; section 3: `2b961262d6`; sections 4-6: `52b19c8ebf`; appendix A: netty `dec589d0eb` (A.1, A.2, A.3, A.4) and the PoC build `26bd14b195` (A.2b, A.5). All on `expt/event-loop-arena`, whose head is `256c1d86bd` today. Harness = lao 1.2 + this PoC's benchmark commits, now `e9fa807` |
 | JMH | 3 forks, 10x1 s warmup, 10x1 s measurement |
 
 Fork-to-fork sd on the harness heap cells is about 8% on this box: **3 forks resolve ~10%, not 3%.**
 Differences smaller than that are not differences.
 
-**Sections 1-5 describe the earlier arena builds. The current code is v3: see
-[section 6](#6-v3---the-designed-event-loop-arena).** The earlier sections are kept because they are
-the only measurements of those builds; do not read them as statements about the pinned commit.
+**Appendix A describes the earlier arena builds (v2). The current code is v3: see
+[section 2](#2-v3-the-pinned-build).** The appendix is kept because it holds the only measurements
+of those builds; do not read it as a statement about the pinned commit.
 
-## 1. CycleScopedAllocBenchmark - the scope-aligned case
+## Summary
 
-Allocate k buffers, write a byte into each, read a byte back, release all k. Heap buffers, one
-event-loop thread. `ns/buf` is the JMH score divided by k; nothing else is computed.
-Data: `cycle/cycle-heap.json`.
+One row per section, every number copied verbatim from the section it names.
 
-| allocator | ns per buffer (over k 8/64, FIFO/LIFO, MIXED/SMALL) |
-|---|---|
-| ARENA | 25.2 - 27.5 |
-| ADAPTIVE | 44.3 - 50.9 |
-| MIMALLOC | 46.6 - 52.6 |
+| section | build / configuration | what changed | headline numbers |
+|---|---|---|---|
+| [1](#1-the-lifecycle-topology-of-real-pipelines-adaptive-allocator-seven-pipelines-nio) | adaptive, NIO, 7 pipelines, one window each | nothing - this is the shape the arena was designed against | lifetime 0 iterations for 100.00% of paired buffers in W1/W2/W6a, 97.83% W3, 91.35% W4, 37.26% W5, 15.72% W6b; bytes crossing an iteration 0.00% (W1/W2/W6a), 41.01% (W3), 19.98% (W4), 68.51% (W5), 84.28% (W6b) |
+| [2.1-2.3, 2.8](#2-v3-the-pinned-build) | v3 `3dad84f578`, microbenchmarks | fixed 256 KiB blocks, 8 KiB cap, flat metadata, `endOfIteration()` | cycle k=64 MIXED heap ARENA **2221.306 +- 45.082** vs ADAPTIVE 3344.521 +- 101.462 ns/64 pairs; `sizes=SMALL` 23.5 vs 49.3 (heap) and 23.8 vs 48.3 (direct) ns per pair, mimalloc port 44.8 / 42.9; harness with `-Dexpt.hookEvery=64` **65.184 +- 2.090** vs 83.584 +- 0.503 ns/op; 0%-share cells +32.1 instructions/op |
+| [2.4](#24-lifecycle-topology-counters) | v3, topology counters | arena serving the same 7 pipelines | arena share 99.99% (W1) to 11.85% (W5); maxPinned 0 (W1/W2/W6a), 7 (W3), 4 (W4/W5), 64 (W6b); W6b **2,140** confinement violations |
+| [2.5, 2.6](#25-end-to-end---2m-requests-3-runs-per-build) | v3, e2e, 2M requests, 3 runs | arena vs adaptive on the example servers | h1 177,191 / 176,115 / 177,787 vs 178,079 / 178,487 / 176,437 req/s; h2 388,480 / 389,652 / 390,394 vs 385,920 / 387,329 / 391,597; instructions/req 106.2k -> 105.2k; allocator CPU share h1 7.72% -> 7.15%, h2 11.03% -> 9.25% (filter B) |
+| [2.9](#29-server-rss-and-glibc-adaptive-vs-mimalloc-vs-arena-measured-2026-09-22-2300-mhz-sut-node-0-h2load-node-1) | v3, fixed 1 GiB pre-touched heap | RSS, not throughput | h1 1298 / 1297 / 1281 MB and h2 1307 / 1300 / 1301 MB for adaptive / mimalloc / arena; the arena's own blocks are 3 MiB |
+| [2.10](#210-the-harnesss-e_commerce-eventloop-ladder-with-a-driven-hook-measured-2026-09-22-2300-mhz-node-0-3-forks) | v3, 32 threads, live set 128..65536 | the live set crosses the 8-block bound | at 128 live 0.84 / 0.88 of adaptive; at 1024 0.72 / 0.76; from 4096 up share falls 49% -> 4% with all 8 blocks pinned and the arena is 1.01-1.37x adaptive; RSS +75..990 MB, unexplained |
+| [3.2, 3.3](#3-transports-io_uring-and-epoll-measured-2026-09-23-2300-mhz-node-0) | `TRANSPORT=nio\|epoll\|io_uring`, ring filled by the allocator under test | the transport | within a transport the three allocators span <= 1.7%; io_uring h1 218,509 vs nio 300,868 (-27%), h2 within 2%; io_uring pins 41 (h1) / 24 (h2) block-maxima over 8 loops against nio's 0 |
+| [3.4](#34-what-broke-w6b-the-cross-loop-proxy) | io_uring, W6b cross-loop proxy | the negative test, on io_uring | **10.25 req/s** against adaptive's 71,919, 406 violations, `ringReads=375` |
+| [4.1, 4.2](#4-io_uring-is-the-arena-wrong-for-the-registered-buffers-or-wrong-measured-2026-09-23-2300-mhz-node-0) | `BUFFER_RING_ALLOC=adaptive`: the ring gets its own adaptive | who fills the provided buffer ring | maxPinned W1 21 -> 6, W3 32 -> 5, W5 32 -> 4; req/s within 0.8% (h1 126,782 / 126,697 / 126,902; h2 371,712 / 369,614 / 372,490); allocator CPU h1 3.22% -> 1.71%, h2 7.74% -> 5.58% against adaptive's 1.52% / 8.67% |
+| [4.4](#44-w6b-the-cross-loop-proxy-with-the-ring-on-adaptive) | W6b with the ring on adaptive | which buffers crossed the loops | **0** violations and **40,678** req/s, against 398 and 10.50 with the arena everywhere |
+| [4.6](#46-what-the-ring-and-the-re-entry-cost-on-the-microbenchmarks) | `-Darena.ring`, `ringReentries` | block-as-a-ring reuse and re-entry | the ring costs **+29.3** (direct) / **+8.5** (heap) instructions per pair; re-entry 284.9 -> 270.1 (direct) and 332.4 -> 292.1 (heap) ns/op at 1024 live, 392.1 -> 404.4 and 416.7 -> 468.2 at 4096 |
+| [5.1, 5.2](#5-io_uring-with-no-registered-buffers-buffer_ringoff-measured-2026-09-23-2300-mhz-node-0) | `BUFFER_RING=off` - no provided buffer ring at all | the ring removed, so also one-shot recv | share returns to nio (h1 99.77% / 100.00%, h2 95.45% / 95.43%), pinning does not (24 h1, 9 h2 against nio's 0); twelve cells inside a 1.3% band per protocol; W6b still fails (470 / 486 violations, ~24 req/s) |
+| [5.3](#53-what-is-still-pinned-the-zero-copy-writes-separate-4-cell-run) | `BUFFER_RING=off` + zero-copy writes off | `IO_URING_WRITE_ZERO_COPY_THRESHOLD` -1 vs 4096 | h1 maxPinnedDirect **25 -> 11** and req/s 127,533 -> **174,648 (+37%)**; h2 9 -> 8 and -1.2%. **11 blocks stay pinned and what holds them is not established here** |
+| [6](#6-who-should-serve-the-registered-buffers-measured-2026-09-23-2300-mhz-node-0) | 5 ring allocators: control / adaptive / builtin / builtinadaptive / slab | who should fill the ring | throughput spread 0.7% (h1 126,840-127,572) and 1.4% (h2 370,529-375,775); slab lowest allocator CPU (0.93% h1, 5.54% h2 against the control's 2.05% / 9.35%) with `slabFallbacks=0`; builtinadaptive best on W3 (98.14% share, 19,009 req/s on a quarter of the `allocate()` calls); W5 ran the slab dry, 4,077 fallbacks |
+| [A](#appendix-a-the-earlier-builds-v2---not-the-pinned-code) | v2, `dec589d0eb` / `26bd14b195` | history, not the pinned code | ARENA 25.2-27.5 vs ADAPTIVE 44.3-50.9 and MIMALLOC 46.6-52.6 ns/buf; 8-block harness 40.6 vs 83.1 (1024) and 49.8 vs 96.1 (4096); with the default 4-block bound the arena LOSES; geometric lifetimes 82.7 vs 83.1 and 122.1 vs 106.5 |
 
-ARENA is 40-50% below ADAPTIVE on every one of the 8 cells (k 8/64 x FIFO/LIFO x MIXED/SMALL;
-`cycle/cycle-heap.json` holds 24 rows = 8 cells x 3 allocators). Adaptive is ahead of the mimalloc port
-here. Full per-cell table: `../../summarize.py cycle/cycle-heap.json`.
+Sections 1-6 are the current line of work: section 1 is the shape of the problem measured with
+adaptive, section 2 the pinned v3 build, sections 3-6 the io_uring questions on top of it. Appendix A
+is the history of two earlier builds and is not a statement about the pinned commit.
 
-## 2. ByteBufAllocatorAllocPatternBenchmark - the steady-state case
+## 1. The lifecycle topology of real pipelines (adaptive allocator, seven pipelines, NIO)
 
-A live set of MAX_LIVE_BUFFERS buffers, E_COMMERCE size pattern, heap, `enableReadWrite=true`,
-release order random over the ring. **This is not the workload the arena is for**; it is here
-because the arena must not be quoted only on the case that suits it.
+The question the microbenchmarks cannot answer: in a real pipeline, **how long does a buffer live
+measured in event-loop iterations, in what order is it released, and who releases it?** The study in
+[`../../topology/`](../../topology/) answers it by recording, in one window of a running server:
 
-Peak RSS is the harness's own `cRSS-pRSS:[cur, peak]`, first fork (the per-fork values are in the
-summarizer output; forks agree within ~1% on these cells).
+- `io.netty.AllocateBuffer` / `io.netty.FreeBuffer` / `io.netty.ReallocateBuffer` (the
+  `Reallocate` events are what balances the ledger when a buffer grows in place);
+- a `netty.IterationEnd` marker committed by a self-renewing tail task on every event loop, so a
+  buffer's lifetime can be counted in **iterations of its own loop**, not only in wall-clock time;
+- the **nesting class** at release - was this buffer the only live one, the youngest (LIFO), the
+  oldest, or in the middle of the live set;
+- the **release cause**, taken from the first non-plumbing frame of the `FreeBuffer` stack;
+- how many **bytes cross an iteration boundary**, which is the number a per-iteration arena would
+  have to keep.
 
-`ARENA` = the default bound (`arena.maxBlocks=4`, <= 4 blocks); `ARENA8` = `-Darena.maxBlocks=8`
-(<= 32 MiB), which is **above** the live set of these cells.
-
-| threads | live | ADAPTIVE | MIMALLOC | ARENA (4 blocks) | ARENA8 (8 blocks) |
-|---|---|---|---|---|---|
-| 1 | 1024 | 83.1 ns (1091 MB) | 70.3 ns (1069 MB) | 76.8 ns (1427 MB) | **40.6 ns** (1050 MB) |
-| 1 | 4096 | 96.1 ns (1097 MB) | 76.2 ns (1075 MB) | 100.0 ns (1188 MB) | **49.8 ns** (1084 MB) |
-| 32 | 1024 | 316.9 ns (2134 MB) | 271.0 ns (1930 MB) | 427.4 ns (2551 MB) | 298.6 ns (2352 MB) |
-| 32 | 4096 | 387.4 ns (2128 MB) | 365.6 ns (2798 MB) | 481.3 ns (2860 MB) | 350.3 ns (2821 MB) |
-
-Two separate readings:
-
-- **With the bound below the live set** (the default 4 blocks) the arena LOSES: blocks are pinned by
-  their longest-lived buffer, the bound is reached, the fallback pays both paths, and RSS is
-  +8..34% (first-fork peaks: +30.8% / +8.3% / +19.5% / +34.4% down the table). Arena share at 4 blocks on these cells: 58% (1024) / 19% (4096) - from
-  `diag/tele-arena2-1024.data` (`arena=83860117 fallback=61512762`) and `diag/tele-arena2-4096.data`
-  (`arena=20499714 fallback=89222495`); the `harness-t1-*-ARENA` runs predate the counter teardown
-  and carry no `ARENATELE` line.
-- **With the bound above the live set** (8 blocks) the counters show effectively everything served
-  by the arena (`harness/harness-t1-1024-ARENA8.data`: `arena=501300300 fallback=0
-  blockReuse=1179648` -> one block recycled every ~425 allocations; at 4096, `fallback=1065` out of
-  400M) and the LIFO pop essentially never firing (`lifoPop=5..27`). Then it is -50% against
-  adaptive where the core is the bottleneck (1 thread) and -6..-10% in the memory-bound 32-thread
-  regime.
-
-**CAVEAT that limits all of section 2:** this harness gives every buffer the same lifetime (N ops,
-a ring of slots), so blocks drain deterministically. Variable lifetimes with long-lived pinning -
-the real case - are not covered here. That is what sections 3 and 4 are for.
-
-### 2b. The current PoC build (heap + direct arenas)
-
-The table above is the first PoC, which was heap-only. The arena now has a heap arena and a direct
-arena, both backed by adaptive's own chunk allocators. Same cell as the first row of the table
-above - E_COMMERCE, 1 thread, 1024 live, 3 forks, 2300 MHz:
-
-| build | ns/op |
-|---|---|
-| ARENA heap, `release=lifo` | 44.28 +- 0.73 |
-| ARENA direct | 43.30 +- 0.46 |
-| ADAPTIVE heap | 83.99 +- 0.29 |
-| ADAPTIVE direct | 79.74 +- 0.38 |
-| heap-only PoC (control) | 40.87 +- 0.17 |
-
-The +3.4 ns of the current build over the heap-only control is **not attributed**. What is known:
-G1 card marks on two hot reference stores were found with perfasm and removed, and a klass-guard
-hypothesis was tested and refuted. Neither accounts for the remaining 3.4 ns.
-
-Evidence: **`micro-v2/`**. Read `micro-v2/INDEX.md` first - it states the gap itself. **There is no
-JMH json or .data for these five cells:** the runs were made without `-rf json`, so
-`micro-v2/quoted-scores.txt` is a *transcription of the console summary lines*, not a
-machine-written artifact. Treat it as such. The perfasm captures behind the card-mark finding are
-real files: `perfasm-new-v1-cardmarks.txt` (G1 barriers on `putfield reserved` in
-`Space::reserve` and `putfield root` in `ArenaBuf::moveTo`, hottest region 24.69%),
-`perfasm-new-v2-after-barrier-fix.txt` (barriers gone), `perfasm-old-control.txt`
-(the heap-only PoC). Their own `Result` lines are **48.510 / 47.591 / 40.991 ns/op** - a perfasm run
-is not a clean score, and the 47.2 / 45.6 / 40.5 quoted in the report come from the regression-walk
-lines of `quoted-scores.txt`, not from these three files. All three with `-prof perfasm:event=cycles`, never `cycles:P` on
-this AMD box. The refuted klass-guard hypothesis is the `monomorphic root` line of
-`quoted-scores.txt`: 48.341 +- 2.861, no recovery.
-
-## 3. Geometric lifetimes (`-Dexpt.randomRelease=true`)
-
-Release a uniformly random live slot instead of the next one in the ring: same mean lifetime,
-geometric distribution. 1 thread, 3 forks, E_COMMERCE heap. Data: `rand/`.
-
-**These runs use `-Darena.maxBlocks=8`** (the VM options line in each `.data` says so), i.e. the
-same 8-block arena that wins section 2. The comparison that matters is therefore the ARENA column
-here against the ARENA8 column above: 40.6 -> 82.7 and 49.8 -> 122.1 for changing nothing but the
-lifetime distribution.
-
-| live | ADAPTIVE | MIMALLOC | ARENA (8 blocks) | arena share | peak RSS vs adaptive |
-|---|---|---|---|---|---|
-| 1024 | 83.1 ns | 68.6 ns | 82.7 ns | 77% | 1210-1223 vs 1071-1073 MB (+13..14%) |
-| 4096 | 106.5 ns | 77.2 ns | 122.1 ns | 22% | 1225-1227 vs 1084-1091 MB (+13%) |
-
-At 4096 the block reuses collapse from 538K (`harness/harness-t1-4096-ARENA8.data`) to 46K
-(`rand/rand-t1-4096-ARENA.data`). A few long-lived buffers per block pin it and the bound fills
-with mostly-dead blocks. The LIFO pop, silent in section 2, now fires 103K-108K times: releases
-stop arriving in stack order.
-
-**CAVEAT on these two cells specifically:** Chrome was using about 66% of one CPU during this run.
-The comparison is between allocators measured in the same conditions, but the absolute levels are
-not clean.
-
-## 4. Real lifetimes from JFR - the gate
-
-`io.netty.AllocateBuffer` / `io.netty.FreeBuffer` (see `../../lifetimes/buf.jfc`), paired by
-address by `../../lifetimes/lifetimes.py`. Allocator: adaptive. Outputs: `lifetimes/*.txt`.
-
-| server | load | req/s | buffers | same thread | allocations in between |
-|---|---|---|---|---|---|
-| HttpSnoopServer, HTTP/1.1 POST 4 KiB | h2load, 64 conn, 4 threads, 12 s | 274,927 | 4.14M | 100.0000% | p50 1, **max 2** |
-| Http2Server (h2c) | h2load, 16 conn x 32 streams, 12 s | 45,478 | 3.00M | 100.0000% | p50 14, p90 37, p99 45, **max 90** |
-
-In the HTTP/1.1 case the 8 kB inbound read buffer lives exactly 2 allocations: the response header
-and body buffers are allocated inside its lifetime and released first - nested stack discipline. In
-the HTTP/2 case the lifetime is bounded by the multiplexing window; 76% of the buffers are 9-15 B
-frame buffers, 4.5% are the 32/64 kB read buffers.
-
-**What this does NOT show.** These are two example servers that retain nothing. Application code
-that holds buffers across iterations - aggregation, queues, backpressure, `ChannelOutboundBuffer`
-under a slow peer - is absent. This is a lower bound on real lifetimes, not the general case.
-
-**An earlier sample in the same block is invalid and is not reported here:** an `HttpSnoopServer`
-run driven by the jbang `wrk` on this box showed no inbound read buffers at all, because that `wrk`
-ignores the Lua body and no POST bodies were sent (`lifetimes/snoop-wrk.log`, `lifetimes/wrk.log`).
-h2load was used for every number above.
-
-## 5. End to end - the allocator is not visible
-
-`run-e2e.sh`: the same netty example pipelines behind `E2EServer`, one allocator per run, 8 event
-loops, `-Xms2g`, driven by h2load for 20 s.
-
-Evidence: **`e2e-v2/`** - `INDEX.md` maps every table row to a `runs/<tag>/` directory holding
-`h2load.txt`, `server.log` (the READY line and the `ARENATELE` counters from the shutdown hook),
-`rss.txt` (VmRSS in KiB every 0.5 s) and `gc.log`. `e2e-v2/harness/` has the exact `E2EServer.java`
-that was run, `logback-quiet.xml`, the driver `run.sh` and `cp.txt` (the exact classpath).
-
-**What limits this section:**
-
-1. **The frequency was NOT fixed** - these runs were at 4300 MHz, not the 2300 MHz of the other
-   sections. Do not compare their absolute levels with anything above.
-2. The server ran on node 0 (`numactl --cpunodebind=0 --membind=0`, `-Xms2g -Xmx2g`) and h2load on
-   node 1.
-
-### HTTP/2 (h2c), `-c 16 -m 32`
-
-| build | req/s | mean request time | RSS | GC pauses | run |
-|---|---|---|---|---|---|
-| ADAPTIVE | 671,887 | 720 us | 92 -> 1471 MiB | 34 | `runs/f-h2-adaptive` |
-| ARENA heap (`-Dio.netty.noPreferDirect=true`) | 676,928 | 709 us | 93 -> 1457 MiB | 30 | `runs/f-h2-arena-heap` |
-| ARENA direct | 672,233 | 711 us | 93 -> 1448 MiB | 32 | `runs/f-h2-arena-direct` |
-| ARENA `-Darena.release=hook -Darena.hook=iteration` | 671,800 | 711 us | 93 -> 1458 MiB | 32 | `runs/f-h2-arena-hookiter` |
-| ARENA `-Darena.release=hook -Darena.hook=off -Darena.e2e.readCompleteHook=true` | 666,754 | 716 us | 93 -> 1413 MiB | 32 | `runs/f-h2-arena-hookrc` |
-
-### HTTP/1.1, `--h1 -c 64`
-
-| build | req/s | mean request time | RSS | GC pauses | run |
-|---|---|---|---|---|---|
-| ADAPTIVE | 298,586 | 218 us | 93 -> 1437 MiB | 92 | `runs/f-h1-adaptive` |
-| ARENA direct | 300,662 | 216 us | 92 -> 1447 MiB | 92 | `runs/f-h1-arena-direct` |
-| ARENA heap | 302,460 | 214 us | 92 -> 1436 MiB | 73 | `runs/f-h1-arena-heap` |
-
-### Counters
-
-HTTP/2, ARENA heap run:
+Seven pipelines, all NIO:
 
 ```
-arenaHeap=71.7M  arenaDirect=111.4M  fallbackHeap=0  fallbackDirect=0
-grow=0  resetOnZero=9.4M  lifoPop=68.7M
+  w1  W1 HTTP/1.1 snoop, 4 KiB POST, 64 conn, h2load --h1
+  w2  W2 HTTP/2 hello, 16 conn x 32 streams, 4 KiB POST
+  w3  W3 HTTP/2 echo of a 64 KiB body, 4 KiB client flow-control windows, 8 conn x 16 streams
+  w4  W4 HTTP/1.1 chunked echo of a 256 KiB POST, 64 slow readers (4 KiB/20 ms), server SO_SNDBUF=16 KiB
+  w5  W5 HttpServerCodec + HttpObjectAggregator(1 MiB) + small OK, 256 KiB POST, 64 conn
+  w6a  W6a TCP proxy (HexDumpProxy topology) -> snoop backend, outbound on the SAME event loop, 4 KiB POST, 64 conn
+  w6b  W6b same proxy but the outbound channel on a SEPARATE event loop group, 4 KiB POST, 64 conn
 ```
 
-`release=hook`, `hook=iteration`: `hookRegistered=8 hookIteration=3.03M hookReset=3.03M`.
-The `readCompleteHook` variant: `hookReadComplete=3.16M hookReset=604k`. On HTTP/1.1 the snoop
-handler's `channelReadComplete` does not propagate, so that variant never fires there - a 3 s smoke
-of `run-e2e.sh` on h1 with those flags gives `hookReadComplete=0`.
+Results (`topology/`, copied exactly from `summary.txt`):
 
-### What these runs actually say
+```
+LIFETIME IN EVENT-LOOP ITERATIONS (share of paired buffers)
+wl        pairs        0        1      2-3      4-7       8+ x-thread
+w1       549633  100.00%    0.00%    0.00%    0.00%    0.00%    0.00%
+w2       568072  100.00%    0.00%    0.00%    0.00%    0.00%    0.00%
+w3      1385797   97.83%    0.00%    0.00%    0.00%    2.17%    0.00%
+w4         2496   91.35%    1.20%    0.00%    0.00%    7.45%    0.00%
+w5       332006   37.26%    5.32%    8.78%   10.03%   38.61%    0.00%
+w6a      310270  100.00%    0.00%    0.00%    0.00%    0.00%    0.00%
+w6b      254132   15.72%   17.66%   27.80%   31.86%    6.96%  100.00%
 
-**End to end the allocators stay within run-to-run spread on these servers.** Every HTTP/2 build
-lands between 666.8k and 676.9k req/s and every HTTP/1.1 build between 298.6k and 302.5k; the
-request-time means differ by 11 us out of 709-720 (h2) and 4 us out of 214-218 (h1). Nothing here
-separates the arena from adaptive, in either direction.
+HEADLINE CLASSES (share of paired buffers)
+wl             i         ii        iii         iv          v  vi-other
+w1        33.33%     66.67%      0.00%      0.00%      0.00%     0.00%
+w2         2.94%     97.06%      0.00%      0.00%      0.00%     0.00%
+w3         0.05%     97.77%      2.17%      0.00%      0.00%     0.00%
+w4         0.20%     91.15%      8.65%      0.00%      0.00%     0.00%
+w5         5.21%     32.05%      0.00%     62.74%      0.00%     0.00%
+w6a      100.00%      0.00%      0.00%      0.00%      0.00%     0.00%
+w6b        8.17%      7.56%     84.28%      0.00%      0.00%     0.00%
 
-The earlier **"713 req/s" HTTP/2 arena result does not reproduce** at the pinned commit:
-`runs/repro-h2-arena` gives 52,257 req/s against `runs/ref-h2-adaptive` 53,402 in the same
-logging-bound harness, while `runs/repro-old-h2-arena` - the pre-fix `dec589d0eb` classes overlaid -
-still gives 0.00 req/s. It is attributed to a stale build. **That attribution is not established.**
+BYTES AND OCCUPANCY
+wl       MiB alloc MiB crossing     %bytes   avgLive   maxLive  alloc/it  it/s/thr
+w1          2231.2          0.0      0.00%      0.00         0     39.39      3253
+w2          1081.6          0.0      0.00%      0.00         0    135.85       972
+w3          4653.0       1908.3     41.01%     64.76        85      4.71     25302
+w4            20.0          4.0     19.98%      1.04        72      0.00    525237
+w5         13386.2       9170.8     68.51%      3.23        34      0.32    239218
+w6a         2424.0          0.0      0.00%      0.00         0      0.80     90164
+w6b         1985.4       1673.2     84.28%      0.51        16      0.13    232206
+```
 
-The RSS climb to ~1.5 GiB is the 2 GB Java heap filling between GCs under `-Xms2g`, the same for
-every build. It is not native allocator retention.
+Headline classes: **i** = same iteration, LIFO or only-live; **ii** = same iteration, out of order;
+**iii** = crosses an iteration, released by write completion; **iv** = crosses an iteration, held by
+a decoder/cumulator or an aggregator; **v** = crosses an iteration, HTTP/2 flow control;
+**vi** = anything else.
 
-### The superseded run in `e2e/`
+### 1.1 What limits this study
 
-The files under `e2e/` are an earlier round that **measured the example servers' logging, not their
-allocators**: the example pipelines log every HTTP/2 frame at INFO. Adaptive on HTTP/2 measured
-23,507 req/s with that logging and 670,768 req/s without it - a factor of 28 (the quiet side of
-that comparison is `e2e-v2/runs/q-h2-adaptive-heap`, the intermediate build; the final
-`runs/f-h2-adaptive` of the table above is 671,887). `run-e2e.sh` now
-passes `-Dlogback.configurationFile=e2e/logback-off.xml` by default; set `LOGBACK_CONFIG=` to
-measure the servers as the examples ship them.
+- **One 1-1.5 s window per workload**, one run each. These are shapes, not converged numbers.
+- **NIO only.** No io_uring, so nothing here says anything about registered or provided buffers.
+- **No derived-buffer events.** Slices and duplicates do not fire allocate/free, so a buffer pinned
+  only by a derived reference is invisible.
+- **The iteration counter is inflated on idle loops.** The `IterationEnd` tail task is always
+  pending, so `hasTasks()` is always true and the selector never blocks. `topology/control.txt` measures the
+  cost: on a saturated loop (W1) markers cost +3.3% CPU and no throughput, but on a near-idle loop
+  (W4) they cost **31x** CPU and turn the iteration counter into a spin counter. **On W4 read the
+  wall-clock column, not the iteration column.**
+- `jfr print` truncates timestamps to milliseconds, which cannot order 450k events/s, so
+  `../../topology/Dump.java` uses the JFR API directly to get nanoseconds.
+- The recordings were made against a frozen classpath at netty `cfb23bcf63` - not the commit this
+  repository pins (`256c1d86bd` today) - and the exact h2load flags of W1/W2/W3/W5 were not recorded.
+  Both are spelled out in `topology/README.md`.
+- The `.jfr` recordings (706 MB) are not in this repository; `../../topology/run.sh` regenerates them.
 
-That round also hit a real bug, which is why its logs are kept. With the arena, HTTP/2 completed 0
-of 512 started requests: h2load sent GO_AWAY with `errorCode=1` and the debug bytes
-`DATA: stream not opened` on every connection, and the server threw no exception. **The kept logs do
-not show that evidence**: `e2e/h2-arena.server.log.gz` is 93,494 lines of INBOUND/OUTBOUND frame
-logging with no `GOAWAY` line in it, and `e2e/h2-arena.h2load` was truncated before h2load's summary
-block. The GO_AWAY observation is from the console of that round and is not reproducible from this
-directory; what the directory does show is the frame log of the failing run. **Cause, established:** `ArenaBuf.internalNioBuffer(index, len)` delegated to the
-block's root buffer (an `UnpooledUnsafeHeapByteBuf`), whose `internalNioBuffer` returns **one cached
-ByteBuffer per root**. A gathering write collects the NIO views of several outbound buffers of the
-same block before using any of them, so all of those views pointed at the last position set -
-corrupted DATA frames. **Fixed** on the PoC branch in commit `05604aa1c2` ("per-buffer NIO views"):
-each `ArenaBuf` keeps its own cached duplicate for `internalNioBuffer` and slices a fresh view in
-`nioBuffer` / `nioBuffers`.
-
-## 6. v3 - the designed event-loop arena
+## 2. v3, the pinned build
 
 Everything in this section was measured on **2026-09-22**, on the machine described at the top of
 this file: **2300 MHz fixed, node 0**. Code: netty `3dad84f578` (`expt/event-loop-arena`, 6 commits
-on the `26bd14b195` of sections 2b and 5); harness: netty-allocator `e9fa807`, which adds the
+on the `26bd14b195` of sections A.2b and A.5); harness: netty-allocator `e9fa807`, which adds the
 `-Dexpt.hookEvery` driver described below. Raw data: **`arena-v3/`**.
 
-v3 is a rewrite, not a tuning of the build measured in sections 2b and 5: fixed 256 KiB blocks, flat
+v3 is a rewrite, not a tuning of the build measured in sections A.2b and A.5: fixed 256 KiB blocks, flat
 block metadata (ids and parallel columns, no block object), a size cap above which the request is
 handed to adaptive, and a public `endOfIteration()` hook instead of `endOfCycle()`. The knobs and
-the JFR events are listed in the README.
+the JFR events are listed in the README. Reuse in this build happens in exactly one place, the
+end-of-iteration hook: the variable-slot ring (`-Darena.ring`) and the re-entry of a stalled ring into
+another block came later, at `11adeba602` / `52b19c8ebf`, and are measured in sections 3 to 6 and
+costed in section 4.6.
 
-### 6.1 `CycleScopedAllocBenchmark`, k=64, FIFO, MIXED - 3 forks
+### 2.1 `CycleScopedAllocBenchmark`, k=64, FIFO, MIXED - 3 forks
 
 JMH `avgt 30` = 3 forks x 10 iterations. The score is per invocation, i.e. **per 64 allocate/release
 pairs**, not per buffer. Data: `arena-v3/cycle/cycle-v3b.{log,json}`.
@@ -273,7 +166,7 @@ table has 12 entries, of which 16384 and 32768 are above the default `arena.cap=
 delegated to adaptive - 10/12 = 83.33% exactly. The remaining 16.67% is adaptive's own cost inside
 the ARENA column.
 
-### 6.2 `ByteBufAllocatorAllocPatternBenchmark` with the hook driven every 64 ops - 3 forks
+### 2.2 `ByteBufAllocatorAllocPatternBenchmark` with the hook driven every 64 ops - 3 forks
 
 E_COMMERCE, heap, 1 thread, 1024 live, `enableReadWrite=true`, `-Dexpt.hookEvery=64`. Data:
 `arena-v3/micro/t1-heap-hook64-v3b.log` (ARENA) and `arena-v3/micro/t1-heap-v3b.log` (ADAPTIVE).
@@ -290,7 +183,7 @@ Counters on the ARENA run: `arenaShare=88.27%`, `blocksHeap=7`, `maxPinnedHeap=7
 loop, so nothing would ever close an iteration; `-Dexpt.hookEvery=N` calls `endOfIteration()` every
 N allocations from the benchmark state. N=64 is a choice, and the score depends on it.
 
-### 6.3 The 0%-share cells measure the delegate detour, not the arena
+### 2.3 The 0%-share cells measure the delegate detour, not the arena
 
 The ARENA cells run **without** the driver print `arenaShare=0.00%` and `hooks=0`: the blocks fill,
 nothing is ever reset, and every allocation goes to adaptive. Those cells measure
@@ -309,7 +202,7 @@ agent report quotes +33 and +82; the arithmetic on these three files gives +32.1
 comparison, the same cell **with** the hook driven every 64 ops is 413.631 instructions/op at
 62.880 ns/op (`arena-v3/prof/perfnorm-v3b-hook64.txt`, 1 fork).
 
-### 6.4 Lifecycle-topology counters
+### 2.4 Lifecycle-topology counters
 
 One window per workload, arena build, 4 event loops, servers and labels as in
 `topology/labels.txt`. The figures are the process-wide `ARENATELE` line of each
@@ -336,7 +229,7 @@ confinement violations are counted.
 It is there to show the counter fires when confinement is broken. W5 at 11.85% is the aggregator:
 the aggregated body is above the cap and is delegated.
 
-### 6.5 End to end - 2M requests, 3 runs per build
+### 2.5 End to end - 2M requests, 3 runs per build
 
 `run-e2e.sh`, logging off, server pinned on node 0, h2load on node 1, 2,000,000 requests per run,
 all succeeded. Data: `arena-v3/e2e/`.
@@ -366,7 +259,7 @@ instructions per request**, so three runs do not separate the two builds on this
 On HTTP/2 the counters are unchanged: ADAPTIVE 40,970 / 40,382 / 41,090 instructions per request
 against ARENA 40,658 / 41,424 / 40,688.
 
-### 6.6 async-profiler: allocator share of event-loop CPU samples
+### 2.6 async-profiler: allocator share of event-loop CPU samples
 
 **One profile per build**, 14 s, CPU samples, collapsed stacks in `arena-v3/e2e/*-prof.collapsed`.
 
@@ -386,16 +279,16 @@ What both agree on: the allocator's share of event-loop CPU samples is **single-
 percent** and the arena build's share is lower than adaptive's on both protocols, in one profile each.
 One profile is one sample; this is not a distribution.
 
-### 6.7 What section 6 does not establish
+### 2.7 What section 2 does not establish
 
-- Throughput: unchanged (6.5). The only quantities that move are the allocator's share of loop CPU
+- Throughput: unchanged (2.5). The only quantities that move are the allocator's share of loop CPU
   samples and, by about 1% and inside adaptive's own spread, instructions per request on HTTP/1.1.
 - The 32-thread and `-Dexpt.randomRelease=true` cells were **not** re-measured on the v3 build.
 - Topology and end-to-end are single windows per workload.
-- 6.1 and 6.2 are the arena's best case with the hook driven artificially, exactly as sections 1
-  and 2 were for the earlier build.
+- 2.1 and 2.2 are the arena's best case with the hook driven artificially, exactly as sections A.1
+  and A.2 were for the earlier build.
 
-### 6.8 Like-for-like against the first PoC: sizes under the cap (measured 2026-09-22, 2300 MHz, node 0, 3 forks)
+### 2.8 Like-for-like against the first PoC: sizes under the cap (measured 2026-09-22, 2300 MHz, node 0, 3 forks)
 
 `CycleScopedAllocBenchmark`, k=64, FIFO, `sizes=SMALL` (64/128/256/512 B: every request under the 8 KiB cap, so both
 arenas run at 100% share, `maxPinned=0` - stated for v3 from the twelve `arenaShare=100.00%` lines of `small-v3.log`;
@@ -413,10 +306,10 @@ MIMALLOC files: `arena-v3/cycle/small-mi.*` (same jar, same flags, run right aft
 adaptive on this cell.
 
 v3 is −52.4% (heap) / −50.8% (direct) against adaptive where the arena applies, level with or better than the first PoC on heap,
-and twice as fast as it on direct. The gap to v2 seen on `sizes=MIXED` (section 6.2) is the cap: 16 and 32 KiB requests
+and twice as fast as it on direct. The gap to v2 seen on `sizes=MIXED` (section 2.2) is the cap: 16 and 32 KiB requests
 delegate in v3 and were served by v2's arena. v3's fork spread is wider than adaptive's.
 
-### 6.9 Server RSS and glibc: adaptive vs mimalloc vs arena (measured 2026-09-22, 2300 MHz, SUT node 0, h2load node 1)
+### 2.9 Server RSS and glibc: adaptive vs mimalloc vs arena (measured 2026-09-22, 2300 MHz, SUT node 0, h2load node 1)
 
 `run-e2e.sh`, 4 event loops, 20 s per run, one run per cell, `JVM_OPTS="-Xms1g -Xmx1g -XX:+AlwaysPreTouch
 -XX:MaxDirectMemorySize=2g"` so that RSS differences are native memory, not heap sizing. Files:
@@ -437,7 +330,7 @@ The two RSS columns are the same quantity in different units - smaps `Rss` in kB
 sample in kB over 1024; the underlying values differ by less than 0.01%, so the ~30 unit drop between the columns is
 the divisor, not a decline. Allocator footprint differences are within 17 MB (about 1%) on a 1.3 GB process, arena
 lowest; the arena's own native footprint is 3 MiB of blocks. Throughput: single runs, same direction as `e2e-rss/` (h2 arena +3.5% here,
-+8% there) but the three-run 2M-request comparison in 6.5 showed no change - not established without repeats.
++8% there) but the three-run 2M-request comparison in 2.5 showed no change - not established without repeats.
 
 glibc: the arena's `/proc/<pid>/maps` holds only **two** 256 KiB anonymous `rw-p` mappings in each of the two
 captures, against the 12 blocks the counters report, so most of the 256 KiB blocks obtained through
@@ -447,7 +340,7 @@ histogram is dominated by 132K and 1008K mappings (`arena-maps-1790099196.txt`: 
 only), so they stay in the loop threads' glibc arenas for the life of the process. Which segments hold them was not
 established.
 
-### 6.10 The harness's E_COMMERCE "eventloop" ladder with a driven hook (measured 2026-09-22, 2300 MHz, node 0, 3 forks)
+### 2.10 The harness's E_COMMERCE "eventloop" ladder with a driven hook (measured 2026-09-22, 2300 MHz, node 0, 3 forks)
 
 `ByteBufAllocatorAllocPatternBenchmark`, 32 threads on the FastThreadLocal harness executor (not event loops: the arena's
 hook is driven every 64 operations with `-Dexpt.hookEvery=64`), `enableReadWrite=true`, seven live-buffer counts.
@@ -484,14 +377,14 @@ for; that excess is not explained. A partial same-session re-run of adaptive and
 (277 vs 345) and mimalloc heap 128 (270 vs 316), so the ratios at those cells carry a 15-20% run-to-run uncertainty. This is the geometric-lifetime regime the
 design declares out of scope: the driven hook is a fixed cadence, not a lifetime boundary.
 
-## 7. Transports: io_uring and epoll (measured 2026-09-23, 2300 MHz, node 0)
+## 3. Transports: io_uring and epoll (measured 2026-09-23, 2300 MHz, node 0)
 
 Code: netty `2b961262d6` (`expt/event-loop-arena`, the ring-reuse commit before its final amend; the pushed commit is `11adeba602`, differing only in javadoc and the ring's default, which every run here set explicitly), PoC `run-e2e.sh` /
 `topology/run-matrix.sh` with `TRANSPORT=nio|epoll|io_uring`. Server pinned with
 `numactl --cpunodebind=0 --membind=0`, h2load with `--cpunodebind=1 --membind=1`, logging off, one
 run per cell. Raw output: `arena-v3/{io_uring,epoll,nio}/`.
 
-### 7.1 What this kernel supports - probed, not assumed
+### 3.1 What this kernel supports - probed, not assumed
 
 `lib/java/IoUringProbe.java` run on this box (kernel `7.1.13-100.fc43.x86_64`, full output in
 `arena-v3/io_uring/probe.txt`) reports **every** feature the branch probes as supported:
@@ -543,7 +436,7 @@ run's `RINGTELE` counted 1,917,439 buffers taken out of the provided buffer ring
 plus the buffer ring. `SENDMSG_ZC` (48) never appears in this workload. I do not know why `WRITEV`
 and `SEND_ZC` have exactly equal counts; I did not investigate it.
 
-### 7.2 End to end, 20 s per cell, one run per cell
+### 3.2 End to end, 20 s per cell, one run per cell
 
 req/s from h2load; RSS is the sampled max and is dominated by the JVM heap (no `-Xmx` is set on
 these servers), so it separates nothing here.
@@ -580,7 +473,7 @@ nothing is ever pinned at a hook; with the buffer ring every loop grows to its 8
 the kernel-owned ring buffers plus the zero-copy writes in flight. No confinement violation and no
 leaked block in any of these cells.
 
-### 7.3 Lifecycle topology on io_uring, seven cells x three builds
+### 3.3 Lifecycle topology on io_uring, seven cells x three builds
 
 One 1.5 s JFR window inside an 8 s load, 4 event loops, `topology/run-matrix.sh`. ARENA is run at
 the branch default `-Darena.ring=true` and again with `-Darena.ring=false`. `maxPinned` is
@@ -611,7 +504,7 @@ every block was created.
 | W6b | arena ring=true | 100.00% | 16 | **406** | **375** | **10.25** |
 | W6b | arena ring=false | 100.00% | 16 | **414** | **387** | **10.62** |
 
-Against the nio figures of section 6.4 (same workloads, same window shape, W1 99.99% share and
+Against the nio figures of section 2.4 (same workloads, same window shape, W1 99.99% share and
 maxPinned 0), the io_uring cells show a **much lower arena share and a much higher pinned count** on
 W1-W4: every block of every loop is created and 3-8 of them per loop are pinned at a hook. W5 is the
 exception: its share goes up (11.85% on nio to 83.66% here), because on io_uring the 256 KiB body
@@ -623,7 +516,7 @@ below the arena cells (90.5 k vs 154.1 k, 306.8 k vs 469.3 k) while the e2e cell
 allocators on the same transport tie to within 1.7%. **I do not know what makes those two cells
 differ** and did not investigate it.
 
-### 7.4 What broke: W6b, the cross-loop proxy
+### 3.4 What broke: W6b, the cross-loop proxy
 
 W6b is the deliberate negative test: the buffer is allocated on the inbound loop and released on the
 outbound loop. On nio it counted 2,140 violations and still served the load. On io_uring the same
@@ -646,7 +539,7 @@ violations, ringReads 375, 10.25 req/s. The throw lands on the zero-copy write-c
 is logged by the io_uring handler as an unexpected event-loop exception. No claim is made here about
 the mechanism beyond what these three counters and that stack say.
 
-### 7.5 async-profiler, io_uring, one 14 s CPU profile per cell
+### 3.5 async-profiler, io_uring, one 14 s CPU profile per cell
 
 `tools/asprof-alloc-share.py` (filter B = stacks containing `SingleThreadIoEventLoop.run`, which is
 transport independent, of which those containing an allocator frame):
@@ -675,7 +568,7 @@ recv inline, so what is left in "io_uring enter" is ring machinery):
 | socket read (syscall incl.) | 4.3% | 4.6% | 8.8% | 8.2% |
 | allocator | 1.9% | 4.3% | 12.6% | 8.6% |
 
-### 7.6 What section 7 does not establish
+### 3.6 What section 3 does not establish
 
 - Every cell is **one run**. The e2e cells are 20 s, the topology cells a single 1.5 s window.
 - Why io_uring is 27% below nio/epoll on HTTP/1.1 here: not investigated.
@@ -684,20 +577,20 @@ recv inline, so what is left in "io_uring enter" is ring machinery):
 - `RECVSEND_BUNDLE` and `ENTER_NO_IOWAIT` are supported by the kernel but were left at netty's
   defaults (off), so nothing here measures them.
 
-## 8. io_uring: is the arena wrong for the registered buffers, or wrong? (measured 2026-09-23, 2300 MHz, node 0)
+## 4. io_uring: is the arena wrong for the registered buffers, or wrong? (measured 2026-09-23, 2300 MHz, node 0)
 
-Section 7 measured the arena on io_uring with ONE allocator doing two jobs: serving the channels and
+Section 3 measured the arena on io_uring with ONE allocator doing two jobs: serving the channels and
 filling the provided buffer ring. A ring buffer is handed to the kernel and comes back only when the
 kernel has filled it - lifetime class D, alive across an unbounded number of iterations - so that run
 could not separate "the arena is wrong for io_uring" from "the arena is wrong for the buffers the
 ring registers". `BUFFER_RING_ALLOC=adaptive` (PoC `lib/java/Transports.java`) gives the buffer ring
 its own `AdaptiveByteBufAllocator` and leaves `ChannelOption.ALLOCATOR` on the allocator under test,
 so the two can be measured apart. Code: netty `52b19c8ebf`, PoC `topology/run-matrix.sh` and `run-e2e.sh`
-with `TRANSPORT=io_uring`; the arena cells set `-Darena.ring=true` explicitly, as section 7's did.
+with `TRANSPORT=io_uring`; the arena cells set `-Darena.ring=true` explicitly, as section 3's did.
 Server pinned with `numactl --cpunodebind=0 --membind=0`, h2load on node 1. Raw output:
 `arena-v3/io_uring-split/`.
 
-### 8.1 Lifecycle topology on io_uring, seven cells x three configurations
+### 4.1 Lifecycle topology on io_uring, seven cells x three configurations
 
 | workload | configuration | arena share | maxPinned | violations | ringReads | reentries | req/s |
 |---|---|---|---|---|---|---|---|
@@ -723,7 +616,7 @@ Server pinned with `numactl --cpunodebind=0 --membind=0`, h2load on node 1. Raw 
 | W6b proxy, separate loop | arena everywhere | 100.00% | 16 | 398 | 371 | 0 | 10 |
 | W6b proxy, separate loop | arena + adaptive ring | n/a | 0 | 0 | 1,555,149 | 0 | 40,678 |
 
-### 8.2 End to end on io_uring, 20 s per cell, one run per cell
+### 4.2 End to end on io_uring, 20 s per cell, one run per cell
 
 `summary-h1-ringadaptive.txt`:
 ```
@@ -757,12 +650,12 @@ req/s is within 0.8% across all three configurations (h1 126,782 / 126,697 / 126
 CPU on h1, back to adaptive's level, and takes h2 below adaptive. The ring's buffers were costing the
 arena CPU as well as blocks.
 
-### 8.3 What survives a hook, and an instrument that was blind
+### 4.3 What survives a hook, and an instrument that was blind
 
 `CycleArenaAllocator` emits no `io.netty.AllocateBuffer` / `FreeBuffer` - those live on the adaptive
-paths - so for an ARENA cell the lifetime study of sections 6.4 and 7.3 only ever saw the buffers the
+paths - so for an ARENA cell the lifetime study of sections 2.4 and 3.3 only ever saw the buffers the
 arena could **not** serve. The event count tracks the delegated fraction exactly: W1 share 100% -> 0
-events here against 7.3's 64.43% -> 243,411; W6a/W6b 100% -> 0; W5 99.33% -> 942 against 7.3's
+events here against 3.3's 64.43% -> 243,411; W6a/W6b 100% -> 0; W5 99.33% -> 942 against 3.3's
 83.66% -> 460,251. Those tables describe the delegated minority, not the arena's own traffic.
 
 The split run gives the attribution anyway, because there the ring's buffers **are** adaptive and do
@@ -780,7 +673,7 @@ In the proxy workloads essentially every provided-ring buffer outlives the itera
 it, on the write-completion and zero-copy-completion paths - and those are the buffers that were
 pinning 12-32 of the arena's blocks.
 
-### 8.4 W6b, the cross-loop proxy, with the ring on adaptive
+### 4.4 W6b, the cross-loop proxy, with the ring on adaptive
 
 | configuration | violations | req/s |
 |---|---|---|
@@ -803,19 +696,19 @@ IllegalStateException: arena buffer of Thread[multiThreadIoEventLoopGroup-3-4]
 writes that slice to the other loop's channel and the outbound loop releases it. Nothing else crossed
 loops. Cross-loop is out of scope for the arena by design and is **not** fixed here.
 
-### 8.5 What section 8 does not establish
+### 4.5 What section 4 does not establish
 
-* Absolute `req/s` is not comparable with section 7. The adaptive control is unchanged code and moved
+* Absolute `req/s` is not comparable with section 3. The adaptive control is unchanged code and moved
   with everything else (W2 219,602 vs 306,757; W3 13,112 vs 28,695; W6a 46,049 vs 87,304), so the
   session differs, not the change. Everything above is compared **within** this run.
 * One run per cell, 8 s with a JFR recording inside; no repetitions, no error bars.
 * W6a with the arena everywhere came out at 14,094 req/s against adaptive's 46,049 in the same
-  session, where 7.3 had them at parity. The arena counters do not point at the arena (100% share,
+  session, where 3.3 had them at parity. The arena counters do not point at the arena (100% share,
   12 blocks, 3,764 block switches, 1,524 re-entries, 0 violations). Unexplained.
 * Nothing here says the arena is the right tool for the channel buffers either - only that the
   registered ring buffers are what it cannot hold.
 
-### 8.6 What the ring and the re-entry cost, on the microbenchmarks
+### 4.6 What the ring and the re-entry cost, on the microbenchmarks
 
 Raw data: `arena-v3/ring/` (copied from the `netty-bench` harness run of 2026-09-22; the two
 `bench-*.jar` files are not in the repo). The `.sh` files next to the JSON are the exact commands.
@@ -862,9 +755,9 @@ it came from, so it is not reported here.
 bitmap could mark a slot free while a live buffer still pointed into it. Every number in this
 subsection is from builds at or after that commit.
 
-## 9. io_uring with no registered buffers (`BUFFER_RING=off`, measured 2026-09-23, 2300 MHz, node 0)
+## 5. io_uring with no registered buffers (`BUFFER_RING=off`, measured 2026-09-23, 2300 MHz, node 0)
 
-Sections 7 and 8 always had a provided buffer ring. This one removes it. `BUFFER_RING=off`
+Sections 3 and 4 always had a provided buffer ring. This one removes it. `BUFFER_RING=off`
 (PoC `lib/java/Transports.java`) installs **no** `IoUringBufferRingConfig` and sets **no**
 `IO_URING_BUFFER_GROUP_ID`, so `AbstractIoUringStreamChannel.scheduleRead0()` falls through to its
 plain branch: the receive buffer comes from the **channel allocator** via `allocHandle.allocate(alloc())`
@@ -879,7 +772,7 @@ Code: netty `52b19c8ebf`, PoC `run-e2e.sh` / `topology/run-matrix.sh`. Server
 `numactl --cpunodebind=0 --membind=0`, h2load on node 1, logging off, one run per cell. Raw output:
 `arena-v3/uring-noring/`.
 
-### 9.1 End to end, 20 s per cell, one run per cell
+### 5.1 End to end, 20 s per cell, one run per cell
 
 `maxPin` is `maxPinnedDirect`, the **sum over the 8 arenas** of each arena's own maximum; `blk` is
 `blocksDirect`. `share B` is `tools/asprof-alloc-share.py` filter B on a separate 14 s profiled run
@@ -906,17 +799,17 @@ Readings, all within this one session:
   128,011 -> 127,525 on h1 (-0.4%) and 373,036 -> 375,820 on h2 (+0.7%) between off and on. All
   twelve cells sit inside a 1.3% band per protocol. One run per cell; this is not a distribution.
 * **The arena's share does go back to nio levels without the ring.** h1 99.77% / 100.00% against
-  nio's 100.00% (§7.2); h2 95.45% / 95.43% against nio's 95.54%. On h2 the share is *higher* without
+  nio's 100.00% (§3.2); h2 95.45% / 95.43% against nio's 95.54%. On h2 the share is *higher* without
   the ring than with it (95.45% vs 92.88%).
 * **Pinned blocks do not.** nio pins 0 in these cells; with `BUFFER_RING=off` the sum over 8 loops is
   24 (h1, ring=false) and 9 (h2). So the answer to "does the arena behave on io_uring as it does on
-  nio" is **share yes, pinning no** - see §9.3 for what half of the h1 pinning is.
+  nio" is **share yes, pinning no** - see §5.3 for what half of the h1 pinning is.
 * **Zero confinement violations in every e2e cell**, with or without the ring.
 * Allocator CPU: on h2 the arena's filter-B share halves when the ring goes away (6.84% -> 3.37%)
   and is less than half adaptive's 8.17%. On h1 the three-way spread (1.18-2.56%) is smaller than the
   difference between the two arena builds, and I would not read a ranking out of one profile each.
 
-### 9.2 Lifecycle topology with `BUFFER_RING=off`, seven cells x three builds
+### 5.2 Lifecycle topology with `BUFFER_RING=off`, seven cells x three builds
 
 One 1.5 s JFR window inside an 8 s load, 4 event loops. These are **not** throughput measurements.
 
@@ -947,22 +840,22 @@ One 1.5 s JFR window inside an 8 s load, 4 event loops. These are **not** throug
 Readings:
 
 * **W6b is not fixed by removing the ring.** 470 / 486 violations and ~24 req/s against adaptive's
-  48,090. §8.4 made W6b pass by moving the ring's buffers to adaptive (0 violations, 40,678 req/s);
+  48,090. §4.4 made W6b pass by moving the ring's buffers to adaptive (0 violations, 40,678 req/s);
   with **no** ring at all the read buffers come from the arena instead and those cross the loops.
-  Cross-loop is out of scope for the arena by design, and §8.4's result was about *which* buffers
+  Cross-loop is out of scope for the arena by design, and §4.4's result was about *which* buffers
   crossed, not about the ring being the only thing that can cross.
-* **W1 at `ring=false` measures 45.39%**, against §7.3's 45.45% for the same build knob with the ring
+* **W1 at `ring=false` measures 45.39%**, against §3.3's 45.45% for the same build knob with the ring
   on - the two agree to 0.06 points across two sessions and two transports configurations, which is
   the best cross-check in this file that the harness is measuring what it claims. `ring=true` is
   99.99%.
-* **W5's share collapses to 13.17%** where §7.3 had 83.66% / 91.55% with the ring on. With no ring
+* **W5's share collapses to 13.17%** where §3.3 had 83.66% / 91.55% with the ring on. With no ring
   the 256 KiB body arrives in large receive buffers rather than 8 KiB ring slices; `-Darena.cap=8192`
   sends anything bigger straight to adaptive. That is the documented behaviour of the knob - I read
   the code, I did not instrument this cell to confirm the size distribution.
 * Every non-W6b cell has 0 violations, and `maxPin` is between 4 and 17 - never 0, and never the
-  32 (= 4 loops x 8 blocks) that §7.3 hit with the ring on.
+  32 (= 4 loops x 8 blocks) that §3.3 hit with the ring on.
 
-### 9.3 What is still pinned: the zero-copy writes (separate 4-cell run)
+### 5.3 What is still pinned: the zero-copy writes (separate 4-cell run)
 
 `maxPin` above is not 0, and the other class-D path the harness enables is
 `IO_URING_WRITE_ZERO_COPY_THRESHOLD=4096`, which netty leaves **disabled** by default
@@ -983,19 +876,19 @@ back to confirm `-1` vs `4096`:
   **I do not know what holds them** and did not instrument it.
 * The +37% on h1 is one run per cell and is a property of *this harness's* choice of a 4096-byte
   threshold against a 4096-byte body, not a statement about `SEND_ZC`. It is also the first number
-  in this file that dents §7.2's unexplained "io_uring is 27% below nio/epoll on HTTP/1.1"
+  in this file that dents §3.2's unexplained "io_uring is 27% below nio/epoll on HTTP/1.1"
   (218.5 k vs 300.9 k there); 174,648 is still below nio, and the sessions differ, so this is a lead,
   not an explanation.
 
-### 9.4 What section 9 does not establish
+### 5.4 What section 5 does not establish
 
 * One run per e2e cell, one 1.5 s window per topology cell, no repetitions, no error bars.
 * Nothing here separates "no buffer ring" from "no multishot recv": `BUFFER_RING=off` is both.
 * W1/W2/W3 topology req/s again come out far above the adaptive control while the e2e cells tie, as
-  in §7.3 and §8.5. Still not investigated.
-* The zero-copy cells are a different session from §9.1 and are only compared among themselves.
+  in §3.3 and §4.5. Still not investigated.
+* The zero-copy cells are a different session from §5.1 and are only compared among themselves.
 
-## 10. Who should serve the registered buffers (measured 2026-09-23, 2300 MHz, node 0)
+## 6. Who should serve the registered buffers (measured 2026-09-23, 2300 MHz, node 0)
 
 Four candidates fill the provided buffer ring while the channel allocator is held at
 `arena -Darena.ring=false`, plus adaptive everywhere as the control. The lifecycle they have to
@@ -1005,7 +898,7 @@ io_uring project does are in [`docs/uring-registered-buffers.md`](../../docs/uri
 | id | `BUFFER_RING_ALLOC` | what |
 |---|---|---|
 | control | `same` + adaptive channels | one `AdaptiveByteBufAllocator` for channels and ring |
-| (i) | `adaptive` | the ring gets its own `AdaptiveByteBufAllocator` (this is §8's split) |
+| (i) | `adaptive` | the ring gets its own `AdaptiveByteBufAllocator` (this is §4's split) |
 | (ii) | `builtin` | netty's `IoUringFixedBufferRingAllocator` over `ByteBufAllocator.DEFAULT` (= adaptive here) |
 | (ii-a) | `builtinadaptive` | netty's `IoUringAdaptiveBufferRingAllocator`, the only one that varies the buffer **size** (1 KiB..64 KiB) |
 | (iii) | `slab` | `RegisteredSlabBufferRingAllocator`: one preallocated direct region **per loop**, 64x4 chunks of 8 KiB, free list by slot, nothing allocated after start-up |
@@ -1015,7 +908,7 @@ io_uring project does are in [`docs/uring-registered-buffers.md`](../../docs/uri
 different adaptive instances, so they should be indistinguishable. Candidate (iv), the FFM mimalloc
 allocator, was **not run**: it needs JDK 25 and these scripts run on `PATH`'s `java`, which is 21.
 
-### 10.1 End to end, 20 s per cell, one run per cell
+### 6.1 End to end, 20 s per cell, one run per cell
 
 `ringAllocs` is `allocate()` calls, i.e. buffers handed to the kernel; `ringReads` is buffers the
 kernel filled and gave back. Over the 20 s load that is ~65 k `allocate()`/s (h1) and ~188 k/s (h2).
@@ -1052,7 +945,7 @@ h2  instances=8 regionBytes=16777216 slabAcquires=3753605 slabReleases=3753349 s
 after start-up is measured, not assumed; `slabForeignReleases=0`, so in these two workloads nothing
 released a ring buffer off its own loop and the Treiber stack's CAS was never contended.
 
-### 10.2 Lifecycle topology, W1 / W3 / W5
+### 6.2 Lifecycle topology, W1 / W3 / W5
 
 | workload | ring served by | req/s | arena share | blk | maxPin | viol | ringAllocs | ringReads |
 |---|---|---|---|---|---|---|---|---|
@@ -1078,7 +971,7 @@ where the fixed slab ran dry** - 256 chunks per loop were not enough headroom fo
 aggregator, and 4,077 buffers came from the fallback `UnpooledByteBufAllocator` instead. That is the
 failure mode of "not elastic", and the counter is there precisely so it cannot pass unnoticed.
 
-### 10.3 Five lines: what the data favours
+### 6.3 Five lines: what the data favours
 
 1. **On throughput, nothing separates the candidates.** The five configurations span 0.7% on h1
    (126,840-127,572), 1.4% on h2 (370,529-375,775) and 3.5% on W1; one run per cell.
@@ -1096,11 +989,240 @@ failure mode of "not elastic", and the counter is there precisely so it cannot p
    locality or NUMA (nothing here measured a remote access), and W5's 4,077 fallbacks show the fixed
    sizing is a real constraint that a 20 s h1/h2 run never exercised.
 
-### 10.4 What section 10 does not establish
+### 6.4 What section 6 does not establish
 
-* One run per cell, one session, no repetitions. Absolute req/s is not comparable with §7, §8 or §9.
+* One run per cell, one session, no repetitions. Absolute req/s is not comparable with §3, §4 or §5.
 * `slabForeignReleases=0` everywhere means the cross-loop path was never taken in W1/W3/W5 or the
   e2e cells - it does **not** mean the slab handles the W6b topology, which was not run here.
 * No candidate was run with `IORING_REGISTER_BUFFERS`; netty exposes no binding for it (§4 of the doc).
 * `depth=4` was picked before the runs, not tuned; W5 says it is too small for that workload and
   nothing here says what the right value is.
+
+## Appendix A. The earlier builds (v2) - NOT the pinned code
+
+These sections measure netty `dec589d0eb` (A.1-A.4) and the PoC build `26bd14b195` (A.2b, A.5), on
+the same reference machine. **v3 is a rewrite, not a tuning of them**: `arena.release`, `arena.hook`,
+`arena.retainBytes`, `arena.initialBlock`, `arena.maxBlock`, `arena.objects`, `endOfCycle()` and
+`CycleArenaEndOfCycleHandler` do not exist at the pinned commit. Nothing here is a statement about
+the pinned code. They are kept because they are the only measurements those builds will ever have.
+
+### A.1 CycleScopedAllocBenchmark - the scope-aligned case
+
+Allocate k buffers, write a byte into each, read a byte back, release all k. Heap buffers, one
+event-loop thread. `ns/buf` is the JMH score divided by k; nothing else is computed.
+Data: `cycle/cycle-heap.json`.
+
+| allocator | ns per buffer (over k 8/64, FIFO/LIFO, MIXED/SMALL) |
+|---|---|
+| ARENA | 25.2 - 27.5 |
+| ADAPTIVE | 44.3 - 50.9 |
+| MIMALLOC | 46.6 - 52.6 |
+
+ARENA is 40-50% below ADAPTIVE on every one of the 8 cells (k 8/64 x FIFO/LIFO x MIXED/SMALL;
+`cycle/cycle-heap.json` holds 24 rows = 8 cells x 3 allocators). Adaptive is ahead of the mimalloc port
+here. Full per-cell table: `../../summarize.py cycle/cycle-heap.json`.
+
+### A.2 ByteBufAllocatorAllocPatternBenchmark - the steady-state case
+
+A live set of MAX_LIVE_BUFFERS buffers, E_COMMERCE size pattern, heap, `enableReadWrite=true`,
+release order random over the ring. **This is not the workload the arena is for**; it is here
+because the arena must not be quoted only on the case that suits it.
+
+Peak RSS is the harness's own `cRSS-pRSS:[cur, peak]`, first fork (the per-fork values are in the
+summarizer output; forks agree within ~1% on these cells).
+
+`ARENA` = the default bound (`arena.maxBlocks=4`, <= 4 blocks); `ARENA8` = `-Darena.maxBlocks=8`
+(<= 32 MiB), which is **above** the live set of these cells.
+
+| threads | live | ADAPTIVE | MIMALLOC | ARENA (4 blocks) | ARENA8 (8 blocks) |
+|---|---|---|---|---|---|
+| 1 | 1024 | 83.1 ns (1091 MB) | 70.3 ns (1069 MB) | 76.8 ns (1427 MB) | **40.6 ns** (1050 MB) |
+| 1 | 4096 | 96.1 ns (1097 MB) | 76.2 ns (1075 MB) | 100.0 ns (1188 MB) | **49.8 ns** (1084 MB) |
+| 32 | 1024 | 316.9 ns (2134 MB) | 271.0 ns (1930 MB) | 427.4 ns (2551 MB) | 298.6 ns (2352 MB) |
+| 32 | 4096 | 387.4 ns (2128 MB) | 365.6 ns (2798 MB) | 481.3 ns (2860 MB) | 350.3 ns (2821 MB) |
+
+Two separate readings:
+
+- **With the bound below the live set** (the default 4 blocks) the arena LOSES: blocks are pinned by
+  their longest-lived buffer, the bound is reached, the fallback pays both paths, and RSS is
+  +8..34% (first-fork peaks: +30.8% / +8.3% / +19.5% / +34.4% down the table). Arena share at 4 blocks on these cells: 58% (1024) / 19% (4096) - from
+  `diag/tele-arena2-1024.data` (`arena=83860117 fallback=61512762`) and `diag/tele-arena2-4096.data`
+  (`arena=20499714 fallback=89222495`); the `harness-t1-*-ARENA` runs predate the counter teardown
+  and carry no `ARENATELE` line.
+- **With the bound above the live set** (8 blocks) the counters show effectively everything served
+  by the arena (`harness/harness-t1-1024-ARENA8.data`: `arena=501300300 fallback=0
+  blockReuse=1179648` -> one block recycled every ~425 allocations; at 4096, `fallback=1065` out of
+  400M) and the LIFO pop essentially never firing (`lifoPop=5..27`). Then it is -50% against
+  adaptive where the core is the bottleneck (1 thread) and -6..-10% in the memory-bound 32-thread
+  regime.
+
+**CAVEAT that limits all of section A.2:** this harness gives every buffer the same lifetime (N ops,
+a ring of slots), so blocks drain deterministically. Variable lifetimes with long-lived pinning -
+the real case - are not covered here. That is what sections A.3 and A.4 are for.
+
+#### A.2b The heap + direct build (`26bd14b195`)
+
+The table above is the first PoC, which was heap-only. The arena now has a heap arena and a direct
+arena, both backed by adaptive's own chunk allocators. Same cell as the first row of the table
+above - E_COMMERCE, 1 thread, 1024 live, 3 forks, 2300 MHz:
+
+| build | ns/op |
+|---|---|
+| ARENA heap, `release=lifo` | 44.28 +- 0.73 |
+| ARENA direct | 43.30 +- 0.46 |
+| ADAPTIVE heap | 83.99 +- 0.29 |
+| ADAPTIVE direct | 79.74 +- 0.38 |
+| heap-only PoC (control) | 40.87 +- 0.17 |
+
+The +3.4 ns of the current build over the heap-only control is **not attributed**. What is known:
+G1 card marks on two hot reference stores were found with perfasm and removed, and a klass-guard
+hypothesis was tested and refuted. Neither accounts for the remaining 3.4 ns.
+
+Evidence: **`micro-v2/`**. Read `micro-v2/INDEX.md` first - it states the gap itself. **There is no
+JMH json or .data for these five cells:** the runs were made without `-rf json`, so
+`micro-v2/quoted-scores.txt` is a *transcription of the console summary lines*, not a
+machine-written artifact. Treat it as such. The perfasm captures behind the card-mark finding are
+real files: `perfasm-new-v1-cardmarks.txt` (G1 barriers on `putfield reserved` in
+`Space::reserve` and `putfield root` in `ArenaBuf::moveTo`, hottest region 24.69%),
+`perfasm-new-v2-after-barrier-fix.txt` (barriers gone), `perfasm-old-control.txt`
+(the heap-only PoC). Their own `Result` lines are **48.510 / 47.591 / 40.991 ns/op** - a perfasm run
+is not a clean score, and the 47.2 / 45.6 / 40.5 quoted in the report come from the regression-walk
+lines of `quoted-scores.txt`, not from these three files. All three with `-prof perfasm:event=cycles`, never `cycles:P` on
+this AMD box. The refuted klass-guard hypothesis is the `monomorphic root` line of
+`quoted-scores.txt`: 48.341 +- 2.861, no recovery.
+
+### A.3 Geometric lifetimes (`-Dexpt.randomRelease=true`)
+
+Release a uniformly random live slot instead of the next one in the ring: same mean lifetime,
+geometric distribution. 1 thread, 3 forks, E_COMMERCE heap. Data: `rand/`.
+
+**These runs use `-Darena.maxBlocks=8`** (the VM options line in each `.data` says so), i.e. the
+same 8-block arena that wins section A.2. The comparison that matters is therefore the ARENA column
+here against the ARENA8 column above: 40.6 -> 82.7 and 49.8 -> 122.1 for changing nothing but the
+lifetime distribution.
+
+| live | ADAPTIVE | MIMALLOC | ARENA (8 blocks) | arena share | peak RSS vs adaptive |
+|---|---|---|---|---|---|
+| 1024 | 83.1 ns | 68.6 ns | 82.7 ns | 77% | 1210-1223 vs 1071-1073 MB (+13..14%) |
+| 4096 | 106.5 ns | 77.2 ns | 122.1 ns | 22% | 1225-1227 vs 1084-1091 MB (+13%) |
+
+At 4096 the block reuses collapse from 538K (`harness/harness-t1-4096-ARENA8.data`) to 46K
+(`rand/rand-t1-4096-ARENA.data`). A few long-lived buffers per block pin it and the bound fills
+with mostly-dead blocks. The LIFO pop, silent in section A.2, now fires 103K-108K times: releases
+stop arriving in stack order.
+
+**CAVEAT on these two cells specifically:** Chrome was using about 66% of one CPU during this run.
+The comparison is between allocators measured in the same conditions, but the absolute levels are
+not clean.
+
+### A.4 Real lifetimes from JFR - the gate
+
+`io.netty.AllocateBuffer` / `io.netty.FreeBuffer` (see `../../lifetimes/buf.jfc`), paired by
+address by `../../lifetimes/lifetimes.py`. Allocator: adaptive. Outputs: `lifetimes/*.txt`.
+
+| server | load | req/s | buffers | same thread | allocations in between |
+|---|---|---|---|---|---|
+| HttpSnoopServer, HTTP/1.1 POST 4 KiB | h2load, 64 conn, 4 threads, 12 s | 274,927 | 4.14M | 100.0000% | p50 1, **max 2** |
+| Http2Server (h2c) | h2load, 16 conn x 32 streams, 12 s | 45,478 | 3.00M | 100.0000% | p50 14, p90 37, p99 45, **max 90** |
+
+In the HTTP/1.1 case the 8 kB inbound read buffer lives exactly 2 allocations: the response header
+and body buffers are allocated inside its lifetime and released first - nested stack discipline. In
+the HTTP/2 case the lifetime is bounded by the multiplexing window; 76% of the buffers are 9-15 B
+frame buffers, 4.5% are the 32/64 kB read buffers.
+
+**What this does NOT show.** These are two example servers that retain nothing. Application code
+that holds buffers across iterations - aggregation, queues, backpressure, `ChannelOutboundBuffer`
+under a slow peer - is absent. This is a lower bound on real lifetimes, not the general case.
+
+**An earlier sample in the same block is invalid and is not reported here:** an `HttpSnoopServer`
+run driven by the jbang `wrk` on this box showed no inbound read buffers at all, because that `wrk`
+ignores the Lua body and no POST bodies were sent (`lifetimes/snoop-wrk.log`, `lifetimes/wrk.log`).
+h2load was used for every number above.
+
+### A.5 End to end - the allocator is not visible
+
+`run-e2e.sh`: the same netty example pipelines behind `E2EServer`, one allocator per run, 8 event
+loops, `-Xms2g`, driven by h2load for 20 s.
+
+Evidence: **`e2e-v2/`** - `INDEX.md` maps every table row to a `runs/<tag>/` directory holding
+`h2load.txt`, `server.log` (the READY line and the `ARENATELE` counters from the shutdown hook),
+`rss.txt` (VmRSS in KiB every 0.5 s) and `gc.log`. `e2e-v2/harness/` has the exact `E2EServer.java`
+that was run, `logback-quiet.xml`, the driver `run.sh` and `cp.txt` (the exact classpath).
+
+**What limits this section:**
+
+1. **The frequency was NOT fixed** - these runs were at 4300 MHz, not the 2300 MHz of the other
+   sections. Do not compare their absolute levels with anything above.
+2. The server ran on node 0 (`numactl --cpunodebind=0 --membind=0`, `-Xms2g -Xmx2g`) and h2load on
+   node 1.
+
+#### HTTP/2 (h2c), `-c 16 -m 32`
+
+| build | req/s | mean request time | RSS | GC pauses | run |
+|---|---|---|---|---|---|
+| ADAPTIVE | 671,887 | 720 us | 92 -> 1471 MiB | 34 | `runs/f-h2-adaptive` |
+| ARENA heap (`-Dio.netty.noPreferDirect=true`) | 676,928 | 709 us | 93 -> 1457 MiB | 30 | `runs/f-h2-arena-heap` |
+| ARENA direct | 672,233 | 711 us | 93 -> 1448 MiB | 32 | `runs/f-h2-arena-direct` |
+| ARENA `-Darena.release=hook -Darena.hook=iteration` | 671,800 | 711 us | 93 -> 1458 MiB | 32 | `runs/f-h2-arena-hookiter` |
+| ARENA `-Darena.release=hook -Darena.hook=off -Darena.e2e.readCompleteHook=true` | 666,754 | 716 us | 93 -> 1413 MiB | 32 | `runs/f-h2-arena-hookrc` |
+
+#### HTTP/1.1, `--h1 -c 64`
+
+| build | req/s | mean request time | RSS | GC pauses | run |
+|---|---|---|---|---|---|
+| ADAPTIVE | 298,586 | 218 us | 93 -> 1437 MiB | 92 | `runs/f-h1-adaptive` |
+| ARENA direct | 300,662 | 216 us | 92 -> 1447 MiB | 92 | `runs/f-h1-arena-direct` |
+| ARENA heap | 302,460 | 214 us | 92 -> 1436 MiB | 73 | `runs/f-h1-arena-heap` |
+
+#### Counters
+
+HTTP/2, ARENA heap run:
+
+```
+arenaHeap=71.7M  arenaDirect=111.4M  fallbackHeap=0  fallbackDirect=0
+grow=0  resetOnZero=9.4M  lifoPop=68.7M
+```
+
+`release=hook`, `hook=iteration`: `hookRegistered=8 hookIteration=3.03M hookReset=3.03M`.
+The `readCompleteHook` variant: `hookReadComplete=3.16M hookReset=604k`. On HTTP/1.1 the snoop
+handler's `channelReadComplete` does not propagate, so that variant never fires there - a 3 s smoke
+of `run-e2e.sh` on h1 with those flags gives `hookReadComplete=0`.
+
+#### What these runs actually say
+
+**End to end the allocators stay within run-to-run spread on these servers.** Every HTTP/2 build
+lands between 666.8k and 676.9k req/s and every HTTP/1.1 build between 298.6k and 302.5k; the
+request-time means differ by 11 us out of 709-720 (h2) and 4 us out of 214-218 (h1). Nothing here
+separates the arena from adaptive, in either direction.
+
+The earlier **"713 req/s" HTTP/2 arena result does not reproduce** at the pinned commit:
+`runs/repro-h2-arena` gives 52,257 req/s against `runs/ref-h2-adaptive` 53,402 in the same
+logging-bound harness, while `runs/repro-old-h2-arena` - the pre-fix `dec589d0eb` classes overlaid -
+still gives 0.00 req/s. It is attributed to a stale build. **That attribution is not established.**
+
+The RSS climb to ~1.5 GiB is the 2 GB Java heap filling between GCs under `-Xms2g`, the same for
+every build. It is not native allocator retention.
+
+#### The superseded run in `e2e/`
+
+The files under `e2e/` are an earlier round that **measured the example servers' logging, not their
+allocators**: the example pipelines log every HTTP/2 frame at INFO. Adaptive on HTTP/2 measured
+23,507 req/s with that logging and 670,768 req/s without it - a factor of 28 (the quiet side of
+that comparison is `e2e-v2/runs/q-h2-adaptive-heap`, the intermediate build; the final
+`runs/f-h2-adaptive` of the table above is 671,887). `run-e2e.sh` now
+passes `-Dlogback.configurationFile=e2e/logback-off.xml` by default; set `LOGBACK_CONFIG=` to
+measure the servers as the examples ship them.
+
+That round also hit a real bug, which is why its logs are kept. With the arena, HTTP/2 completed 0
+of 512 started requests: h2load sent GO_AWAY with `errorCode=1` and the debug bytes
+`DATA: stream not opened` on every connection, and the server threw no exception. **The kept logs do
+not show that evidence**: `e2e/h2-arena.server.log.gz` is 93,494 lines of INBOUND/OUTBOUND frame
+logging with no `GOAWAY` line in it, and `e2e/h2-arena.h2load` was truncated before h2load's summary
+block. The GO_AWAY observation is from the console of that round and is not reproducible from this
+directory; what the directory does show is the frame log of the failing run. **Cause, established:** `ArenaBuf.internalNioBuffer(index, len)` delegated to the
+block's root buffer (an `UnpooledUnsafeHeapByteBuf`), whose `internalNioBuffer` returns **one cached
+ByteBuffer per root**. A gathering write collects the NIO views of several outbound buffers of the
+same block before using any of them, so all of those views pointed at the last position set -
+corrupted DATA frames. **Fixed** on the PoC branch in commit `05604aa1c2` ("per-buffer NIO views"):
+each `ArenaBuf` keeps its own cached duplicate for `internalNioBuffer` and slices a fresh view in
+`nioBuffer` / `nioBuffers`.
