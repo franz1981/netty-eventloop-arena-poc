@@ -510,10 +510,14 @@ paired buffers of W1 (HTTP/1.1 POST), W2 (HTTP/2 multiplexed) and W6a (proxy on 
   to 4%, all eight blocks are pinned in every fork, and the arena is 1-37% slower than adaptive
   while carrying 75-990 MB more RSS - an excess far larger than the 128 MiB the blocks can account
   for and which is **not explained**.
-* **io_uring with provided buffers** ([3](results/ryzen9-7950x-node0/RESULTS.md#3-transports-io_uring-and-epoll-measured-2026-09-23-2300-mhz-node-0), [4](results/ryzen9-7950x-node0/RESULTS.md#4-io_uring-is-the-arena-wrong-for-the-registered-buffers-or-wrong-measured-2026-09-23-2300-mhz-node-0)). A registered buffer belongs to the kernel for an unbounded
-  number of iterations. With the ring filled by the arena, 12-32 of the process's block-maxima stay
-  pinned and the arena's allocator CPU share on HTTP/1.1 goes *above* adaptive's (1.91% -> 4.31%).
-  Give the ring its own adaptive allocator and the counters return to the nio shape.
+* **io_uring, and not only its provided buffers** ([3](results/ryzen9-7950x-node0/RESULTS.md#3-transports-io_uring-and-epoll-measured-2026-09-23-2300-mhz-node-0), [4](results/ryzen9-7950x-node0/RESULTS.md#4-io_uring-is-the-arena-wrong-for-the-registered-buffers-or-wrong-measured-2026-09-23-2300-mhz-node-0), [7](results/ryzen9-7950x-node0/RESULTS.md#7-what-holds-the-blocks-that-stay-pinned-on-io_uring-measured-2026-09-24-2300-mhz-node-0)). A registered buffer belongs to the kernel
+  for an unbounded number of iterations. With the ring filled by the arena, 12-32 of the
+  process's block-maxima stay pinned and the arena's allocator CPU share on HTTP/1.1 goes *above*
+  adaptive's (1.91% -> 4.31%). Give the ring its own adaptive allocator and the counters return to
+  the nio shape - but the blocks still pinned after that are **zero-copy write buffers** on
+  HTTP/1.1 (99.5% of 8,682 attributed samples; turning zero-copy off takes them to 3) and
+  **9-byte HTTP/2 frame headers** on HTTP/2, where zero-copy makes no difference at all. The
+  recommendation, with its evidence, is [`docs/uring.md`](docs/uring.md): **no arena on io_uring.**
 * **Cross-loop pipelines** ([3.4](results/ryzen9-7950x-node0/RESULTS.md#34-what-broke-w6b-the-cross-loop-proxy), [4.4](results/ryzen9-7950x-node0/RESULTS.md#44-w6b-the-cross-loop-proxy-with-the-ring-on-adaptive)). W6b - a proxy whose outbound channel is on another event loop - is the
   deliberate negative test: the confinement check fires (398-486 violations) and throughput
   collapses to ~10-24 req/s against adaptive's 38.9-48.1 k. Confinement is a design decision, not a

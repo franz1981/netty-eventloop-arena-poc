@@ -1,0 +1,9 @@
+== cell start (arena-smoke) 14:43:15
+== scaling_max_freq set=2300000 readback=2300000, governor=performance
+== loadavg 0.22 3.77 10.40 1/1261 2099236
+== runnable samples: 2 2 2 2 2 2 max=2 (limit 3)
+ARENATELE blockSize=262144 maxBlocks=8 cap=8192 maxObjects=16384 debug=false ring=false ringStats=false arenaHeap=2071 arenaDirect=0 delegateHeap=10929 delegateDirect=0 arenaShare=15.93% blocksHeap=8 blocksDirect=1 pinned=8 reusable=0 maxPinnedHeap=8 maxPinnedDirect=0 blockReuses=0 blockGrowths=7 blockSwitches=176 ringWraps=0 ringResets=0 ringScans=0 ringReentries=0 ringStalls=0 stallBytes=0 strandedBytes=0 strandedShare=n/a holes<=256=0 holes<=1k=0 holes<=4k=0 holes<=8k=0 holes>8k=0 hooks=200 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=0 reallocMoved=0 reallocDelegated=0 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=32 bytesHeap=46399232 bytesDirect=0 liveHeap=31 liveDirect=0
+ARENALOOP thread=main arenaHeap=2071 arenaDirect=0 delegateHeap=10929 delegateDirect=0 arenaShare=15.93% blocksHeap=8 blocksDirect=1 pinned=8 reusable=0 maxPinnedHeap=8 maxPinnedDirect=0 blockReuses=0 blockGrowths=7 blockSwitches=176 ringWraps=0 ringResets=0 ringScans=0 ringReentries=0 ringStalls=0 stallBytes=0 strandedBytes=0 strandedShare=n/a holes<=256=0 holes<=1k=0 holes<=4k=0 holes<=8k=0 holes>8k=0 hooks=200 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=0 reallocMoved=0 reallocDelegated=0 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=32 bytesHeap=46399232 bytesDirect=0 liveHeap=31 liveDirect=0
+ARENAPINNED period=1 frames=16 pinnedBlockSamples=1495 unattributed=0 sites=1
+ARENAPINNEDSITE blocks=1495 maxAgeHooks=199 avgLiveInBlock=3 avgOldestBytes=256 stack=Chk.keepOne <- Chk.main
+== cell end   (arena-smoke) 14:43:20 rc=0

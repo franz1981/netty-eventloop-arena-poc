@@ -29,7 +29,7 @@ by the marker task (W4: 31x CPU, `control.txt`), so W4/W5 use wall-clock or the 
 | W - write-parked | `ChannelOutboundBuffer` holds the encoded write until the socket accepts it | W3 (h2, 4 KiB client window, 64 KiB echo): 2.2% of buffers = 41% of bytes; W4 (h1 slow readers, SO_SNDBUF 16 KiB): 8.7% = 20% | W3: longest-lived by iterations 1,636 it / 18.1 ms, by time 424 ms / 1,059 it; W4 up to 86 ms | n/a |
 | A - aggregation / cumulation | `HttpObjectAggregator` (by construction any cumulating decoder) retains parts across reads | W5 (256 KiB bodies): 63% of buffers = 69% of bytes, sizes 16-64 KiB | read-iterations: 0 = 37%, 1 = 7%, 2-3 = 13%, 4-7 = 18%, 8+ = 25%; wall-clock p50 77 us, p99 228 us, max 1.2 ms | FIFO |
 | X - cross-thread | read on one loop, released on another | W6b (proxy with separate groups): 84% of buffers, 100% of those freed on another thread; W6a (same loop): 0% | 1 productive iteration | n/a |
-| D - kernel / long-lived | io_uring provided/registered buffers, user-retained data, composites kept across iterations | **now measured**: with the provided buffer ring filled by the arena, 12-32 block maxima pinned across 4-8 loops (`../results/ryzen9-7950x-node0/RESULTS.md` sections 3 and 4); with no ring at all, 24 (h1) / 9 (h2), and turning zero-copy writes off takes h1's 25 to 11 (section 5.3) | long-lived by construction | n/a |
+| D - kernel / long-lived | io_uring provided/registered buffers, user-retained data, composites kept across iterations | **now measured**: with the provided buffer ring filled by the arena, 12-32 block maxima pinned across 4-8 loops (`../results/ryzen9-7950x-node0/RESULTS.md` sections 3 and 4); with no ring at all, 24 (h1) / 9 (h2); section 7 attributes what is left: on h1 **99.5% of the pinned blocks are zero-copy write buffers** (`filterOutboundMessage`'s 4,368-byte copy), on h2 they are the frame writer's own **9-byte** DATA frame headers and zero-copy is irrelevant | long-lived by construction | n/a |
 
 Sizes (M): class I buffers are small: W1/W6a/W6b read buffers exactly 8,192 B, W1 responses 208 B / 4.3 KiB, W2 frames
 <= 256 B in 97%. Survivors: at the chosen 8 KiB cap, 99.98% of W3's crossers and 100% of W5's are above the cap
@@ -314,6 +314,9 @@ survives a run with no recording, which is how every other number in this reposi
   write keeps its buffer alive until the notification. Both outlive the iteration that allocated them by
   construction, and the measurements are sections 3-5 of the results. The arena has no answer to this and should not
   be given one: see [`uring.md`](uring.md) and [`uring-registered-buffers.md`](uring-registered-buffers.md).
+- **And class D is not only the kernel's.** Section 7 of the results found the HTTP/2 frame writer holding
+  51-63 small buffers in one block across a flush, the oldest of them 9 bytes. No size cap filters that, and
+  the design's own consequence 2 said so from the start - it just had not been seen in a measurement before.
 - Composites: a `CompositeByteBuf` holding arena components across iterations pins their blocks (class D behaviour).
 - Thread termination: `FastThreadLocal.onRemoval` releases the block roots of blocks with `live == 0`. Blocks with
   live buffers LEAK until GC, unconditionally: under Invariant A no thread may release them once the owner is gone.

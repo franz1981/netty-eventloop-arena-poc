@@ -44,10 +44,12 @@ One row per section, every number copied verbatim from the section it names.
 | [5.1, 5.2](#5-io_uring-with-no-registered-buffers-buffer_ringoff-measured-2026-09-23-2300-mhz-node-0) | `BUFFER_RING=off` - no provided buffer ring at all | the ring removed, so also one-shot recv | share returns to nio (h1 99.77% / 100.00%, h2 95.45% / 95.43%), pinning does not (24 h1, 9 h2 against nio's 0); twelve cells inside a 1.3% band per protocol; W6b still fails (470 / 486 violations, ~24 req/s) |
 | [5.3](#53-what-is-still-pinned-the-zero-copy-writes-separate-4-cell-run) | `BUFFER_RING=off` + zero-copy writes off | `IO_URING_WRITE_ZERO_COPY_THRESHOLD` -1 vs 4096 | h1 maxPinnedDirect **25 -> 11** and req/s 127,533 -> **174,648 (+37%)**; h2 9 -> 8 and -1.2%. **11 blocks stay pinned and what holds them is not established here** |
 | [6](#6-who-should-serve-the-registered-buffers-measured-2026-09-23-2300-mhz-node-0) | 5 ring allocators: control / adaptive / builtin / builtinadaptive / slab | who should fill the ring | throughput spread 0.7% (h1 126,840-127,572) and 1.4% (h2 370,529-375,775); slab lowest allocator CPU (0.93% h1, 5.54% h2 against the control's 2.05% / 9.35%) with `slabFallbacks=0`; builtinadaptive best on W3 (98.14% share, 19,009 req/s on a quarter of the `allocate()` calls); W5 ran the slab dry, 4,077 fallbacks |
+| [7](#7-what-holds-the-blocks-that-stay-pinned-on-io_uring-measured-2026-09-24-2300-mhz-node-0) | `-Darena.debugPinned`, `BUFFER_RING=off`, zero-copy on and off | which allocation stacks hold the pinned blocks | h1: **99.5%** of 8,682 pinned-block samples are the 4,368-byte `filterOutboundMessage` copy, and zero-copy off takes the samples to **3**; h2: zero-copy is irrelevant (972 vs 974 samples), the oldest live buffer is a **9-byte** HTTP/2 DATA frame header in 74% of samples; `-Darena.cap=4096` takes maxPinnedDirect 26 -> 8 for -0.4% req/s, against +36% for turning zero-copy off |
 | [A](#appendix-a-the-earlier-builds-v2---not-the-pinned-code) | v2, `dec589d0eb` / `26bd14b195` | history, not the pinned code | ARENA 25.2-27.5 vs ADAPTIVE 44.3-50.9 and MIMALLOC 46.6-52.6 ns/buf; 8-block harness 40.6 vs 83.1 (1024) and 49.8 vs 96.1 (4096); with the default 4-block bound the arena LOSES; geometric lifetimes 82.7 vs 83.1 and 122.1 vs 106.5 |
 
-Sections 1-6 are the current line of work: section 1 is the shape of the problem measured with
-adaptive, section 2 the pinned v3 build, sections 3-6 the io_uring questions on top of it. Appendix A
+Sections 1-7 are the current line of work: section 1 is the shape of the problem measured with
+adaptive, section 2 the pinned v3 build, sections 3-6 the io_uring questions on top of it and
+section 7 the attribution that closes section 5.3's open question. Appendix A
 is the history of two earlier builds and is not a statement about the pinned commit.
 
 ## 1. The lifecycle topology of real pipelines (adaptive allocator, seven pipelines, NIO)
@@ -997,6 +999,144 @@ failure mode of "not elastic", and the counter is there precisely so it cannot p
 * No candidate was run with `IORING_REGISTER_BUFFERS`; netty exposes no binding for it (§4 of the doc).
 * `depth=4` was picked before the runs, not tuned; W5 says it is too small for that workload and
   nothing here says what the right value is.
+
+## 7. What holds the blocks that stay pinned on io_uring (measured 2026-09-24, 2300 MHz, node 0)
+
+Section 5.3 left a hole: with no provided buffer ring and zero-copy writes off, 11 blocks were still
+pinned on HTTP/1.1 and **"I do not know what holds them"**. This section instruments it.
+
+Code: netty `256c1d86bd`, which adds `-Darena.debugPinned=true`: every arena allocation captures its
+own stack (`new Throwable().getStackTrace()`) and the hook generation it was made in, and every
+`-Darena.debugPinned.period`-th hook that finds a pinned block walks the space's buffer objects and
+charges the block to the allocation stack of the **oldest buffer still live in it**. The result is an
+`ARENAPINNED` summary and one `ARENAPINNEDSITE` line per stack. These runs set `period=1` (every
+pinned hook) and `-XX:MaxJavaStackTraceDepth=32`.
+
+Twelve cells, all `TRANSPORT=io_uring BUFFER_RING=off`, arena at `-Darena.ring=false`, each cell run
+under a shared mutex with the CPU ceiling set and read back inside the lock. Raw data:
+`arena-v3/pinned-attr/`; the per-cell provenance (lock owner, `scaling_max_freq` read-back, load and
+runnable-count samples) is `arena-v3/pinned-attr/run-provenance.log`, and the wrapper that produced
+it is `arena-v3/pinned-attr/cell.sh`. All 13 frequency read-backs say `2300000`.
+
+### 7.1 The instrument is not free, and one cell shows it
+
+One stack capture per allocation. Same cells, instrument off and on:
+
+| cell | req/s off | req/s on | hooks off | hooks on | maxPinnedDirect off | maxPinnedDirect on |
+|---|---|---|---|---|---|---|
+| e2e h1, zero-copy on | 128,436 | 93,035 | 746,114 | 20,153 | 26 | 25 |
+| e2e h1, zero-copy off | 174,372 | 119,232 | 1,101,023 | 19,633 | 14 | **3** |
+| W1 topology, zero-copy on | 93,851 | 65,549 | 4,088 | 1,869 | 15 | 6 |
+| W1 topology, zero-copy off | 135,190 | 93,574 | 6,574 | 1,919 | 7 | 0 |
+| W3 topology, zero-copy on | 20,239 | 3,674 | 10,152 | 1,111 | 8 | 8 |
+| W3 topology, zero-copy off | 20,348 | 3,646 | 13,895 | 1,114 | 8 | 8 |
+
+**Read this before reading 7.2.** The instrument costs 28-38% of throughput on h1 and 82% on W3, and
+it cuts the hook count by one to two orders of magnitude. `maxPinnedDirect` survives it on the cells
+that pin the most (e2e h1 zero-copy on: 26 -> 25; W3: 8 -> 8), so the attribution there is about the
+same state the uninstrumented run was in. It does **not** survive on the cells that barely pin at all
+(e2e h1 zero-copy off: 14 -> 3; W1 zero-copy off: 7 -> 0): those are rare transients, and slowing the
+server down makes them rarer still. So the *rate* of pinned samples is not comparable between the two
+columns anywhere - only which stacks the samples land on.
+
+### 7.2 HTTP/1.1: it is the zero-copy write buffers, 99.5% of them
+
+`e2e h1`, 8 loops, 20 s, `BUFFER_RING=off`, `-Darena.debugPinned=true`:
+
+| zero-copy writes | pinnedBlockSamples | unattributed | distinct sites | top site | share |
+|---|---|---|---|---|---|
+| on (threshold 4096) | 8,682 | 0 | 3 | the outbound copy below | **99.5%** |
+| off (`-1`, netty's default) | **3** | 0 | 2 | the same one | 66.7% |
+
+The site that holds 8,640 of the 8,682 samples, `maxAgeHooks=10`, `avgOldestBytes=4368`:
+
+```
+AbstractIoUringChannel.newDirectBuffer0 <- AbstractIoUringChannel.newDirectBuffer
+  <- AbstractIoUringChannel.filterOutboundMessage <- AbstractIoUringStreamChannel.filterOutboundMessage
+  <- AbstractChannel$AbstractUnsafe.write <- DefaultChannelPipeline$HeadContext.write
+  <- HttpObjectEncoder.writePromiseCombiner <- HttpObjectEncoder.writeOutList
+  <- HttpSnoopServerHandler.writeResponse <- HttpSnoopServerHandler.channelRead0
+```
+
+4,368 bytes is the 4 KiB POST body echoed back plus its headers. `filterOutboundMessage` copies every
+outbound buffer into a direct one from the **channel allocator**, which is the arena here; at or above
+`IO_URING_WRITE_ZERO_COPY_THRESHOLD=4096` that copy goes out as `SEND_ZC` and stays alive until the
+kernel's notification, which is a later iteration. The other two sites are the 208-byte response
+header (`HttpObjectEncoder.encodeFullHttpMessage`, 21 samples) and the 8,192-byte receive buffer
+(`IoUringRecvByteAllocatorHandle.allocate`, 21 samples) - 0.2% each.
+
+**Turning zero-copy off takes the samples from 8,682 to 3.** The same site is still top, so what is
+left with zero-copy off is the same outbound copy, merely rarely still live at a hook rather than
+routinely. Section 5.3's "11 blocks, I do not know what holds them" is answered: **on HTTP/1.1 they
+are outbound write buffers**, and they are a rare transient rather than a steady state once `SEND_ZC`
+is out of the picture.
+
+### 7.3 HTTP/2: it is not the zero-copy writes at all
+
+W3 (HTTP/2 echo of a 64 KiB body, 4 KiB client windows), one 8 s window, 4 loops. Zero-copy makes no
+difference whatsoever - 972 samples with it on, 974 with it off, the same six sites in the same order:
+
+| share | maxAgeHooks | avgLive in block | avgOldestBytes | top frames |
+|---|---|---|---|---|
+| 66.9% | 0 | 55 | 9 | `DefaultHttp2FrameWriter.writeData <- FlowControlledData.write <- ... <- Http2ConnectionHandler.flush <- Http2MultiplexHandler.channelReadComplete` |
+| 14.7% | 0 | 8 | 124 | `DefaultHttp2FrameWriter.writeHeadersInternal <- ... <- Http2FrameCodec.writeHeadersFrame <- AbstractHttp2StreamChannel.write0` |
+| 8.8% | 1 | 13 | 6,560 | `ByteToMessageDecoder.expandCumulation <- ByteToMessageDecoder$1.cumulate <- ... <- AbstractIoUringStreamChannel$IoUringStreamUnsafe.readComplete0` |
+| 6.9% | 0 | 54 | 9 | `DefaultHttp2FrameWriter.writeData <- ... <- Http2ConnectionHandler.channelReadComplete <- ...scheduleNextRead` |
+| 2.3% | 0 | 63 | 13 | `DefaultHttp2FrameWriter.writeWindowUpdate <- ... <- AbstractHttp2StreamChannel$Http2ChannelUnsafe.beginRead` |
+| 0.4% | 0 | 2 | 21 | `DefaultHttp2FrameWriter.writeSettings <- ... <- TopoServer$3.initChannel` |
+
+Two things this says that the h1 answer does not:
+
+1. **The bytes are tiny and the count is large.** The oldest live buffer in a pinned block is a
+   **9-byte** HTTP/2 DATA frame header in 74% of the samples, with 51-63 other live buffers in the
+   same block. This is the shape section 2's design notes called W4's case - "one 8-byte parked write
+   can pin a block" - except here it is the frame writer's own headers during one flush.
+2. **`maxAgeHooks=0` on every site but the cumulator.** The block is pinned *at the hook that observed
+   it* and is free again shortly after; it is not held across iterations. `-Darena.cap=8192` cannot
+   filter a 9-byte buffer, and neither can any size cap.
+
+The one site that does cross an iteration is `ByteToMessageDecoder.expandCumulation` at 6,560 bytes
+and `maxAgeHooks=1` - class A, the cumulator, exactly as section 1 measured on NIO.
+
+### 7.4 Keeping those buffers out of the arena: it fixes the pinning and buys no throughput
+
+If the h1 pinning is the outbound copy, then keeping that copy out of the arena should remove it.
+The design's answer would be a consumer hint ("this buffer is destined for a zero-copy write, do not
+arena it"), which does not exist. The only lever this build already has is the size cap: the copy is
+4,368 bytes, so `-Darena.cap=4096` sends it to the delegate. Same cell as 7.2, zero-copy ON, no
+instrument, one run:
+
+| cell | req/s | arena share | blocksDirect | maxPinnedDirect |
+|---|---|---|---|---|
+| `cap=8192` (default) | 128,436 | 99.78% | 64 | **26** |
+| `cap=4096` | 127,971 | 33.33% | 11 | **8** |
+| `cap=8192`, zero-copy OFF | 174,372 | 99.61% | 64 | 14 |
+
+**CONFOUND, and it is a large one:** 4,096 is below the 8,192-byte receive buffer as well, so the cap
+pushes the reads to the delegate too - which is why the arena share falls to 33.33%. This is not a
+clean test of "delegate the zero-copy write buffers"; it is the closest knob that exists.
+
+What it does show, and what matters for the design: **taking those buffers out of the arena removes
+two thirds of the pinning (26 -> 8) and moves throughput by -0.4%, while turning zero-copy off moves
+it by +36%.** So the +37% of section 5.3 is not the arena's pinning being relieved - the pinning and
+the throughput are separate effects, and a hint that delegated zero-copy write buffers would buy the
+first and not the second. No claim is made here about what `SEND_ZC` itself costs on this workload;
+that was not measured.
+
+### 7.5 What section 7 does not establish
+
+* One run per cell, one 20 s e2e run and one 8 s topology window each; no repetitions.
+* The instrumented and uninstrumented columns of 7.1 are **not** comparable on throughput or on the
+  number of pinned samples, only on which stacks those samples land on. On the two cells that barely
+  pin, the instrument reduced the pinning it was meant to observe.
+* The attribution charges a block to its OLDEST live buffer only. A block held by fifty buffers from
+  fifty sites is charged to one of them; the `avgLiveInBlock` column is the only hint of that, and it
+  is an average, not a distribution.
+* Nothing here measured allocator CPU share, RSS or latency on these cells.
+* `maxAgeHooks=0` means the oldest live buffer was allocated in the iteration the hook closed. It does
+  not say how much longer it lived after that hook.
+* 7.4 is one run per cell and its cap knob is confounded, as stated there. Nothing here measured what
+  `SEND_ZC` costs or why turning it off is worth +36% on this 4 KiB-body workload.
 
 ## Appendix A. The earlier builds (v2) - NOT the pinned code
 
