@@ -1,0 +1,66 @@
+================================================================================================
+WORKLOAD w5-io_uring-adaptive-ra-slab3fixed-r1   (w5-io_uring-adaptive-ra-slab3fixed-r1.tsv)
+================================================================================================
+events: AllocateBuffer=40686 FreeBuffer=40690 ReallocateBuffer=0 IterationEnd=11004039
+pairs=40686  unpaired releases (alloc before window)=4  still live at window end=0  truncated stacks=40686  address reused with no release event=0
+BALANCE CHECK: allocs(40686) - pairs(40686) - live-at-end(0) - reuse(0) = 0  (must be 0)
+event-loop threads with markers: 4  iterations total=11004039  with reads>0=191960 (1.7%)
+
+(a) lifetime in event-loop ITERATIONS of the allocating thread
+     iters : 0=99.51%  1=0.02%  2-3=0.00%  4-7=0.00%  8+=0.47%
+  read-its : 0=99.51%  1=0.02%  2-3=0.02%  4-7=0.05%  8+=0.39%   (only iterations that saw >=1 channelRead)
+  iters p50=0 p90=0 p99=0 p99.9=617 max=733
+  wall-clock lifetime us: p50=15.6 p90=66.4 p99=314.2 p99.9=459.3 max=3538.0
+
+(b) released on the allocating thread: 100.000%  (cross-thread: 0)
+
+(c) nesting class at release: only=46.94%  youngest=0.00%  oldest=49.57%  middle=3.49%
+     within same-iteration releases (40488, 99.51% of all): only=47.15%  youngest=0.00%  oldest=49.34%  middle=3.51%
+
+(d) size bucket (power-of-two ceiling of the requested capacity)
+     16384=0.57%  64=49.72%  2=49.72%
+     exact sizes: 2=49.72%  52=49.72%  16384=0.57%
+
+(e) release cause (first non-allocator frame of the FreeBuffer stack)
+     codec-encoder           49.717%  top site: io.netty.handler.codec.http.HttpObjectEncoder.encodeFullHttpMessage
+     write-completion        49.717%  top site: io.netty.channel.ChannelOutboundBuffer.remove
+     aggregator               0.565%  top site: io.netty.handler.codec.http.HttpObjectAggregator$AggregatedFullHttpMessage.release
+
+    cause x lifetime-in-iterations (row %% of all pairs)
+    cause                         0        1      2-3      4-7       8+     share
+    codec-encoder           49.717%   0.000%   0.000%   0.000%   0.000%   49.717%
+    write-completion        49.698%   0.020%   0.000%   0.000%   0.000%   49.717%
+    aggregator               0.098%   0.000%   0.000%   0.000%   0.467%    0.565%
+
+    cause x size bucket (row %% of all pairs)
+    cause                          2        64     16384
+    codec-encoder            49.717%    0.000%    0.000%
+    write-completion          0.000%   49.717%    0.000%
+    aggregator                0.000%    0.000%    0.565%
+
+    max lifetime: 733 iterations (334.6 us), size=16384, cause=aggregator, site=io.netty.handler.codec.http.HttpObjectAggregator$AggregatedFullHttpMessage.release
+    max wall-clock: 3538.0 us (0 iterations), size=16384, cause=aggregator
+
+(f) live buffers at end of iteration, per event-loop thread
+    thread                          iters  avgLive  maxLive   avgAlloc maxAlloc
+    multiThreadIoEventLoopGroup-3-1  2774496     0.01        2       0.00      240
+    multiThreadIoEventLoopGroup-3-2  2773591     0.01        2       0.00      191
+    multiThreadIoEventLoopGroup-3-3  2826483     0.01        2       0.00      173
+    multiThreadIoEventLoopGroup-3-4  2629469     0.01        2       0.00      151
+    live-at-marker over all markers: mean=0.007 p50=0 p90=0 p99=0 p99.9=1 max=2 ; markers with >0 live=79663 (0.72%)
+    allocations per iteration (all EL threads): mean=0.00 p50=0 p90=0 p99=0 max=240  zero-alloc iterations=99.9%
+    channelReads per iteration: mean=0.08 p50=0 p90=0 p99=3 max=4224
+
+(g) the buffers that DO cross an iteration boundary (198, 0.487% of pairs)
+     io.netty.handler.codec.http.HttpObjectAggregator$Aggregate  0.467% of all  iters p50=484 p99=713 max=733  bytes=3.0 MiB
+     io.netty.channel.ChannelOutboundBuffer.remove               0.020% of all  iters p50=1 p99=1 max=1  bytes=0.0 MiB
+     sizes of the crossing buffers: 16384=95.96%  64=4.04%
+     bytes held across a boundary: 3.0 MiB of 4.6 MiB allocated in the window (64.05%)
+
+    diagnostics: pairs whose stack had no non-plumbing frame=0 (0.000%); pairs crossing >=1 marker=198 (0.487%)
+
+HEADLINE CLASSIFICATION
+    ii-same-iter-out-of-order                 52.588%  (21396)
+    i-same-iter-LIFO                          46.925%  (19092)
+    iv-cross-iter-cumulation/aggregation       0.467%  (190)
+    iii-cross-iter-write-completion            0.020%  (8)

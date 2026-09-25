@@ -1,0 +1,329 @@
+### cell e2e-h1-adaptive  2026-09-25T23:34:09+02:00
+waiting for the bench lock (ringalloc) at 23:34:09
+got the bench lock (ringalloc) at 23:34:09
+== cell start 23:34:09 :: ./run-e2e.sh
+== scaling_max_freq set=2300000 readback=2300000, cpus=32 governor=performance
+== loadavg 1.65 1.79 0.98 1/1268 2873103
+== runnable samples: 2 2 2 2 2 3 max=3 (limit 4)
+==> io_uring-h1-adaptive-ra-adaptive: server, 8 event loops, port 8080, transport io_uring
+   READY pid=2873153
+   h2load --h1 -c 64 -t 4 -D 20 -d /home/forked_franz/IdeaProjects/netty-eventloop-arena-poc/results/ryzen9-7950x-node0/arena-v3/ring-alloc/e2e/body-4096.bin http://127.0.0.1:8080/
+
+== end to end, h1, io_uring, 20s, 64 connections, 8 event loops ==
+adaptive       172901.50 req/s | 48us    168.13ms       377us       934us    99.71% | RSS 106->843 MB (mean 809, 38 samples) | 112 young GCs | RINGTELE transport=io_uring bufferRing=on ringAllocs=1770654 ringReads=5227630 ringReadBytes=14503141386 bgId=1 entries=64 chunk=8192 incremental=true batchSize=32 batchAllocation=false alloc=adaptive allocClass=AdaptiveByteBufAllocator | BUFRINGTELE refCntTele=false noSliceHandoff=false handoffs=0 slices=0 retireRefCnt=1:0,2:0,3:0,4:0,5:0,6:0,>=7:0
+raw logs in /home/forked_franz/IdeaProjects/netty-eventloop-arena-poc/results/ryzen9-7950x-node0/arena-v3/ring-alloc/e2e
+== cell end 23:34:36 rc=0
+released (ringalloc) at 23:34:36 rc=0
+### cell e2e-h1-builtinadaptive  2026-09-25T23:34:36+02:00
+waiting for the bench lock (ringalloc) at 23:34:36
+got the bench lock (ringalloc) at 23:34:36
+== cell start 23:34:36 :: ./run-e2e.sh
+== scaling_max_freq set=2300000 readback=2300000, cpus=32 governor=performance
+== loadavg 4.37 2.40 1.20 1/1269 2873914
+== runnable samples: 2 2 2 2 2 2 max=2 (limit 4)
+==> io_uring-h1-adaptive-ra-builtinadaptive: server, 8 event loops, port 8080, transport io_uring
+   READY pid=2873966
+   h2load --h1 -c 64 -t 4 -D 20 -d /home/forked_franz/IdeaProjects/netty-eventloop-arena-poc/results/ryzen9-7950x-node0/arena-v3/ring-alloc/e2e/body-4096.bin http://127.0.0.1:8080/
+
+== end to end, h1, io_uring, 20s, 64 connections, 8 event loops ==
+adaptive       173469.30 req/s | 48us    161.20ms       375us       915us    99.73% | RSS 104->852 MB (mean 820, 38 samples) | 113 young GCs | RINGTELE transport=io_uring bufferRing=on ringAllocs=1209166 ringReads=4677738 ringReadBytes=14550743286 bgId=1 entries=64 chunk=8192 incremental=true batchSize=32 batchAllocation=false alloc=builtinadaptive allocClass=IoUringAdaptiveBufferRingAllocator/AdaptiveByteBufAllocator | BUFRINGTELE refCntTele=false noSliceHandoff=false handoffs=0 slices=0 retireRefCnt=1:0,2:0,3:0,4:0,5:0,6:0,>=7:0
+raw logs in /home/forked_franz/IdeaProjects/netty-eventloop-arena-poc/results/ryzen9-7950x-node0/arena-v3/ring-alloc/e2e
+== cell end 23:35:02 rc=0
+released (ringalloc) at 23:35:02 rc=0
+### cell e2e-h1-slab  2026-09-25T23:35:02+02:00
+waiting for the bench lock (ringalloc) at 23:35:02
+got the bench lock (ringalloc) at 23:35:02
+== cell start 23:35:02 :: ./run-e2e.sh
+== scaling_max_freq set=2300000 readback=2300000, cpus=32 governor=performance
+== loadavg 5.66 2.90 1.41 1/1270 2874722
+== runnable samples: 2 2 3 2 2 2 max=3 (limit 4)
+==> io_uring-h1-adaptive-ra-slab: server, 8 event loops, port 8080, transport io_uring
+   READY pid=2874770
+   h2load --h1 -c 64 -t 4 -D 20 -d /home/forked_franz/IdeaProjects/netty-eventloop-arena-poc/results/ryzen9-7950x-node0/arena-v3/ring-alloc/e2e/body-4096.bin http://127.0.0.1:8080/
+
+== end to end, h1, io_uring, 20s, 64 connections, 8 event loops ==
+adaptive       172973.35 req/s | 53us    152.97ms       377us       953us    99.71% | RSS 121->848 MB (mean 817, 38 samples) | 112 young GCs | RINGTELE transport=io_uring bufferRing=on ringAllocs=1771390 ringReads=5229802 ringReadBytes=14509159776 bgId=1 entries=64 chunk=8192 incremental=true batchSize=32 batchAllocation=false alloc=slab allocClass=RegisteredSlabBufferRingAllocator[256x8192 per loop] | SLABTELE instances=8 regionBytes=16777216 slabAcquires=1771390 slabReleases=1771134 slabFallbacks=0 slabForeignReleases=0 lastBytesReadCalls=5229802 | BUFRINGTELE refCntTele=false noSliceHandoff=false handoffs=0 slices=0 retireRefCnt=1:0,2:0,3:0,4:0,5:0,6:0,>=7:0
+raw logs in /home/forked_franz/IdeaProjects/netty-eventloop-arena-poc/results/ryzen9-7950x-node0/arena-v3/ring-alloc/e2e
+== cell end 23:35:29 rc=0
+released (ringalloc) at 23:35:29 rc=0
+### cell e2e-h1-slab2fixed  2026-09-25T23:35:29+02:00
+waiting for the bench lock (ringalloc) at 23:35:29
+got the bench lock (ringalloc) at 23:35:29
+== cell start 23:35:29 :: ./run-e2e.sh
+== scaling_max_freq set=2300000 readback=2300000, cpus=32 governor=performance
+== loadavg 7.07 3.49 1.65 1/1273 2875536
+== runnable samples: 2 2 2 2 2 2 max=2 (limit 4)
+==> io_uring-h1-adaptive-ra-slab2fixed: server, 8 event loops, port 8080, transport io_uring
+   READY pid=2875584
+   h2load --h1 -c 64 -t 4 -D 20 -d /home/forked_franz/IdeaProjects/netty-eventloop-arena-poc/results/ryzen9-7950x-node0/arena-v3/ring-alloc/e2e/body-4096.bin http://127.0.0.1:8080/
+
+== end to end, h1, io_uring, 20s, 64 connections, 8 event loops ==
+adaptive       172512.55 req/s | 51us    166.05ms       378us       958us    99.71% | RSS 122->843 MB (mean 810, 38 samples) | 112 young GCs | RINGTELE transport=io_uring bufferRing=on ringAllocs=1766669 ringReads=5215861 ringReadBytes=14470491096 bgId=1 entries=64 chunk=8192 incremental=true batchSize=32 batchAllocation=false alloc=slab2fixed allocClass=SlabV2BufferRingAllocator/slab2fixed[256x8192 per loop, grow=true, maxRegion=33554432, timeHist=false, warmup=16384, reprovGap=65536, reprovRuns=1024, maxReprov=8] | SLAB2TELE name=slab2fixed instances=8 adaptiveSlot=false loopLocal=false align2M=false aligned=false finalSlots=256x8192/256x8192/256x8192/256x8192/256x8192/256x8192/256x8192/256x8192 regionBytes=16777216 acquires=1766669 releases=1766413 fallbacks=0 exhaustions=0 reprovSize=0 reprovGrow=0 foreignReleases=0 staleReleases=0 lastBytesReadCalls=5215861 maxInFlight=34 minFreeSlots=222 drains=0 occupancy[0-25%:1766669,25-50%:0,50-75%:0,75-100%:0,full:0] lifeSeq[<1ring:1766413,<8ring:0,<64ring:0,>=64ring:0] | BUFRINGTELE refCntTele=false noSliceHandoff=false handoffs=0 slices=0 retireRefCnt=1:0,2:0,3:0,4:0,5:0,6:0,>=7:0
+raw logs in /home/forked_franz/IdeaProjects/netty-eventloop-arena-poc/results/ryzen9-7950x-node0/arena-v3/ring-alloc/e2e
+== cell end 23:35:56 rc=0
+released (ringalloc) at 23:35:56 rc=0
+### cell e2e-h1-slab2  2026-09-25T23:35:56+02:00
+waiting for the bench lock (ringalloc) at 23:35:56
+got the bench lock (ringalloc) at 23:35:56
+== cell start 23:35:56 :: ./run-e2e.sh
+== scaling_max_freq set=2300000 readback=2300000, cpus=32 governor=performance
+== loadavg 7.79 3.93 1.84 2/1273 2876344
+== runnable samples: 2 2 2 2 4 2 max=4 (limit 4)
+==> io_uring-h1-adaptive-ra-slab2: server, 8 event loops, port 8080, transport io_uring
+   READY pid=2876418
+   h2load --h1 -c 64 -t 4 -D 20 -d /home/forked_franz/IdeaProjects/netty-eventloop-arena-poc/results/ryzen9-7950x-node0/arena-v3/ring-alloc/e2e/body-4096.bin http://127.0.0.1:8080/
+
+== end to end, h1, io_uring, 20s, 64 connections, 8 event loops ==
+adaptive       173262.50 req/s | 57us    157.30ms       376us       921us    99.68% | RSS 122->846 MB (mean 815, 38 samples) | 112 young GCs | RINGTELE transport=io_uring bufferRing=on ringAllocs=1774352 ringReads=5238548 ringReadBytes=14533422066 bgId=1 entries=64 chunk=8192 incremental=true batchSize=32 batchAllocation=false alloc=slab2 allocClass=SlabV2BufferRingAllocator/slab2[256x8192 per loop, grow=true, maxRegion=33554432, timeHist=false, warmup=16384, reprovGap=65536, reprovRuns=1024, maxReprov=8] | SLAB2TELE name=slab2 instances=8 adaptiveSlot=true loopLocal=false align2M=false aligned=false finalSlots=256x8192/256x8192/256x8192/256x8192/256x8192/256x8192/256x8192/256x8192 regionBytes=16777216 acquires=1774352 releases=1774096 fallbacks=0 exhaustions=0 reprovSize=0 reprovGrow=0 foreignReleases=0 staleReleases=0 lastBytesReadCalls=5238548 maxInFlight=34 minFreeSlots=222 drains=0 occupancy[0-25%:1774352,25-50%:0,50-75%:0,75-100%:0,full:0] lifeSeq[<1ring:1774096,<8ring:0,<64ring:0,>=64ring:0] | BUFRINGTELE refCntTele=false noSliceHandoff=false handoffs=0 slices=0 retireRefCnt=1:0,2:0,3:0,4:0,5:0,6:0,>=7:0
+raw logs in /home/forked_franz/IdeaProjects/netty-eventloop-arena-poc/results/ryzen9-7950x-node0/arena-v3/ring-alloc/e2e
+== cell end 23:36:23 rc=0
+released (ringalloc) at 23:36:23 rc=0
+### cell e2e-h1-slab3fixed  2026-09-25T23:36:23+02:00
+waiting for the bench lock (ringalloc) at 23:36:23
+got the bench lock (ringalloc) at 23:36:23
+== cell start 23:36:23 :: ./run-e2e.sh
+== scaling_max_freq set=2300000 readback=2300000, cpus=32 governor=performance
+== loadavg 7.49 4.22 2.00 1/1275 2877153
+== runnable samples: 2 3 2 2 2 2 max=3 (limit 4)
+==> io_uring-h1-adaptive-ra-slab3fixed: server, 8 event loops, port 8080, transport io_uring
+   READY pid=2877227
+   h2load --h1 -c 64 -t 4 -D 20 -d /home/forked_franz/IdeaProjects/netty-eventloop-arena-poc/results/ryzen9-7950x-node0/arena-v3/ring-alloc/e2e/body-4096.bin http://127.0.0.1:8080/
+
+== end to end, h1, io_uring, 20s, 64 connections, 8 event loops ==
+adaptive       173065.05 req/s | 50us    163.65ms       377us       956us    99.71% | RSS 121->848 MB (mean 816, 38 samples) | 112 young GCs | RINGTELE transport=io_uring bufferRing=on ringAllocs=1772331 ringReads=5232581 ringReadBytes=14516864154 bgId=1 entries=64 chunk=8192 incremental=true batchSize=32 batchAllocation=false alloc=slab3fixed allocClass=SlabV2BufferRingAllocator/slab3fixed[256x8192 per loop, grow=true, maxRegion=33554432, timeHist=false, warmup=16384, reprovGap=65536, reprovRuns=1024, maxReprov=8] | SLAB2TELE name=slab3fixed instances=8 adaptiveSlot=false loopLocal=true align2M=false aligned=false finalSlots=256x8192/256x8192/256x8192/256x8192/256x8192/256x8192/256x8192/256x8192 regionBytes=16777216 acquires=1772331 releases=1772075 fallbacks=0 exhaustions=0 reprovSize=0 reprovGrow=0 foreignReleases=0 staleReleases=0 lastBytesReadCalls=5232581 maxInFlight=34 minFreeSlots=222 drains=0 occupancy[0-25%:1772331,25-50%:0,50-75%:0,75-100%:0,full:0] lifeSeq[<1ring:1772075,<8ring:0,<64ring:0,>=64ring:0] | BUFRINGTELE refCntTele=false noSliceHandoff=false handoffs=0 slices=0 retireRefCnt=1:0,2:0,3:0,4:0,5:0,6:0,>=7:0
+raw logs in /home/forked_franz/IdeaProjects/netty-eventloop-arena-poc/results/ryzen9-7950x-node0/arena-v3/ring-alloc/e2e
+== cell end 23:36:50 rc=0
+released (ringalloc) at 23:36:50 rc=0
+### cell e2e-h1-slab3  2026-09-25T23:36:50+02:00
+waiting for the bench lock (ringalloc) at 23:36:50
+got the bench lock (ringalloc) at 23:36:50
+== cell start 23:36:50 :: ./run-e2e.sh
+== scaling_max_freq set=2300000 readback=2300000, cpus=32 governor=performance
+== loadavg 8.15 4.64 2.20 1/1275 2877960
+== runnable samples: 2 2 2 2 2 2 max=2 (limit 4)
+==> io_uring-h1-adaptive-ra-slab3: server, 8 event loops, port 8080, transport io_uring
+   READY pid=2878034
+   h2load --h1 -c 64 -t 4 -D 20 -d /home/forked_franz/IdeaProjects/netty-eventloop-arena-poc/results/ryzen9-7950x-node0/arena-v3/ring-alloc/e2e/body-4096.bin http://127.0.0.1:8080/
+
+== end to end, h1, io_uring, 20s, 64 connections, 8 event loops ==
+adaptive       173537.55 req/s | 55us    154.90ms       375us       902us    99.71% | RSS 122->846 MB (mean 815, 38 samples) | 112 young GCs | RINGTELE transport=io_uring bufferRing=on ringAllocs=1777166 ringReads=5246861 ringReadBytes=14556484872 bgId=1 entries=64 chunk=8192 incremental=true batchSize=32 batchAllocation=false alloc=slab3 allocClass=SlabV2BufferRingAllocator/slab3[256x8192 per loop, grow=true, maxRegion=33554432, timeHist=false, warmup=16384, reprovGap=65536, reprovRuns=1024, maxReprov=8] | SLAB2TELE name=slab3 instances=8 adaptiveSlot=true loopLocal=true align2M=false aligned=false finalSlots=256x8192/256x8192/256x8192/256x8192/256x8192/256x8192/256x8192/256x8192 regionBytes=16777216 acquires=1777166 releases=1776910 fallbacks=0 exhaustions=0 reprovSize=0 reprovGrow=0 foreignReleases=0 staleReleases=0 lastBytesReadCalls=5246861 maxInFlight=34 minFreeSlots=222 drains=0 occupancy[0-25%:1777166,25-50%:0,50-75%:0,75-100%:0,full:0] lifeSeq[<1ring:1776910,<8ring:0,<64ring:0,>=64ring:0] | BUFRINGTELE refCntTele=false noSliceHandoff=false handoffs=0 slices=0 retireRefCnt=1:0,2:0,3:0,4:0,5:0,6:0,>=7:0
+raw logs in /home/forked_franz/IdeaProjects/netty-eventloop-arena-poc/results/ryzen9-7950x-node0/arena-v3/ring-alloc/e2e
+== cell end 23:37:16 rc=0
+released (ringalloc) at 23:37:16 rc=0
+### cell e2e-h1-slab3huge  2026-09-25T23:37:16+02:00
+waiting for the bench lock (ringalloc) at 23:37:16
+got the bench lock (ringalloc) at 23:37:16
+== cell start 23:37:16 :: ./run-e2e.sh
+== scaling_max_freq set=2300000 readback=2300000, cpus=32 governor=performance
+== loadavg 8.36 4.95 2.37 1/1275 2878767
+== runnable samples: 2 2 2 2 2 2 max=2 (limit 4)
+==> io_uring-h1-adaptive-ra-slab3huge: server, 8 event loops, port 8080, transport io_uring
+   READY pid=2878841
+   h2load --h1 -c 64 -t 4 -D 20 -d /home/forked_franz/IdeaProjects/netty-eventloop-arena-poc/results/ryzen9-7950x-node0/arena-v3/ring-alloc/e2e/body-4096.bin http://127.0.0.1:8080/
+
+== end to end, h1, io_uring, 20s, 64 connections, 8 event loops ==
+adaptive       173088.05 req/s | 59us    164.49ms       376us       903us    99.68% | RSS 137->863 MB (mean 832, 38 samples) | 112 young GCs | RINGTELE transport=io_uring bufferRing=on ringAllocs=1772563 ringReads=5233268 ringReadBytes=14518776618 bgId=1 entries=64 chunk=8192 incremental=true batchSize=32 batchAllocation=false alloc=slab3huge allocClass=SlabV2BufferRingAllocator/slab3huge[256x8192 per loop, grow=true, maxRegion=33554432, timeHist=false, warmup=16384, reprovGap=65536, reprovRuns=1024, maxReprov=8] | SLAB2TELE name=slab3huge instances=8 adaptiveSlot=true loopLocal=true align2M=true aligned=true finalSlots=256x8192/256x8192/256x8192/256x8192/256x8192/256x8192/256x8192/256x8192 regionBytes=33554432 acquires=1772563 releases=1772307 fallbacks=0 exhaustions=0 reprovSize=0 reprovGrow=0 foreignReleases=0 staleReleases=0 lastBytesReadCalls=5233268 maxInFlight=34 minFreeSlots=222 drains=0 occupancy[0-25%:1772563,25-50%:0,50-75%:0,75-100%:0,full:0] lifeSeq[<1ring:1772307,<8ring:0,<64ring:0,>=64ring:0] | BUFRINGTELE refCntTele=false noSliceHandoff=false handoffs=0 slices=0 retireRefCnt=1:0,2:0,3:0,4:0,5:0,6:0,>=7:0
+raw logs in /home/forked_franz/IdeaProjects/netty-eventloop-arena-poc/results/ryzen9-7950x-node0/arena-v3/ring-alloc/e2e
+== cell end 23:37:43 rc=0
+released (ringalloc) at 23:37:43 rc=0
+### cell e2e-h1-arena-ringfalse  2026-09-25T23:37:43+02:00
+waiting for the bench lock (ringalloc) at 23:37:43
+got the bench lock (ringalloc) at 23:37:43
+== cell start 23:37:43 :: ./run-e2e.sh
+== scaling_max_freq set=2300000 readback=2300000, cpus=32 governor=performance
+== loadavg 8.27 5.26 2.55 1/1276 2879579
+== runnable samples: 2 2 2 2 3 3 max=3 (limit 4)
+==> io_uring-h1-adaptive-ra-arena-ringfalse: server, 8 event loops, port 8080, transport io_uring
+   READY pid=2879653
+   h2load --h1 -c 64 -t 4 -D 20 -d /home/forked_franz/IdeaProjects/netty-eventloop-arena-poc/results/ryzen9-7950x-node0/arena-v3/ring-alloc/e2e/body-4096.bin http://127.0.0.1:8080/
+
+== end to end, h1, io_uring, 20s, 64 connections, 8 event loops ==
+adaptive       172110.05 req/s | 53us    172.99ms       380us      1.10ms    99.73% | RSS 108->862 MB (mean 829, 38 samples) | 112 young GCs | RINGTELE transport=io_uring bufferRing=on ringAllocs=1762552 ringReads=5203704 ringReadBytes=14436754560 bgId=1 entries=64 chunk=8192 incremental=true batchSize=32 batchAllocation=false alloc=arena allocClass=CycleArenaAllocator (ring only, channels untouched) | BUFRINGTELE refCntTele=false noSliceHandoff=false handoffs=0 slices=0 retireRefCnt=1:0,2:0,3:0,4:0,5:0,6:0,>=7:0 | ARENATELE blockSize=262144 maxBlocks=8 cap=8192 maxObjects=16384 debug=false ring=false ringStats=false arenaHeap=0 arenaDirect=1762552 delegateHeap=0 delegateDirect=0 arenaShare=100.00% blocksHeap=8 blocksDirect=64 pinned=16 reusable=48 maxPinnedHeap=0 maxPinnedDirect=16 blockReuses=55019 blockGrowths=56 blockSwitches=55075 ringWraps=0 ringResets=0 ringScans=0 ringReentries=0 ringStalls=0 stallBytes=0 strandedBytes=0 strandedShare=n/a holes<=256=0 holes<=1k=0 holes<=4k=0 holes<=8k=0 holes>8k=0 hooks=819434 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=0 reallocMoved=0 reallocDelegated=0 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=264 bytesHeap=0 bytesDirect=14438825984 liveHeap=0 liveDirect=256
+raw logs in /home/forked_franz/IdeaProjects/netty-eventloop-arena-poc/results/ryzen9-7950x-node0/arena-v3/ring-alloc/e2e
+== cell end 23:38:10 rc=0
+released (ringalloc) at 23:38:10 rc=0
+### cell e2e-h1-arena-ringtrue  2026-09-25T23:38:10+02:00
+waiting for the bench lock (ringalloc) at 23:38:10
+got the bench lock (ringalloc) at 23:38:10
+== cell start 23:38:10 :: ./run-e2e.sh
+== scaling_max_freq set=2300000 readback=2300000, cpus=32 governor=performance
+== loadavg 8.47 5.53 2.71 2/1269 2880391
+== runnable samples: 3 2 2 2 2 2 max=3 (limit 4)
+==> io_uring-h1-adaptive-ra-arena-ringtrue: server, 8 event loops, port 8080, transport io_uring
+   READY pid=2880465
+   h2load --h1 -c 64 -t 4 -D 20 -d /home/forked_franz/IdeaProjects/netty-eventloop-arena-poc/results/ryzen9-7950x-node0/arena-v3/ring-alloc/e2e/body-4096.bin http://127.0.0.1:8080/
+
+== end to end, h1, io_uring, 20s, 64 connections, 8 event loops ==
+adaptive       173026.00 req/s | 58us    169.39ms       377us      1.01ms    99.71% | RSS 109->857 MB (mean 823, 38 samples) | 113 young GCs | RINGTELE transport=io_uring bufferRing=on ringAllocs=1771927 ringReads=5231388 ringReadBytes=14513563476 bgId=1 entries=64 chunk=8192 incremental=true batchSize=32 batchAllocation=false alloc=arena allocClass=CycleArenaAllocator (ring only, channels untouched) | BUFRINGTELE refCntTele=false noSliceHandoff=false handoffs=0 slices=0 retireRefCnt=1:0,2:0,3:0,4:0,5:0,6:0,>=7:0 | ARENATELE blockSize=262144 maxBlocks=8 cap=8192 maxObjects=16384 debug=false ring=true ringStats=false arenaHeap=0 arenaDirect=1771927 delegateHeap=0 delegateDirect=0 arenaShare=100.00% blocksHeap=8 blocksDirect=16 pinned=16 reusable=0 maxPinnedHeap=0 maxPinnedDirect=16 blockReuses=25065 blockGrowths=8 blockSwitches=55368 ringWraps=0 ringResets=0 ringScans=85663 ringReentries=30295 ringStalls=0 stallBytes=0 strandedBytes=0 strandedShare=n/a holes<=256=0 holes<=1k=0 holes<=4k=0 holes<=8k=0 holes>8k=0 hooks=796556 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=0 reallocMoved=0 reallocDelegated=0 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=264 bytesHeap=0 bytesDirect=14515625984 liveHeap=0 liveDirect=256
+raw logs in /home/forked_franz/IdeaProjects/netty-eventloop-arena-poc/results/ryzen9-7950x-node0/arena-v3/ring-alloc/e2e
+== cell end 23:38:37 rc=0
+released (ringalloc) at 23:38:37 rc=0
+### cell e2e-h2-adaptive  2026-09-25T23:38:37+02:00
+waiting for the bench lock (ringalloc) at 23:38:37
+got the bench lock (ringalloc) at 23:38:37
+== cell start 23:38:37 :: ./run-e2e.sh
+== scaling_max_freq set=2300000 readback=2300000, cpus=32 governor=performance
+== loadavg 8.00 5.69 2.86 1/1273 2881227
+== runnable samples: 2 2 2 2 2 3 max=3 (limit 4)
+==> io_uring-h2-adaptive-ra-adaptive: server, 8 event loops, port 8080, transport io_uring
+   READY pid=2881275
+   h2load -c 16 -m 32 -t 4 -D 20 -d /home/forked_franz/IdeaProjects/netty-eventloop-arena-poc/results/ryzen9-7950x-node0/arena-v3/ring-alloc/e2e/body-4096.bin http://127.0.0.1:8080/
+
+== end to end, h2, io_uring, 20s, 16 connections x 32 streams, 8 event loops ==
+adaptive       372240.00 req/s | 516us    224.74ms      1.34ms      3.01ms    99.50% | RSS 106->866 MB (mean 816, 38 samples) | 36 young GCs | RINGTELE transport=io_uring bufferRing=on ringAllocs=3750070 ringReads=5442486 ringReadBytes=30718514946 bgId=1 entries=64 chunk=8192 incremental=true batchSize=32 batchAllocation=false alloc=adaptive allocClass=AdaptiveByteBufAllocator | BUFRINGTELE refCntTele=false noSliceHandoff=false handoffs=0 slices=0 retireRefCnt=1:0,2:0,3:0,4:0,5:0,6:0,>=7:0
+raw logs in /home/forked_franz/IdeaProjects/netty-eventloop-arena-poc/results/ryzen9-7950x-node0/arena-v3/ring-alloc/e2e
+== cell end 23:39:03 rc=0
+released (ringalloc) at 23:39:03 rc=0
+### cell e2e-h2-builtinadaptive  2026-09-25T23:39:04+02:00
+waiting for the bench lock (ringalloc) at 23:39:04
+got the bench lock (ringalloc) at 23:39:04
+== cell start 23:39:04 :: ./run-e2e.sh
+== scaling_max_freq set=2300000 readback=2300000, cpus=32 governor=performance
+== loadavg 7.87 5.87 2.99 1/1275 2882039
+== runnable samples: 2 2 2 2 2 2 max=2 (limit 4)
+==> io_uring-h2-adaptive-ra-builtinadaptive: server, 8 event loops, port 8080, transport io_uring
+   READY pid=2882087
+   h2load -c 16 -m 32 -t 4 -D 20 -d /home/forked_franz/IdeaProjects/netty-eventloop-arena-poc/results/ryzen9-7950x-node0/arena-v3/ring-alloc/e2e/body-4096.bin http://127.0.0.1:8080/
+
+== end to end, h2, io_uring, 20s, 16 connections x 32 streams, 8 event loops ==
+adaptive       370644.40 req/s | 507us    222.52ms      1.33ms      3.01ms    99.52% | RSS 105->902 MB (mean 855, 38 samples) | 34 young GCs | RINGTELE transport=io_uring bufferRing=on ringAllocs=1021422 ringReads=2771192 ringReadBytes=30586941072 bgId=1 entries=64 chunk=8192 incremental=true batchSize=32 batchAllocation=false alloc=builtinadaptive allocClass=IoUringAdaptiveBufferRingAllocator/AdaptiveByteBufAllocator | BUFRINGTELE refCntTele=false noSliceHandoff=false handoffs=0 slices=0 retireRefCnt=1:0,2:0,3:0,4:0,5:0,6:0,>=7:0
+raw logs in /home/forked_franz/IdeaProjects/netty-eventloop-arena-poc/results/ryzen9-7950x-node0/arena-v3/ring-alloc/e2e
+== cell end 23:39:30 rc=0
+released (ringalloc) at 23:39:30 rc=0
+### cell e2e-h2-slab  2026-09-25T23:39:30+02:00
+waiting for the bench lock (ringalloc) at 23:39:30
+got the bench lock (ringalloc) at 23:39:30
+== cell start 23:39:30 :: ./run-e2e.sh
+== scaling_max_freq set=2300000 readback=2300000, cpus=32 governor=performance
+== loadavg 8.26 6.11 3.15 1/1277 2882841
+== runnable samples: 3 2 2 2 2 2 max=3 (limit 4)
+==> io_uring-h2-adaptive-ra-slab: server, 8 event loops, port 8080, transport io_uring
+   READY pid=2882889
+   h2load -c 16 -m 32 -t 4 -D 20 -d /home/forked_franz/IdeaProjects/netty-eventloop-arena-poc/results/ryzen9-7950x-node0/arena-v3/ring-alloc/e2e/body-4096.bin http://127.0.0.1:8080/
+
+== end to end, h2, io_uring, 20s, 16 connections x 32 streams, 8 event loops ==
+adaptive       374606.40 req/s | 486us    221.45ms      1.32ms      2.86ms    99.49% | RSS 121->862 MB (mean 816, 38 samples) | 36 young GCs | RINGTELE transport=io_uring bufferRing=on ringAllocs=3773920 ringReads=5446254 ringReadBytes=30913895217 bgId=1 entries=64 chunk=8192 incremental=true batchSize=32 batchAllocation=false alloc=slab allocClass=RegisteredSlabBufferRingAllocator[256x8192 per loop] | SLABTELE instances=8 regionBytes=16777216 slabAcquires=3773920 slabReleases=3773664 slabFallbacks=0 slabForeignReleases=0 lastBytesReadCalls=5446254 | BUFRINGTELE refCntTele=false noSliceHandoff=false handoffs=0 slices=0 retireRefCnt=1:0,2:0,3:0,4:0,5:0,6:0,>=7:0
+raw logs in /home/forked_franz/IdeaProjects/netty-eventloop-arena-poc/results/ryzen9-7950x-node0/arena-v3/ring-alloc/e2e
+== cell end 23:39:57 rc=0
+released (ringalloc) at 23:39:57 rc=0
+### cell e2e-h2-slab2fixed  2026-09-25T23:39:57+02:00
+waiting for the bench lock (ringalloc) at 23:39:57
+got the bench lock (ringalloc) at 23:39:57
+== cell start 23:39:57 :: ./run-e2e.sh
+== scaling_max_freq set=2300000 readback=2300000, cpus=32 governor=performance
+== loadavg 7.46 6.12 3.25 1/1277 2883696
+== runnable samples: 2 2 4 2 4 2 max=4 (limit 4)
+==> io_uring-h2-adaptive-ra-slab2fixed: server, 8 event loops, port 8080, transport io_uring
+   READY pid=2883773
+   h2load -c 16 -m 32 -t 4 -D 20 -d /home/forked_franz/IdeaProjects/netty-eventloop-arena-poc/results/ryzen9-7950x-node0/arena-v3/ring-alloc/e2e/body-4096.bin http://127.0.0.1:8080/
+
+== end to end, h2, io_uring, 20s, 16 connections x 32 streams, 8 event loops ==
+adaptive       373715.60 req/s | 495us    229.03ms      1.33ms      3.04ms    99.44% | RSS 121->866 MB (mean 817, 38 samples) | 36 young GCs | RINGTELE transport=io_uring bufferRing=on ringAllocs=3764948 ringReads=5425371 ringReadBytes=30840384174 bgId=1 entries=64 chunk=8192 incremental=true batchSize=32 batchAllocation=false alloc=slab2fixed allocClass=SlabV2BufferRingAllocator/slab2fixed[256x8192 per loop, grow=true, maxRegion=33554432, timeHist=false, warmup=16384, reprovGap=65536, reprovRuns=1024, maxReprov=8] | SLAB2TELE name=slab2fixed instances=8 adaptiveSlot=false loopLocal=false align2M=false aligned=false finalSlots=256x8192/256x8192/256x8192/256x8192/256x8192/256x8192/256x8192/256x8192 regionBytes=16777216 acquires=3764948 releases=3764692 fallbacks=0 exhaustions=0 reprovSize=0 reprovGrow=0 foreignReleases=0 staleReleases=0 lastBytesReadCalls=5425371 maxInFlight=37 minFreeSlots=219 drains=0 occupancy[0-25%:3764948,25-50%:0,50-75%:0,75-100%:0,full:0] lifeSeq[<1ring:3764692,<8ring:0,<64ring:0,>=64ring:0] | BUFRINGTELE refCntTele=false noSliceHandoff=false handoffs=0 slices=0 retireRefCnt=1:0,2:0,3:0,4:0,5:0,6:0,>=7:0
+raw logs in /home/forked_franz/IdeaProjects/netty-eventloop-arena-poc/results/ryzen9-7950x-node0/arena-v3/ring-alloc/e2e
+== cell end 23:40:24 rc=0
+released (ringalloc) at 23:40:24 rc=0
+### cell e2e-h2-slab2  2026-09-25T23:40:24+02:00
+waiting for the bench lock (ringalloc) at 23:40:24
+got the bench lock (ringalloc) at 23:40:24
+== cell start 23:40:24 :: ./run-e2e.sh
+== scaling_max_freq set=2300000 readback=2300000, cpus=32 governor=performance
+== loadavg 7.92 6.37 3.41 1/1281 2884507
+== runnable samples: 2 2 2 2 2 2 max=2 (limit 4)
+==> io_uring-h2-adaptive-ra-slab2: server, 8 event loops, port 8080, transport io_uring
+   READY pid=2884581
+   h2load -c 16 -m 32 -t 4 -D 20 -d /home/forked_franz/IdeaProjects/netty-eventloop-arena-poc/results/ryzen9-7950x-node0/arena-v3/ring-alloc/e2e/body-4096.bin http://127.0.0.1:8080/
+
+== end to end, h2, io_uring, 20s, 16 connections x 32 streams, 8 event loops ==
+adaptive       373875.20 req/s | 518us    222.14ms      1.33ms      3.05ms    99.51% | RSS 122->853 MB (mean 807, 38 samples) | 36 young GCs | RINGTELE transport=io_uring bufferRing=on ringAllocs=3766552 ringReads=5465565 ringReadBytes=30853521756 bgId=1 entries=64 chunk=8192 incremental=true batchSize=32 batchAllocation=false alloc=slab2 allocClass=SlabV2BufferRingAllocator/slab2[256x8192 per loop, grow=true, maxRegion=33554432, timeHist=false, warmup=16384, reprovGap=65536, reprovRuns=1024, maxReprov=8] | SLAB2TELE name=slab2 instances=8 adaptiveSlot=true loopLocal=false align2M=false aligned=false finalSlots=256x8192/256x8192/256x8192/256x8192/256x8192/256x8192/256x8192/256x8192 regionBytes=16777216 acquires=3766552 releases=3766296 fallbacks=0 exhaustions=0 reprovSize=0 reprovGrow=0 foreignReleases=0 staleReleases=0 lastBytesReadCalls=5465565 maxInFlight=36 minFreeSlots=220 drains=0 occupancy[0-25%:3766552,25-50%:0,50-75%:0,75-100%:0,full:0] lifeSeq[<1ring:3766296,<8ring:0,<64ring:0,>=64ring:0] | BUFRINGTELE refCntTele=false noSliceHandoff=false handoffs=0 slices=0 retireRefCnt=1:0,2:0,3:0,4:0,5:0,6:0,>=7:0
+raw logs in /home/forked_franz/IdeaProjects/netty-eventloop-arena-poc/results/ryzen9-7950x-node0/arena-v3/ring-alloc/e2e
+== cell end 23:40:51 rc=0
+released (ringalloc) at 23:40:51 rc=0
+### cell e2e-h2-slab3fixed  2026-09-25T23:40:51+02:00
+waiting for the bench lock (ringalloc) at 23:40:51
+got the bench lock (ringalloc) at 23:40:51
+== cell start 23:40:51 :: ./run-e2e.sh
+== scaling_max_freq set=2300000 readback=2300000, cpus=32 governor=performance
+== loadavg 8.07 6.51 3.53 1/1280 2885312
+== runnable samples: 2 2 2 2 2 2 max=2 (limit 4)
+==> io_uring-h2-adaptive-ra-slab3fixed: server, 8 event loops, port 8080, transport io_uring
+   READY pid=2885386
+   h2load -c 16 -m 32 -t 4 -D 20 -d /home/forked_franz/IdeaProjects/netty-eventloop-arena-poc/results/ryzen9-7950x-node0/arena-v3/ring-alloc/e2e/body-4096.bin http://127.0.0.1:8080/
+
+== end to end, h2, io_uring, 20s, 16 connections x 32 streams, 8 event loops ==
+adaptive       373949.60 req/s | 493us    222.05ms      1.33ms      2.94ms    99.49% | RSS 122->861 MB (mean 815, 38 samples) | 36 young GCs | RINGTELE transport=io_uring bufferRing=on ringAllocs=3767301 ringReads=5450407 ringReadBytes=30859661430 bgId=1 entries=64 chunk=8192 incremental=true batchSize=32 batchAllocation=false alloc=slab3fixed allocClass=SlabV2BufferRingAllocator/slab3fixed[256x8192 per loop, grow=true, maxRegion=33554432, timeHist=false, warmup=16384, reprovGap=65536, reprovRuns=1024, maxReprov=8] | SLAB2TELE name=slab3fixed instances=8 adaptiveSlot=false loopLocal=true align2M=false aligned=false finalSlots=256x8192/256x8192/256x8192/256x8192/256x8192/256x8192/256x8192/256x8192 regionBytes=16777216 acquires=3767301 releases=3767045 fallbacks=0 exhaustions=0 reprovSize=0 reprovGrow=0 foreignReleases=0 staleReleases=0 lastBytesReadCalls=5450407 maxInFlight=36 minFreeSlots=220 drains=0 occupancy[0-25%:3767301,25-50%:0,50-75%:0,75-100%:0,full:0] lifeSeq[<1ring:3767045,<8ring:0,<64ring:0,>=64ring:0] | BUFRINGTELE refCntTele=false noSliceHandoff=false handoffs=0 slices=0 retireRefCnt=1:0,2:0,3:0,4:0,5:0,6:0,>=7:0
+raw logs in /home/forked_franz/IdeaProjects/netty-eventloop-arena-poc/results/ryzen9-7950x-node0/arena-v3/ring-alloc/e2e
+== cell end 23:41:18 rc=0
+released (ringalloc) at 23:41:18 rc=0
+### cell e2e-h2-slab3  2026-09-25T23:41:18+02:00
+waiting for the bench lock (ringalloc) at 23:41:18
+got the bench lock (ringalloc) at 23:41:18
+== cell start 23:41:18 :: ./run-e2e.sh
+== scaling_max_freq set=2300000 readback=2300000, cpus=32 governor=performance
+== loadavg 7.40 6.49 3.62 1/1277 2886116
+== runnable samples: 2 2 2 2 3 2 max=3 (limit 4)
+==> io_uring-h2-adaptive-ra-slab3: server, 8 event loops, port 8080, transport io_uring
+   READY pid=2886190
+   h2load -c 16 -m 32 -t 4 -D 20 -d /home/forked_franz/IdeaProjects/netty-eventloop-arena-poc/results/ryzen9-7950x-node0/arena-v3/ring-alloc/e2e/body-4096.bin http://127.0.0.1:8080/
+
+== end to end, h2, io_uring, 20s, 16 connections x 32 streams, 8 event loops ==
+adaptive       374692.40 req/s | 529us    218.61ms      1.32ms      2.86ms    99.52% | RSS 122->851 MB (mean 806, 38 samples) | 36 young GCs | RINGTELE transport=io_uring bufferRing=on ringAllocs=3774784 ringReads=5455955 ringReadBytes=30920959143 bgId=1 entries=64 chunk=8192 incremental=true batchSize=32 batchAllocation=false alloc=slab3 allocClass=SlabV2BufferRingAllocator/slab3[256x8192 per loop, grow=true, maxRegion=33554432, timeHist=false, warmup=16384, reprovGap=65536, reprovRuns=1024, maxReprov=8] | SLAB2TELE name=slab3 instances=8 adaptiveSlot=true loopLocal=true align2M=false aligned=false finalSlots=256x8192/256x8192/256x8192/256x8192/256x8192/256x8192/256x8192/256x8192 regionBytes=16777216 acquires=3774784 releases=3774528 fallbacks=0 exhaustions=0 reprovSize=0 reprovGrow=0 foreignReleases=0 staleReleases=0 lastBytesReadCalls=5455955 maxInFlight=37 minFreeSlots=219 drains=0 occupancy[0-25%:3774784,25-50%:0,50-75%:0,75-100%:0,full:0] lifeSeq[<1ring:3774528,<8ring:0,<64ring:0,>=64ring:0] | BUFRINGTELE refCntTele=false noSliceHandoff=false handoffs=0 slices=0 retireRefCnt=1:0,2:0,3:0,4:0,5:0,6:0,>=7:0
+raw logs in /home/forked_franz/IdeaProjects/netty-eventloop-arena-poc/results/ryzen9-7950x-node0/arena-v3/ring-alloc/e2e
+== cell end 23:41:44 rc=0
+released (ringalloc) at 23:41:44 rc=0
+### cell e2e-h2-slab3huge  2026-09-25T23:41:44+02:00
+waiting for the bench lock (ringalloc) at 23:41:44
+got the bench lock (ringalloc) at 23:41:44
+== cell start 23:41:44 :: ./run-e2e.sh
+== scaling_max_freq set=2300000 readback=2300000, cpus=32 governor=performance
+== loadavg 8.06 6.77 3.79 1/1272 2886925
+== runnable samples: 10 3 3 2 2 2 max=10 (limit 4)
+!! ABORT: runnable 10 > 4
+released (ringalloc) at 23:41:49 rc=89
+### cell e2e-h2-arena-ringfalse  2026-09-25T23:41:49+02:00
+waiting for the bench lock (ringalloc) at 23:41:49
+got the bench lock (ringalloc) at 23:41:49
+== cell start 23:41:49 :: ./run-e2e.sh
+== scaling_max_freq set=2300000 readback=2300000, cpus=32 governor=performance
+== loadavg 7.49 6.67 3.78 1/1273 2887207
+== runnable samples: 3 2 3 2 2 2 max=3 (limit 4)
+==> io_uring-h2-adaptive-ra-arena-ringfalse: server, 8 event loops, port 8080, transport io_uring
+   READY pid=2887281
+   h2load -c 16 -m 32 -t 4 -D 20 -d /home/forked_franz/IdeaProjects/netty-eventloop-arena-poc/results/ryzen9-7950x-node0/arena-v3/ring-alloc/e2e/body-4096.bin http://127.0.0.1:8080/
+
+== end to end, h2, io_uring, 20s, 16 connections x 32 streams, 8 event loops ==
+adaptive       372150.40 req/s | 510us    237.09ms      1.33ms      3.02ms    99.47% | RSS 109->918 MB (mean 866, 38 samples) | 36 young GCs | RINGTELE transport=io_uring bufferRing=on ringAllocs=3749180 ringReads=5445360 ringReadBytes=30711219957 bgId=1 entries=64 chunk=8192 incremental=true batchSize=32 batchAllocation=false alloc=arena allocClass=CycleArenaAllocator (ring only, channels untouched) | BUFRINGTELE refCntTele=false noSliceHandoff=false handoffs=0 slices=0 retireRefCnt=1:0,2:0,3:0,4:0,5:0,6:0,>=7:0 | ARENATELE blockSize=262144 maxBlocks=8 cap=8192 maxObjects=16384 debug=false ring=false ringStats=false arenaHeap=0 arenaDirect=3741435 delegateHeap=0 delegateDirect=7745 arenaShare=99.79% blocksHeap=8 blocksDirect=64 pinned=16 reusable=48 maxPinnedHeap=0 maxPinnedDirect=16 blockReuses=116701 blockGrowths=56 blockSwitches=117051 ringWraps=0 ringResets=0 ringScans=0 ringReentries=0 ringStalls=0 stallBytes=0 strandedBytes=0 strandedShare=n/a holes<=256=0 holes<=1k=0 holes<=4k=0 holes<=8k=0 holes>8k=0 hooks=712547 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=0 reallocMoved=0 reallocDelegated=0 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=264 bytesHeap=0 bytesDirect=30726905856 liveHeap=0 liveDirect=256
+raw logs in /home/forked_franz/IdeaProjects/netty-eventloop-arena-poc/results/ryzen9-7950x-node0/arena-v3/ring-alloc/e2e
+== cell end 23:42:16 rc=0
+released (ringalloc) at 23:42:16 rc=0
+### cell e2e-h2-arena-ringtrue  2026-09-25T23:42:16+02:00
+waiting for the bench lock (ringalloc) at 23:42:16
+got the bench lock (ringalloc) at 23:42:16
+== cell start 23:42:16 :: ./run-e2e.sh
+== scaling_max_freq set=2300000 readback=2300000, cpus=32 governor=performance
+== loadavg 7.66 6.75 3.88 1/1274 2888016
+== runnable samples: 2 2 2 2 3 2 max=3 (limit 4)
+==> io_uring-h2-adaptive-ra-arena-ringtrue: server, 8 event loops, port 8080, transport io_uring
+   READY pid=2888092
+   h2load -c 16 -m 32 -t 4 -D 20 -d /home/forked_franz/IdeaProjects/netty-eventloop-arena-poc/results/ryzen9-7950x-node0/arena-v3/ring-alloc/e2e/body-4096.bin http://127.0.0.1:8080/
+
+== end to end, h2, io_uring, 20s, 16 connections x 32 streams, 8 event loops ==
+adaptive       373114.80 req/s | 553us    224.43ms      1.33ms      2.80ms    99.48% | RSS 109->897 MB (mean 848, 38 samples) | 36 young GCs | RINGTELE transport=io_uring bufferRing=on ringAllocs=3758888 ringReads=5445758 ringReadBytes=30790738638 bgId=1 entries=64 chunk=8192 incremental=true batchSize=32 batchAllocation=false alloc=arena allocClass=CycleArenaAllocator (ring only, channels untouched) | BUFRINGTELE refCntTele=false noSliceHandoff=false handoffs=0 slices=0 retireRefCnt=1:0,2:0,3:0,4:0,5:0,6:0,>=7:0 | ARENATELE blockSize=262144 maxBlocks=8 cap=8192 maxObjects=16384 debug=false ring=true ringStats=false arenaHeap=0 arenaDirect=3758888 delegateHeap=0 delegateDirect=0 arenaShare=100.00% blocksHeap=8 blocksDirect=16 pinned=16 reusable=0 maxPinnedHeap=0 maxPinnedDirect=16 blockReuses=22069 blockGrowths=8 blockSwitches=117461 ringWraps=0 ringResets=0 ringScans=212845 ringReentries=95384 ringStalls=0 stallBytes=0 strandedBytes=0 strandedShare=n/a holes<=256=0 holes<=1k=0 holes<=4k=0 holes<=8k=0 holes>8k=0 hooks=706323 hookRejections=0 violations=0 earlyReuses=0 reallocInPlace=0 reallocMoved=0 reallocDelegated=0 trims=0 trimmedBlocks=0 leakedBlocks=0 objects=264 bytesHeap=0 bytesDirect=30792810496 liveHeap=0 liveDirect=256
+raw logs in /home/forked_franz/IdeaProjects/netty-eventloop-arena-poc/results/ryzen9-7950x-node0/arena-v3/ring-alloc/e2e
+== cell end 23:42:43 rc=0
+released (ringalloc) at 23:42:43 rc=0
+### cell e2e-h2-slab3huge  2026-09-25T23:44:36+02:00
+waiting for the bench lock (ringalloc) at 23:44:36
+got the bench lock (ringalloc) at 23:44:36
+== cell start 23:44:36 :: ./run-e2e.sh
+== scaling_max_freq set=2300000 readback=2300000, cpus=32 governor=performance
+== loadavg 1.19 4.60 3.49 1/1264 2889438
+== runnable samples: 2 3 2 2 3 2 max=3 (limit 4)
+==> io_uring-h2-adaptive-ra-slab3huge: server, 8 event loops, port 8080, transport io_uring
+   READY pid=2889512
+   h2load -c 16 -m 32 -t 4 -D 20 -d /home/forked_franz/IdeaProjects/netty-eventloop-arena-poc/results/ryzen9-7950x-node0/arena-v3/ring-alloc/e2e/body-4096.bin http://127.0.0.1:8080/
+
+== end to end, h2, io_uring, 20s, 16 connections x 32 streams, 8 event loops ==
+adaptive       372791.20 req/s | 569us    221.62ms      1.32ms      2.83ms    99.46% | RSS 137->857 MB (mean 812, 38 samples) | 36 young GCs | RINGTELE transport=io_uring bufferRing=on ringAllocs=3755631 ringReads=5468221 ringReadBytes=30764067366 bgId=1 entries=64 chunk=8192 incremental=true batchSize=32 batchAllocation=false alloc=slab3huge allocClass=SlabV2BufferRingAllocator/slab3huge[256x8192 per loop, grow=true, maxRegion=33554432, timeHist=false, warmup=16384, reprovGap=65536, reprovRuns=1024, maxReprov=8] | SLAB2TELE name=slab3huge instances=8 adaptiveSlot=true loopLocal=true align2M=true aligned=true finalSlots=256x8192/256x8192/256x8192/256x8192/256x8192/256x8192/256x8192/256x8192 regionBytes=33554432 acquires=3755631 releases=3755375 fallbacks=0 exhaustions=0 reprovSize=0 reprovGrow=0 foreignReleases=0 staleReleases=0 lastBytesReadCalls=5468221 maxInFlight=36 minFreeSlots=220 drains=0 occupancy[0-25%:3755631,25-50%:0,50-75%:0,75-100%:0,full:0] lifeSeq[<1ring:3755375,<8ring:0,<64ring:0,>=64ring:0] | BUFRINGTELE refCntTele=false noSliceHandoff=false handoffs=0 slices=0 retireRefCnt=1:0,2:0,3:0,4:0,5:0,6:0,>=7:0
+raw logs in /home/forked_franz/IdeaProjects/netty-eventloop-arena-poc/results/ryzen9-7950x-node0/arena-v3/ring-alloc/e2e
+== cell end 23:45:03 rc=0
+released (ringalloc) at 23:45:03 rc=0

@@ -426,14 +426,32 @@ Two knobs separate the questions that were first measured together:
   address and length. Multishot RECV is only reachable from the provided-buffer branch, so `off`
   also means one-shot recv - that is io_uring, not a second knob. `RINGTELE` prints
   `bufferRing=off ringAllocs=0 ringReads=0`.
-* **`BUFFER_RING_ALLOC=same|adaptive|builtin|builtinadaptive|slab`** (`-DbufferRingAlloc`). The ring
-  does not have to be filled by the channel allocator: `IoUringBufferRingConfig` takes its own
-  `IoUringBufferRingAllocator`. `same` (the default) uses the allocator under test; `adaptive` gives
-  the ring its own shared `AdaptiveByteBufAllocator`; `builtin` and `builtinadaptive` are netty's
-  own `IoUringFixedBufferRingAllocator` / `IoUringAdaptiveBufferRingAllocator`; `slab` is
-  [`lib/java/RegisteredSlabBufferRingAllocator.java`](lib/java/RegisteredSlabBufferRingAllocator.java),
-  one preallocated direct region **per loop** with a free list by slot and nothing allocated after
-  start-up (`SLABTELE ... slabFallbacks=0` is how that is checked).
+* **`BUFFER_RING_ALLOC`** (`-DbufferRingAlloc`). The ring does not have to be filled by the channel
+  allocator: `IoUringBufferRingConfig` takes its own `IoUringBufferRingAllocator`. Nine values, all
+  measured against each other in
+  [RESULTS.md section 8](results/ryzen9-7950x-node0/RESULTS.md#8-the-provided-buffer-ring-allocator-iterated-measured-2026-0925-26-2300-mhz-node-0):
+
+  | value | what fills the ring |
+  |---|---|
+  | `same` (default) | the allocator under test, i.e. the channel allocator |
+  | `adaptive` | the ring's own shared `AdaptiveByteBufAllocator` |
+  | `builtin` / `builtinadaptive` | netty's `IoUringFixedBufferRingAllocator` / `IoUringAdaptiveBufferRingAllocator` |
+  | `slab` | slab v1, [`lib/java/RegisteredSlabBufferRingAllocator.java`](lib/java/RegisteredSlabBufferRingAllocator.java): one direct region **per loop**, Treiber stack over the slot wrappers |
+  | `slab2` / `slab2fixed` | slab v2, [`lib/java/SlabV2BufferRingAllocator.java`](lib/java/SlabV2BufferRingAllocator.java): generations, one bounded growth step on exhaustion, adaptive slot size (`slab2`) or fixed (`slab2fixed`) |
+  | `slab3` / **`slab3fixed`** | slab v3: v2 plus an owner-thread plain `int` free stack with no atomic, foreign releases through an MPSC hand-back the owner detaches in one `getAndSet`. **`slab3fixed` is the recommendation** |
+  | `slab3huge` | v3 with the region 2 MiB-aligned (folly's shape). Kept only as a measurement: `AnonHugePages` is 0 on a `madvise`-mode box because Java cannot call `madvise` |
+  | `arena` | `CycleArenaAllocator` as the RING's allocator, channels untouched - the "is it still an arena" cell. It is the worst candidate measured |
+
+  Nothing is allocated after start-up on any slab path, and that is checked rather than assumed:
+  `SLABTELE ... slabFallbacks=0` (v1) and `SLAB2TELE ... fallbacks=0` (v2/v3). The v2/v3 line also
+  carries the counters the design has to be judged on - `maxInFlight`, `minFreeSlots`, `exhaustions`,
+  `reprovGrow`, `foreignReleases`, `drains`, an occupancy histogram and an in-flight-lifetime
+  histogram in ring-fulls (plus one in nanoseconds under `-Diouring.slabTimeHist=true`).
+
+  Slab v2/v3 knobs: `-Diouring.slabDepth` (4), `-Diouring.slabGrow` (true),
+  `-Diouring.slabMaxRegion` (32 MiB), `-Diouring.slabSizePolicy=rate|run`,
+  `-Diouring.slabWarmup` / `slabReprovGap` / `slabReprovRuns` / `slabMaxReprov`,
+  `-Diouring.slabMinSlot` / `slabMaxSlot`, `-Diouring.slabTimeHist`.
 
 The servers print what they got: a `TRANSPORT` line with `IoUring.featureString()` (the kernel's own
 probe), a `CHILDOPTS` line reading the two io_uring channel options back off the first accepted
@@ -451,6 +469,42 @@ What the ring's lifecycle demands of an allocator, what every other io_uring pro
 and what this repository measured, is in
 [`docs/uring-registered-buffers.md`](docs/uring-registered-buffers.md). What should actually run on
 io_uring is [`docs/uring.md`](docs/uring.md).
+
+#### Comparing ring allocators
+
+Three scripts drive the whole `BUFFER_RING_ALLOC` matrix. They hold the channel allocator at adaptive
+and zero-copy writes off, so the only variable is who fills the ring. `CELL_WRAPPER` is the
+mutex/frequency/idle wrapper each cell runs under - one cell is one server plus one load, or one JMH
+invocation, and it must never overlap with anything else on the box.
+
+```
+# end to end, h1 and h2, one CPU profile per cell
+RESULTS_DIR=out/ring CANDIDATES="adaptive slab slab3fixed arena" PROTOS="h1 h2" \
+  ASPROF=/path/to/asprof CELL_WRAPPER="/path/cell.sh" ./ring-alloc-e2e.sh
+
+# lifecycle topology: W1 (4 KiB h1), W3 (64 KiB h2 echo), W5 (256 KiB aggregator - the drought case)
+RESULTS_DIR=out/ring-topo CANDIDATES="adaptive slab3fixed" WORKLOADS="w1 w3 w5" \
+  CELL_WRAPPER="/path/cell.sh" ./ring-alloc-topology.sh
+
+# the ring allocator ALONE: one op = allocate -> what add() reads -> lastBytesRead -> retainedSlice
+# -> the ring's release -> the pipeline's release.  3 forks, perfnorm.
+OUT=out/owner.json BENCH=RingAllocBench.ownerCycle INFLIGHT=1,32 PROF=perfnorm ./run-ringbench.sh
+OUT=out/foreign.json BENCH=RingAllocForeignBench PARAMS=alloc ./run-ringbench.sh
+```
+
+`run-ringbench.sh` builds `bench/RingAllocBench.java` (owner thread) and
+`bench/RingAllocForeignBench.java` (allocate here, release on another thread, with a queue-only
+control to subtract) against the jmh jars in `~/.m2`; it does not touch the `netty-allocator` harness
+jar. Reduce the output with `tools/ring-alloc-table.py` (e2e) and `tools/ring-alloc-topo-table.py`
+(topology); `tools/asprof-alloc-share.py` grew two filters for this, `C ring-alloc` (the ring
+allocator's own classes) and `D ring-total` (C plus `IoUringBufferRing`, the slice classes and the
+general allocator). **Use D.** C is an inlining detector: a slab whose `allocate()` inlines into
+`IoUringBufferRing` scores 0.00% in it - measured, see RESULTS.md 8.5.
+
+Two opt-in instruments live on the netty side (`expt/event-loop-arena` `d04ac1f4ec`) and print into
+the same `BUFRINGTELE` line: `-Dio.netty.iouring.bufferRing.refCntTele=true` records the buffer's
+reference count where the ring retires it, and `-Dio.netty.iouring.bufferRing.noSliceHandoff=true`
+makes `useBuffer` hand the retiring buffer over instead of returning a `retainedSlice`.
 
 ### The lifetime study
 
@@ -551,9 +605,9 @@ the allocator cannot infer it.
 
 Full tables, per-cell numbers and every caveat:
 **[`results/ryzen9-7950x-node0/RESULTS.md`](results/ryzen9-7950x-node0/RESULTS.md)**. It opens with
-a one-screen summary table, then the current build, the transports, the three io_uring studies and
-the pinned-block attribution, and ends with an appendix holding the two earlier builds (v2), which
-are **not** statements about the pinned code.
+a one-screen summary table, then the current build, the transports, the three io_uring studies, the
+pinned-block attribution and the iterated provided-buffer-ring allocator (section 8), and ends with an
+appendix holding the two earlier builds (v2), which are **not** statements about the pinned code.
 
 ## Documents
 
@@ -563,7 +617,11 @@ are **not** statements about the pinned code.
 - [`docs/uring.md`](docs/uring.md) - what should run on io_uring, with the evidence.
 - [`docs/uring-registered-buffers.md`](docs/uring-registered-buffers.md) - the lifecycle of one
   provided buffer, what it imposes on an allocator, what liburing / folly / Zig / glommio /
-  tokio-uring do, and which candidate the measurements favour.
+  tokio-uring do, and which candidate the measurements favour. Section 7 is the **verdict after
+  iterating**: a fixed-slot, loop-local slab, why the arena is the worst candidate for this job, why
+  an adaptive slot size does not work with `AdaptiveCalculator`'s feedback, and why the ring
+  allocator cannot reuse the retiring buffer (its reference count at that point is 2 in 100% of
+  retirements, measured).
 - [`docs/layout-survey.md`](docs/layout-survey.md) - block/arena metadata layouts read from the
   source of ten allocators (mimalloc, TigerBeetle, G1, Zig, protobuf, folly, pmr and others). It is
   where the flat block metadata comes from: only mimalloc, TigerBeetle and G1 keep per-block

@@ -24,6 +24,9 @@ import io.netty.channel.uring.IoUringIoHandlerConfig;
 import io.netty.channel.uring.IoUringServerSocketChannel;
 import io.netty.channel.uring.IoUringSocketChannel;
 
+import poc.ring.RegisteredSlabBufferRingAllocator;
+import poc.ring.SlabV2BufferRingAllocator;
+
 import java.util.Locale;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Consumer;
@@ -66,6 +69,23 @@ final class Transports {
     static final boolean SINGLE_ISSUER = Boolean.parseBoolean(System.getProperty("iouring.singleIssuer", "true"));
     /** Chunks per slab = {@link #BUFFER_RING_SIZE} x this.  See RegisteredSlabBufferRingAllocator. */
     static final int SLAB_DEPTH = Integer.getInteger("iouring.slabDepth", 4);
+    /** Slab v2+ only: grow the population once when the free list runs dry (W5's failure mode in RESULTS 6.2). */
+    static final boolean SLAB_GROW = Boolean.parseBoolean(System.getProperty("iouring.slabGrow", "true"));
+    /** Slab v2+ only: per-instance ceiling on the region, so the adaptive slot size cannot run away. */
+    static final int SLAB_MAX_REGION = Integer.getInteger("iouring.slabMaxRegion", 32 << 20);
+    /** Slab v2+ only: adaptive slot size bounds, the same defaults as IoUringAdaptiveBufferRingAllocator. */
+    static final int SLAB_MIN_SLOT = Integer.getInteger("iouring.slabMinSlot", 1024);
+    static final int SLAB_MAX_SLOT = Integer.getInteger("iouring.slabMaxSlot", 65536);
+    /** Slab v2+ only: add the nanoTime in-flight histogram.  It is an instrument with a cost; off by default. */
+    static final boolean SLAB_TIME_HIST = Boolean.parseBoolean(System.getProperty("iouring.slabTimeHist", "false"));
+    /** Slab v2+ adaptive-slot policy: see SlabV2BufferRingAllocator#maybeResize. */
+    static final long SLAB_WARMUP = Long.getLong("iouring.slabWarmup", 1 << 14);
+    static final long SLAB_REPROV_GAP = Long.getLong("iouring.slabReprovGap", 1 << 16);
+    static final long SLAB_REPROV_RUNS = Long.getLong("iouring.slabReprovRuns", 1024);
+    static final int SLAB_MAX_REPROV = Integer.getInteger("iouring.slabMaxReprov", 8);
+    /** {@code rate} (default) = the windowed-rate slot-size rule; {@code run} = the consecutive-run one. */
+    static final boolean SLAB_RATE_POLICY =
+            !"run".equals(System.getProperty("iouring.slabSizePolicy", "rate"));
 
     /**
      * {@code BUFFER_RING=on|off} (or {@code -DbufferRing=}), default {@code on}.
@@ -126,9 +146,26 @@ final class Transports {
 
     private static volatile String ringDescription = "(no buffer ring)";
 
-    /** The ring's own allocator when {@link #BUFFER_RING_ALLOC} is not {@code slab}; one for the JVM. */
+    /** The ring's own INNER allocator when {@link #BUFFER_RING_ALLOC} is not a slab; one for the JVM. */
     private static IoUringBufferRingAllocator sharedRingAllocator;
     private static volatile boolean slabInUse;
+    private static volatile boolean slabV2InUse;
+    /** Non-null when {@code BUFFER_RING_ALLOC=arena}: the arena instance that fills the rings. */
+    private static volatile io.netty.buffer.CycleArenaAllocator arenaAsRing;
+
+    static io.netty.buffer.CycleArenaAllocator arenaAsRing() {
+        return arenaAsRing;
+    }
+
+    private static SlabV2BufferRingAllocator slabV2(String name, boolean adaptiveSlot,
+                                                    boolean loopLocal, boolean align2M) {
+        slabV2InUse = true;
+        return new SlabV2BufferRingAllocator(name, BUFFER_RING_SIZE, BUFFER_CHUNK, SLAB_DEPTH,
+                adaptiveSlot, loopLocal, align2M, SLAB_GROW, SLAB_MAX_REGION,
+                SLAB_MIN_SLOT, SLAB_MAX_SLOT, SLAB_TIME_HIST,
+                SLAB_WARMUP, SLAB_REPROV_GAP, SLAB_REPROV_RUNS, SLAB_MAX_REPROV, SLAB_RATE_POLICY,
+                io.netty.buffer.UnpooledByteBufAllocator.DEFAULT);
+    }
 
     private Transports() { }
 
@@ -159,9 +196,12 @@ final class Transports {
         }
         switch (value) {
             case "same": case "adaptive": case "builtin": case "builtinadaptive": case "slab":
+            case "slab2": case "slab2fixed": case "slab3": case "slab3fixed": case "slab3huge":
+            case "arena":
                 return value;
-            default: throw new IllegalArgumentException(
-                    "BUFFER_RING_ALLOC=" + value + " (want same|adaptive|builtin|builtinadaptive|slab)");
+            default: throw new IllegalArgumentException("BUFFER_RING_ALLOC=" + value
+                    + " (want same|adaptive|builtin|builtinadaptive|slab"
+                    + "|slab2|slab2fixed|slab3|slab3fixed|slab3huge|arena)");
         }
     }
 
@@ -177,6 +217,19 @@ final class Transports {
             return new CountingRingAllocator(
                     new RegisteredSlabBufferRingAllocator(BUFFER_RING_SIZE, BUFFER_CHUNK, SLAB_DEPTH));
         }
+        // Slab v2/v3/v4: one instance per loop, exactly as v1, because per-loop locality is the point.
+        //   adaptiveSlot   the slot size follows netty's AdaptiveCalculator, re-provisioned only on a 2x move
+        //   loopLocal      the owning loop's free list is a plain int stack, no atomic; foreign releases
+        //                  go through an intrusive MPSC hand-back the owner detaches in one getAndSet
+        //   align2M        the region is 2 MiB aligned, so a transparent huge page CAN back it
+        switch (BUFFER_RING_ALLOC) {
+            case "slab2":       return new CountingRingAllocator(slabV2("slab2", true, false, false));
+            case "slab2fixed":  return new CountingRingAllocator(slabV2("slab2fixed", false, false, false));
+            case "slab3":       return new CountingRingAllocator(slabV2("slab3", true, true, false));
+            case "slab3fixed":  return new CountingRingAllocator(slabV2("slab3fixed", false, true, false));
+            case "slab3huge":   return new CountingRingAllocator(slabV2("slab3huge", true, true, true));
+            default: break;
+        }
         if (sharedRingAllocator == null) {
             final IoUringBufferRingAllocator inner;
             switch (BUFFER_RING_ALLOC) {
@@ -190,13 +243,24 @@ final class Transports {
                     // The only candidate that varies the buffer SIZE: AdaptiveCalculator, 1 KiB..64 KiB.
                     inner = new IoUringAdaptiveBufferRingAllocator(ByteBufAllocator.DEFAULT);
                     break;
+                case "arena":
+                    // R6: the cycle arena as the RING's allocator, channels left on their own allocator.
+                    // The arena is thread-local inside and arms its end-of-iteration hook from the
+                    // allocation path, which here runs on the loop, so one instance serves every ring.
+                    arenaAsRing = new io.netty.buffer.CycleArenaAllocator();
+                    inner = new FixedSizeRingAllocator(arenaAsRing, BUFFER_CHUNK);
+                    break;
                 default:
                     inner = new FixedSizeRingAllocator(underTest, BUFFER_CHUNK);
                     break;
             }
-            sharedRingAllocator = new CountingRingAllocator(inner);
+            sharedRingAllocator = inner;
         }
-        return sharedRingAllocator;
+        // The counting WRAPPER is per loop even when the inner allocator is shared: its counters are
+        // then plain longs written only by the owning loop.  Before this the wrapper was shared and
+        // every buffer paid two contended AtomicLong increments - a cost the candidates all carried
+        // equally, but a cost of the MEASUREMENT, which is exactly what must not sit on the hot path.
+        return new CountingRingAllocator(sharedRingAllocator);
     }
 
     /** The class that actually allocates the ring's buffers, for the description line. */
@@ -209,6 +273,14 @@ final class Transports {
                     + ByteBufAllocator.DEFAULT.getClass().getSimpleName();
             case "slab": return "RegisteredSlabBufferRingAllocator[" + BUFFER_RING_SIZE * SLAB_DEPTH
                     + "x" + BUFFER_CHUNK + " per loop]";
+            case "slab2": case "slab2fixed": case "slab3": case "slab3fixed": case "slab3huge":
+                return "SlabV2BufferRingAllocator/" + BUFFER_RING_ALLOC + "["
+                    + BUFFER_RING_SIZE * SLAB_DEPTH + "x" + BUFFER_CHUNK + " per loop, grow=" + SLAB_GROW
+                    + ", maxRegion=" + SLAB_MAX_REGION + ", timeHist=" + SLAB_TIME_HIST
+                    + ", warmup=" + SLAB_WARMUP + ", reprovGap=" + SLAB_REPROV_GAP
+                    + ", reprovRuns=" + SLAB_REPROV_RUNS + ", maxReprov=" + SLAB_MAX_REPROV
+                    + ", sizePolicy=" + (SLAB_RATE_POLICY ? "rate" : "run") + "]";
+            case "arena": return "CycleArenaAllocator (ring only, channels untouched)";
             default: return underTest.getClass().getSimpleName();
         }
     }
@@ -362,6 +434,7 @@ final class Transports {
 
     /** Buffer-ring telemetry: zero reads means the ring was never consumed. */
     static String ringCounters() {
+        CountingRingAllocator.sumInto(RING_ALLOCS, RING_READS, RING_READ_BYTES);
         String line = "RINGTELE transport=" + NAME + " bufferRing=" + (BUFFER_RING ? "on" : "off")
                 + " ringAllocs=" + RING_ALLOCS.get()
                 + " ringReads=" + RING_READS.get() + " ringReadBytes=" + RING_READ_BYTES.get()
@@ -369,6 +442,10 @@ final class Transports {
         if (slabInUse) {
             line = line + " | " + RegisteredSlabBufferRingAllocator.counters();
         }
+        if (slabV2InUse) {
+            line = line + " | " + SlabV2BufferRingAllocator.counters();
+        }
+        line = line + " | " + io.netty.channel.uring.IoUringBufferRingTelemetry.counters();
         return line;
     }
 
@@ -402,31 +479,91 @@ final class Transports {
      * way, but the counter now also works for candidates that are not built on that base class.
      */
     static final class CountingRingAllocator implements IoUringBufferRingAllocator {
+        private static final java.util.List<CountingRingAllocator> ALL = new java.util.ArrayList<>();
+
         private final IoUringBufferRingAllocator delegate;
+        // Plain longs: allocate() and lastBytesRead() are only ever reached from this loop's own
+        // IoHandler (IoUringBufferRing.initialize() and useBuffer() are its only callers).
+        private long allocs;
+        private long reads;
+        private long readBytes;
 
         CountingRingAllocator(IoUringBufferRingAllocator delegate) {
             this.delegate = delegate;
+            synchronized (CountingRingAllocator.class) {
+                ALL.add(this);
+            }
         }
 
         @Override
         public ByteBuf allocate() {
-            RING_ALLOCS.incrementAndGet();
+            allocs++;
             return delegate.allocate();
         }
 
         @Override
         public void allocateBatch(Consumer<ByteBuf> consumer, int num) {
-            RING_ALLOCS.addAndGet(num);
+            allocs += num;
             delegate.allocateBatch(consumer, num);
         }
 
         @Override
         public void lastBytesRead(int attempted, int actual) {
-            RING_READS.incrementAndGet();
+            reads++;
             if (actual > 0) {
-                RING_READ_BYTES.addAndGet(actual);
+                readBytes += actual;
             }
             delegate.lastBytesRead(attempted, actual);
         }
+
+        /** Summed on the shutdown thread; the loops are gone by then. */
+        static void sumInto(AtomicLong allocs, AtomicLong reads, AtomicLong bytes) {
+            synchronized (CountingRingAllocator.class) {
+                for (CountingRingAllocator c : ALL) {
+                    allocs.addAndGet(c.allocs);
+                    reads.addAndGet(c.reads);
+                    bytes.addAndGet(c.readBytes);
+                }
+            }
+        }
+    }
+
+    /**
+     * {@code AnonHugePages} of this process, read out of {@code /proc/self/smaps}, plus the THP mode
+     * the kernel is in.  This is the ONLY thing that says whether a 2 MiB aligned slab region is
+     * actually backed by a transparent huge page: Java cannot call {@code madvise(MADV_HUGEPAGE)}, so
+     * with {@code transparent_hugepage/enabled = [madvise]} the answer is expected to be zero and the
+     * candidate has to be judged on that.
+     */
+    static String hugePageCounters() {
+        long anonHuge = 0;
+        long rss = 0;
+        int vmas = 0;
+        try (java.io.BufferedReader r =
+                     new java.io.BufferedReader(new java.io.FileReader("/proc/self/smaps"))) {
+            String line;
+            while ((line = r.readLine()) != null) {
+                if (line.startsWith("AnonHugePages:")) {
+                    long kb = Long.parseLong(line.replaceAll("[^0-9]", ""));
+                    anonHuge += kb;
+                    if (kb > 0) {
+                        vmas++;
+                    }
+                } else if (line.startsWith("Rss:")) {
+                    rss += Long.parseLong(line.replaceAll("[^0-9]", ""));
+                }
+            }
+        } catch (Exception e) {
+            return "THPTELE unavailable: " + e;
+        }
+        String mode = "?";
+        try (java.io.BufferedReader r = new java.io.BufferedReader(
+                new java.io.FileReader("/sys/kernel/mm/transparent_hugepage/enabled"))) {
+            mode = String.valueOf(r.readLine());
+        } catch (Exception ignored) {
+            // keep "?"
+        }
+        return "THPTELE anonHugePagesKb=" + anonHuge + " vmasWithThp=" + vmas
+                + " rssKb=" + rss + " thpEnabled=" + mode;
     }
 }

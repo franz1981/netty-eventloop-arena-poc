@@ -14,10 +14,28 @@ both are reported, because they do not give the same number and the difference i
       loop      = stack contains SingleThreadIoEventLoop.run
       allocator = loop stack also contains AdaptivePoolingAllocator | AdaptiveByteBufAllocator
                   | CycleArenaAllocator | ArenaBuf
+  C ("ring-alloc", added 2026-09-25 for RESULTS.md section 7)
+      loop      = stack contains SingleThreadIoEventLoop.run
+      allocator = loop stack also contains a frame of a class that IS the provided-buffer-ring
+                  allocator: RegisteredSlabBufferRingAllocator | SlabV2BufferRingAllocator (and its
+                  SlabBuf wrapper) | AbstractIoUringBufferRingAllocator |
+                  IoUringFixedBufferRingAllocator | IoUringAdaptiveBufferRingAllocator |
+                  AdaptiveCalculator | FixedSizeRingAllocator | CountingRingAllocator.
+                  NOTE what this does NOT match: the general-purpose allocator BEHIND candidates R0/R1
+                  (AdaptivePoolingAllocator's own frames are filter B's) and IoUringBufferRing itself.
+                  So C is "the ring allocator's own code", and for R0/R1 most of the work is in B, not C.
+  D ("ring-total")
+      loop      = stack contains SingleThreadIoEventLoop.run
+      allocator = C, plus IoUringBufferRing (fill / add / useBuffer / expand), plus the slice object
+                  the ring hands the pipeline (UnpooledSlicedByteBuf / AbstractUnpooledSlicedByteBuf),
+                  plus the general allocator frames of filter B.  D is "everything the provided
+                  buffer ring's own buffer handling costs on the loop", which is the number a
+                  candidate has to reduce; C is the part that is the candidate's own code.
 
-Share = allocator samples / loop samples.  Neither filter is "right": A counts the recycler and the
+Share = allocator samples / loop samples.  No filter is "right": A counts the recycler and the
 reference-count helpers as allocator work and accepts any single-thread executor as a loop, B counts
-only frames of the two allocator classes on an IO event loop.
+only frames of the two allocator classes on an IO event loop, C sees only the ring allocator's own
+frames and D adds the ring machinery around it.
 """
 import re
 import sys
@@ -31,6 +49,22 @@ FILTERS = {
     'B narrow': (
         re.compile(r'SingleThreadIoEventLoop\.run'),
         re.compile(r'AdaptivePoolingAllocator|AdaptiveByteBufAllocator|CycleArenaAllocator|ArenaBuf'),
+    ),
+    'C ringalloc': (
+        re.compile(r'SingleThreadIoEventLoop\.run'),
+        re.compile(r'RegisteredSlabBufferRingAllocator|SlabV2BufferRingAllocator|SlabBuf'
+                   r'|AbstractIoUringBufferRingAllocator|IoUringFixedBufferRingAllocator'
+                   r'|IoUringAdaptiveBufferRingAllocator|AdaptiveCalculator'
+                   r'|FixedSizeRingAllocator|CountingRingAllocator'),
+    ),
+    'D ringtotal': (
+        re.compile(r'SingleThreadIoEventLoop\.run'),
+        re.compile(r'RegisteredSlabBufferRingAllocator|SlabV2BufferRingAllocator|SlabBuf'
+                   r'|AbstractIoUringBufferRingAllocator|IoUringFixedBufferRingAllocator'
+                   r'|IoUringAdaptiveBufferRingAllocator|AdaptiveCalculator'
+                   r'|FixedSizeRingAllocator|CountingRingAllocator'
+                   r'|IoUringBufferRing|UnpooledSlicedByteBuf|AbstractUnpooledSlicedByteBuf'
+                   r'|AdaptivePoolingAllocator|AdaptiveByteBufAllocator|CycleArenaAllocator|ArenaBuf'),
     ),
 }
 

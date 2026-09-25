@@ -15,11 +15,23 @@ in "io_uring enter (submit/wait)" is the ring machinery itself.
 """
 import re, sys, collections
 ALLOC = r'AdaptivePoolingAllocator|AdaptiveByteBufAllocator|CycleArenaAllocator|ArenaBuf'
+# The provided-buffer-ring path, added 2026-09-25 for RESULTS.md section 7.  RING_ALLOC is the ring
+# allocator's OWN classes; RING_MACH is the ring machinery around it (fill/add/useBuffer) plus the
+# slice object useBuffer hands the pipeline.  Both are placed BEFORE 'allocator' in RULES, so a
+# sample inside AdaptivePoolingAllocator reached from the slab or from IoUringBufferRing is charged to
+# the ring path and not to the general allocator - that is the split this section needs.
+RING_ALLOC = (r'RegisteredSlabBufferRingAllocator|SlabV2BufferRingAllocator|SlabBuf'
+              r'|AbstractIoUringBufferRingAllocator|IoUringFixedBufferRingAllocator'
+              r'|IoUringAdaptiveBufferRingAllocator|AdaptiveCalculator'
+              r'|FixedSizeRingAllocator|CountingRingAllocator')
+RING_MACH = r'IoUringBufferRing[^A]|UnpooledSlicedByteBuf|AbstractUnpooledSlicedByteBuf'
 RULES = [
     ('select/epoll_wait', r'epoll_wait|epoll_pwait|EPollSelectorImpl.doSelect|SelectorImpl.select|Native.epollWait|do_epoll_wait|ep_poll'),
     ('socket read (syscall incl.)', r'SocketDispatcher.read|SocketChannelImpl.read|IOUtil.read|recvmsg|tcp_recvmsg|readAddress|io_recv|sock_recvmsg|inet_recvmsg'),
     ('socket write (syscall incl.)', r'SocketDispatcher.write|SocketChannelImpl.write|IOUtil.write|sendmsg|tcp_sendmsg|writev|writeAddress|io_send|sock_sendmsg|inet_sendmsg'),
     ('io_uring enter (submit/wait)', r'io_uring_enter|ioUringEnter|io_uring_submit|io_cqring|io_ring_submit'),
+    ('ring allocator (own code)', RING_ALLOC),
+    ('ring machinery + slice', RING_MACH),
     ('allocator', ALLOC),
     ('http2 codec', r'codec/http2|codec\.http2'),
     ('http1 codec', r'codec/http|codec\.http'),

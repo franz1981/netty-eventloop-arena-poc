@@ -30,16 +30,17 @@ topo_cp() {
 
 topo_compile() {
     mkdir -p "$CLASSES"
-    if [ "$TOPO/TopoServer.java" -nt "$CLASSES/TopoServer.class" ] \
-       || [ "$ROOT/lib/java/Transports.java" -nt "$CLASSES/Transports.class" ] \
-       || [ "$ROOT/lib/java/RegisteredSlabBufferRingAllocator.java" \
-            -nt "$CLASSES/RegisteredSlabBufferRingAllocator.class" ] \
-       || [ "$TOPO/Dump.java" -nt "$CLASSES/Dump.class" ]; then
+    local src=("$TOPO/TopoServer.java" "$ROOT/lib/java/Transports.java"
+               "$ROOT/lib/java/RegisteredSlabBufferRingAllocator.java"
+               "$ROOT/lib/java/SlabV2BufferRingAllocator.java" "$TOPO/Dump.java")
+    local stamp="$CLASSES/.compiled" need=0 f
+    for f in "${src[@]}"; do [ "$f" -nt "$stamp" ] && need=1; done
+    if [ "$need" = 1 ]; then
         # topo_cp resolves the dependency classpath the first time it is called; calling it here is
         # what makes a fresh clone work, where target/e2e-classpath.txt does not exist yet.
         local cp; cp="$(topo_cp)" || return 1
-        javac -nowarn -d "$CLASSES" -cp "$cp" "$TOPO/TopoServer.java" "$ROOT/lib/java/Transports.java" \
-            "$ROOT/lib/java/RegisteredSlabBufferRingAllocator.java" "$TOPO/Dump.java" || return 1
+        javac -nowarn -d "$CLASSES" -cp "$cp" "${src[@]}" || return 1
+        touch "$stamp"
     fi
 }
 

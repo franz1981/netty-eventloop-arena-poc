@@ -1,3 +1,5 @@
+package poc.ring;
+
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
 import io.netty.buffer.UnpooledByteBufAllocator;
@@ -51,7 +53,7 @@ import java.util.concurrent.atomic.AtomicReference;
  * the {@link SlabBuf}s themselves - no node allocation.  {@code slabForeignReleases} counts the
  * releases that did not come from the owning loop, so the run says whether the CAS was needed.
  */
-final class RegisteredSlabBufferRingAllocator implements IoUringBufferRingAllocator {
+public final class RegisteredSlabBufferRingAllocator implements IoUringBufferRingAllocator {
 
     /** Process-wide totals, printed as the {@code SLABTELE} line. */
     static final AtomicLong ACQUIRES = new AtomicLong();
@@ -73,11 +75,11 @@ final class RegisteredSlabBufferRingAllocator implements IoUringBufferRingAlloca
     /** The loop that built the slab; set on the first {@link #allocate()} (which runs on it). */
     private volatile Thread owner;
 
-    RegisteredSlabBufferRingAllocator(int entries, int chunkSize, int depth) {
+    public RegisteredSlabBufferRingAllocator(int entries, int chunkSize, int depth) {
         this(entries, chunkSize, depth, UnpooledByteBufAllocator.DEFAULT);
     }
 
-    RegisteredSlabBufferRingAllocator(int entries, int chunkSize, int depth, ByteBufAllocator fallback) {
+    public RegisteredSlabBufferRingAllocator(int entries, int chunkSize, int depth, ByteBufAllocator fallback) {
         if (!PlatformDependent.hasUnsafe()) {
             throw new IllegalStateException("RegisteredSlabBufferRingAllocator needs sun.misc.Unsafe "
                     + "for ByteBuf.memoryAddress(); io.netty.noUnsafe is set");
@@ -176,7 +178,7 @@ final class RegisteredSlabBufferRingAllocator implements IoUringBufferRingAlloca
      * {@code slabReleases} slots pushed back (kernel AND pipeline done), {@code slabFallbacks} the
      * allocations that were NOT served from a slab, which must be 0 for the design to hold.
      */
-    static String counters() {
+    public static String counters() {
         return "SLABTELE instances=" + INSTANCES.get()
                 + " regionBytes=" + REGION_BYTES.get()
                 + " slabAcquires=" + ACQUIRES.get()

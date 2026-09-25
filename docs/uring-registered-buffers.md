@@ -1,6 +1,7 @@
 # What should serve io_uring's registered buffers
 
 Everything about netty in this file was read at `netty` submodule commit `52b19c8ebf`
+(section 7, the verdict, at `d04ac1f4ec`, which adds the two `IoUringBufferRing` instruments it uses)
 (`expt/event-loop-arena`), in `transport-classes-io_uring/src/main/java/io/netty/channel/uring/`.
 Everything about other projects was read from the clones/links in [the survey](#5-what-everyone-else-does)
 on 2026-09-23. Anything I could not verify is labelled as such.
@@ -144,7 +145,13 @@ Two kernel/man findings worth keeping:
   application must keep that buffer untouched across several CQEs. Netty's `useBuffer` step 5a does
   exactly that.
 
-## 6. Measured
+## 6. Measured, round 1
+
+**Read [section 7](#7-the-verdict-after-iterating-resultsmd-section-8-measured-2026-0925-26) with
+this.** Two readings below were revised by it: the "lowest ring-allocator frame count" is partly an
+inlining artifact (a slab whose `allocate()` inlines into `IoUringBufferRing` disappears from that
+filter entirely - measured), and `builtinadaptive`'s W3 win did not reproduce with adaptive channels
+and zero-copy writes off.
 
 RESULTS.md **section 6** runs (i), (ii), (ii-a) and (iii) as the ring's allocator with the channel
 allocator held at `arena -Darena.ring=false`, plus adaptive everywhere as the control: two e2e cells
@@ -206,7 +213,89 @@ it needs JDK 25 and the PoC's scripts run on whatever `java` is on `PATH`, which
 different JDK would have made it incomparable with every other cell in the session, and the whole
 matrix is only ever compared within a run.
 
-## 7. What follows for the arena
+## 7. The verdict, after iterating (RESULTS.md section 8, measured 2026-09-25/26)
+
+**Use a fixed-slot, loop-local slab: one direct region per event loop, `entries x depth` equal slots,
+the owning loop popping and pushing a plain `int` free stack with no atomic, foreign releases going
+through an MPSC hand-back the owner detaches in one `getAndSet`, and one bounded growth step when the
+free list runs dry. That is `slab3fixed` in `lib/java/SlabV2BufferRingAllocator.java`.** It is the
+majority pattern of [section 5](#5-what-everyone-else-does) (liburing x2, folly, Zig) plus the two
+things a netty pipeline needs that a C consumer does not: headroom, because the pipeline holds a
+refcounted slice past the read, and a cross-thread release path, because a proxy releases on another
+loop.
+
+What decided it, with the numbers:
+
+| question | answer | evidence |
+|---|---|---|
+| Slab or general allocator behind the ring? | **slab**, 3.7x cheaper per buffer | 40.44 ns / 382.0 insns/op against adaptive's 148.19 / 1495.9, and 0.88 against 6.31 L1d misses/op (RESULTS 8.1) |
+| Is it still an arena? | **no**, the worst candidate | as the ring's allocator the arena is 5-7% slower on W1 (124,829-127,439 vs 131,524-135,194) and 3.71-3.77% of loop CPU against the slabs' 2.11-2.37%; `arenaShare=77.94%`, so a fifth of the ring's buffers fall through to adaptive anyway, with all 8 blocks pinned (RESULTS 8.7) |
+| Treiber stack or loop-local `int` stack? | **loop-local** | -7.7 ns / -76 insns per buffer at an identical feature set; and when every release is foreign, slab v1's CAS-per-release is **301.7 ns, slower than adaptive's 264.6**, against 171.4 ns for the hand-back, with half the stalled frontend cycles (RESULTS 8.2) |
+| Adaptive slot size (the "fixed population, adaptive slot" synthesis)? | **no** | it costs 4.2 ns / 71 insns, and the policy that makes it fire costs 0.3-0.9% throughput for 3-8x the region (16 MB -> 54-134 MB). `AdaptiveCalculator` cannot converge when it does not control the next buffer's size: 80.6% of samples want a size >=2x away and the longest run of the same value is **2** (RESULTS 8.6) |
+| Does the size ever matter, as section 6.2 suggested? | **not established** | W3's spread across nominally identical designs is 18% (13,036-15,442 req/s); section 6.2's `builtinadaptive` win did not reproduce with adaptive channels and zero-copy off (14,053, mid-pack) |
+| folly's 2 MiB alignment / huge pages? | **dropped** | `aligned=true` but `AnonHugePages=0` in every cell: the box is `transparent_hugepage=[madvise]` and Java cannot call `madvise` - no JNI binding, and `java.lang.foreign` is preview on JDK 21 (RESULTS 8.4) |
+| How much does any of it buy end to end? | **nothing measurable** | 0.8% across ten configurations on h1, 1.1% on h2, one run per cell |
+
+### 7.1 Why it buys nothing, stated as a profile line
+
+The whole provided-buffer-ring allocation path is **0.4-0.6% of event-loop CPU** on HTTP/1.1
+(`tools/asprof-loop-breakdown.py`, RESULTS 8.5), against **40.8%** for the socket-write syscall and
+33.7% for the pipeline - where `ByteBufUtil.unsafeWriteUtf8` alone is 12.8% and this box's
+`nft_do_chain [nf_tables]` firewall hook is 2.9%. A 3.7x saving on 0.5% of the loop is 0.4 pp, which
+is exactly the filter-D difference the e2e cells show (2.11% for `slab3fixed` against 2.71% for
+adaptive), and it is below the resolution of a 20 s throughput run. The microbenchmark's floor and the
+server's profile agree: `1,772,331 allocate()` calls x 40.44 ns = 71.7 ms against 83.5 s of loop CPU
+= 0.086%, and for adaptive 0.31% predicted against 0.39% measured.
+
+**So the allocator is at its floor and the floor does not matter here.** What is left of the per-buffer
+cost is not the allocator's: **43% of `slab3fixed`'s 40.44 ns is the `retainedSlice`** that
+`useBuffer` hands the pipeline (150-177 instructions and 9-18 ns for every candidate), and removing it
+is a netty change, not an allocator change - see 7.2.
+
+### 7.2 The two netty questions, answered with counters
+
+**Step 7 cannot reuse the retiring buffer.** `-Dio.netty.iouring.bufferRing.refCntTele=true` (netty
+`d04ac1f4ec`) records `refCnt()` where the ring drops its own reference: it is **2 in 100.0% of
+343,868 (h1) and 764,111 (h2) retirements, never 1**. It cannot be 1 - the `retainedSlice` that
+`useBuffer` is about to return *is* the second reference. So the ring is never the last holder, the
+only place "the kernel and the pipeline are both done" is observable is the buffer's own
+`deallocate()`, and **a recycling allocator is not an alternative to reusing the retiring buffer, it is
+the only implementation of it.** (Those counters also show 66% of h1's reads are incremental
+continuations where the bid stays in the ring.)
+
+**Handing the buffer over instead of slicing it works and is worth nothing.**
+`-Dio.netty.iouring.bufferRing.noSliceHandoff=true` makes `useBuffer` transfer the ring's reference to
+the caller when the read retires the bid - one `UnpooledSlicedByteBuf` and one retain/release pair
+fewer per retiring read, 34% of reads on h1 and 69% on h2. Correct (0 failed, all 2xx) and worth
+-0.1% to +0.5% req/s over 3.8 million removed allocations. The caller then sees a buffer whose
+capacity is the whole ring chunk, which is what the upstream comment "we always slice so the user will
+not mess up things later" is protecting against; on this evidence the protection is free.
+
+### 7.3 Sizing it: the counter that tells you the answer
+
+`maxInFlight` is the number to watch, and it is the one that explains section 6.2's W5 failure.
+
+| workload | slots per loop | maxInFlight | fallbacks v1 | fallbacks v2/v3 |
+|---|---|---|---|---|
+| e2e h1/h2 | 256 | 34-36 | 0 | 0 |
+| W1 | 256 | 34 | 0 | 0 |
+| W3 | 256 | 64-66 | 0 | 0 |
+| W5 (256 KiB aggregator) | 256 -> 512 | **377-384** | **2,145** | **0** |
+
+W5 holds 377-384 ring buffers in flight against 256 slots, so a fixed population **must** run dry;
+one bounded doubling to 512 takes it to zero fallbacks with 4 exhaustions and 4 growths, reproducibly
+across three runs, and throughput does not change. The in-flight histogram says why W5 is different:
+on h1 **every** slot returns within one ring's worth of acquires (`lifeSeq[<1ring:1778667]`), on W5
+**none** does (`lifeSeq[<1ring:0, <8ring:3062161, <64ring:821]`). A provided-ring buffer's life is
+dominated by waiting in the ring for the kernel, not by the pipeline - 3.1 ms mean on h1 by Little's
+law, which the `lifeNanos` histogram confirms - so the thing to size is the slot **count**, not the
+slot lifetime.
+
+`drains=4` with `foreignReleases=0` in every workload measured: the hand-back path exists for
+correctness (requirement 4) and was never taken here, so the measurement that separates it from a
+Treiber stack is the microbenchmark of 7.0, not any of these servers.
+
+## 8. What follows for the arena
 
 The arena is not a candidate here and should not be one. A provided-buffer-ring buffer is
 class D by construction (section 1, step 7 and requirement 2): its lifetime is decided by the

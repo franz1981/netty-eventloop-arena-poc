@@ -13,8 +13,8 @@ Machine and settings:
 | frequency | fixed at 2300 MHz for the run, restored to 4300 MHz afterwards |
 | JDK | 21 (`21+35-LTS-2513`), `-XX:MaxRAM=60g` |
 | glibc / kernel | 2.42 / 7.1 (`7.1.13-100.fc43.x86_64`) |
-| date | sections 1, 2 and appendix A: 2026-09-22; sections 3-6: 2026-09-23 |
-| code | section 1: netty `cfb23bcf63`, adaptive only (frozen classpath, see 1.1); **section 2 (v3): netty `3dad84f578`**; section 3: `2b961262d6`; sections 4-6: `52b19c8ebf`; appendix A: netty `dec589d0eb` (A.1, A.2, A.3, A.4) and the PoC build `26bd14b195` (A.2b, A.5). All on `expt/event-loop-arena`, whose head is `256c1d86bd` today. Harness = lao 1.2 + this PoC's benchmark commits, now `e9fa807` |
+| date | sections 1, 2 and appendix A: 2026-09-22; sections 3-6: 2026-09-23; section 7: 2026-09-24; section 8: 2026-09-25/26 |
+| code | section 1: netty `cfb23bcf63`, adaptive only (frozen classpath, see 1.1); **section 2 (v3): netty `3dad84f578`**; section 3: `2b961262d6`; sections 4-6: `52b19c8ebf`; appendix A: netty `dec589d0eb` (A.1, A.2, A.3, A.4) and the PoC build `26bd14b195` (A.2b, A.5). **section 8: netty `d04ac1f4ec`** (adds the two `IoUringBufferRing` instruments). All on `expt/event-loop-arena`, whose head is `d04ac1f4ec` today. Harness = lao 1.2 + this PoC's benchmark commits, now `e9fa807` |
 | JMH | 3 forks, 10x1 s warmup, 10x1 s measurement |
 
 Fork-to-fork sd on the harness heap cells is about 8% on this box: **3 forks resolve ~10%, not 3%.**
@@ -45,12 +45,15 @@ One row per section, every number copied verbatim from the section it names.
 | [5.3](#53-what-is-still-pinned-the-zero-copy-writes-separate-4-cell-run) | `BUFFER_RING=off` + zero-copy writes off | `IO_URING_WRITE_ZERO_COPY_THRESHOLD` -1 vs 4096 | h1 maxPinnedDirect **25 -> 11** and req/s 127,533 -> **174,648 (+37%)**; h2 9 -> 8 and -1.2%. **11 blocks stay pinned and what holds them is not established here** |
 | [6](#6-who-should-serve-the-registered-buffers-measured-2026-09-23-2300-mhz-node-0) | 5 ring allocators: control / adaptive / builtin / builtinadaptive / slab | who should fill the ring | throughput spread 0.7% (h1 126,840-127,572) and 1.4% (h2 370,529-375,775); slab lowest allocator CPU (0.93% h1, 5.54% h2 against the control's 2.05% / 9.35%) with `slabFallbacks=0`; builtinadaptive best on W3 (98.14% share, 19,009 req/s on a quarter of the `allocate()` calls); W5 ran the slab dry, 4,077 fallbacks |
 | [7](#7-what-holds-the-blocks-that-stay-pinned-on-io_uring-measured-2026-09-24-2300-mhz-node-0) | `-Darena.debugPinned`, `BUFFER_RING=off`, zero-copy on and off | which allocation stacks hold the pinned blocks | h1: **99.5%** of 8,682 pinned-block samples are the 4,368-byte `filterOutboundMessage` copy, and zero-copy off takes the samples to **3**; h2: zero-copy is irrelevant (972 vs 974 samples), the oldest live buffer is a **9-byte** HTTP/2 DATA frame header in 74% of samples; `-Darena.cap=4096` takes maxPinnedDirect 26 -> 8 for -0.4% req/s, against +36% for turning zero-copy off |
+| [8](#8-the-provided-buffer-ring-allocator-iterated-measured-2026-0925-26-2300-mhz-node-0) | 9 ring allocators incl. a loop-local slab, arena as ring allocator, 2 netty instruments | what the right provided-buffer-ring allocator is, and how close it is to its floor | microbench `slab3fixed` **40.44 ns / 382.0 insns/op** vs adaptive 148.19 / 1495.9 (3.7x) and 8x fewer L1d misses; the owner `int` stack is -7.7 ns vs a Treiber CAS, and with all releases foreign it is **171.4 ns vs slab v1 301.7** (slower than adaptive); e2e spread 0.8% (h1) / 1.1% (h2) and the whole ring path is **0.4-0.6% of loop CPU** against 40.8% socket write; refCnt at retire is **2 in 100%** of retirements, so the ring can never reuse the buffer; the no-slice handoff removes 3.8M allocations for +0.5%; W5 v1 **2,145 fallbacks -> 0** with one growth to 512 slots (maxInFlight 377-384); arena as ring allocator **5-7% slower** on W1 with `arenaShare=78%` |
 | [A](#appendix-a-the-earlier-builds-v2---not-the-pinned-code) | v2, `dec589d0eb` / `26bd14b195` | history, not the pinned code | ARENA 25.2-27.5 vs ADAPTIVE 44.3-50.9 and MIMALLOC 46.6-52.6 ns/buf; 8-block harness 40.6 vs 83.1 (1024) and 49.8 vs 96.1 (4096); with the default 4-block bound the arena LOSES; geometric lifetimes 82.7 vs 83.1 and 122.1 vs 106.5 |
 
-Sections 1-7 are the current line of work: section 1 is the shape of the problem measured with
-adaptive, section 2 the pinned v3 build, sections 3-6 the io_uring questions on top of it and
-section 7 the attribution that closes section 5.3's open question. Appendix A
-is the history of two earlier builds and is not a statement about the pinned commit.
+Sections 1-8 are the current line of work: section 1 is the shape of the problem measured with
+adaptive, section 2 the pinned v3 build, sections 3-6 the io_uring questions on top of it,
+section 7 the attribution that closes section 5.3's open question and section 8 the iterated
+answer to section 6's - which allocator the provided buffer ring should have, and why the answer
+changes nothing end to end. Appendix A is the history of two earlier builds and is not a
+statement about the pinned commit.
 
 ## 1. The lifecycle topology of real pipelines (adaptive allocator, seven pipelines, NIO)
 
@@ -1137,6 +1140,365 @@ that was not measured.
   not say how much longer it lived after that hook.
 * 7.4 is one run per cell and its cap knob is confounded, as stated there. Nothing here measured what
   `SEND_ZC` costs or why turning it off is worth +36% on this 4 KiB-body workload.
+
+## 8. The provided-buffer-ring allocator, iterated (measured 2026-09-25/26, 2300 MHz, node 0)
+
+Section 6 compared five ring allocators for one run each and concluded "nothing separates the
+candidates on throughput". This section asks the next question - **what is the right allocator for
+the provided buffer ring, and how close to its floor is it?** - with a microbenchmark of the ring
+allocator alone, seven candidates, the counters each one needs to be judged on, and two changes to
+netty itself.
+
+**Configuration, identical in every cell:** channel allocator **adaptive**, `TRANSPORT=io_uring`,
+`BUFFER_RING=on`, **zero-copy writes OFF** (`-Diouring.zeroCopyThreshold=-1`, netty's own default;
+the threshold-4096 configuration is a separate bug, netty/netty#17632), 8 loops for e2e and 4 for
+topology, logging off. The only variable is `BUFFER_RING_ALLOC`. Code: netty `d04ac1f4ec`
+(`expt/event-loop-arena`), PoC `lib/java/SlabV2BufferRingAllocator.java`. Every cell ran under a
+shared mutex with the CPU ceiling set and **read back** inside the lock and the runnable count
+sampled six times; raw data and the per-cell provenance are in
+`arena-v3/ring-alloc/{e2e,topology,micro,variants,sizepolicy,w5rss}/run-provenance.log`. All
+frequency read-backs say `2300000`; the ceiling was restored to `4300000` at the end.
+
+### 8.0 The candidates
+
+| id | `BUFFER_RING_ALLOC` | what it is |
+|---|---|---|
+| R0 | `adaptive` | one `AdaptiveByteBufAllocator.directBuffer(8192)` per re-add - today's practical default |
+| R1 | `builtinadaptive` | netty's `IoUringAdaptiveBufferRingAllocator` (adaptive SIZE, general allocator behind it) |
+| R2 | `slab` | slab v1 as section 6 measured it: one direct region per loop, Treiber stack over the wrappers |
+| - | `slab2fixed` | v2 with a FIXED slot: isolates v2's structure and telemetry from its size policy |
+| R3 | `slab2` | v2 = fixed population + slot size from netty's `AdaptiveCalculator`, re-provisioned rarely |
+| - | `slab3fixed` | v3 with a FIXED slot - **the recommendation, see 8.6** |
+| R4 | `slab3` | v3 = R3 + owner-thread plain `int` free stack, foreign releases through an MPSC hand-back |
+| R5 | `slab3huge` | R4 with the region 2 MiB-aligned (folly's shape), so a THP *can* back it |
+| R6 | `arena`, `arenaring` | `CycleArenaAllocator` as the RING's allocator, `-Darena.ring=false` and `=true` |
+
+### 8.1 The microbenchmark: the ring allocator alone (3 forks, perfnorm, 2300 MHz)
+
+One op is one buffer's whole trip through the ring, which is what step 7 of the lifecycle costs:
+`allocate()` -> the address and length `add()` writes into the slot -> `lastBytesRead` ->
+`retainedSlice` -> the ring's `release()` -> the pipeline's `release()`.
+`inFlight=32` is netty's default batch for a 64-entry ring; `inFlight=1` is the flattering shape
+where a free list always hits the same slot. `bench/RingAllocBench.java`, raw data
+`arena-v3/ring-alloc/micro/owner.json`.
+
+| ring allocator | ns/op | +-99.9% | insns/op | cycles/op | L1d misses/op | ns/op no slice | insns/op no slice |
+|---|---|---|---|---|---|---|---|
+| R0 `adaptive` | 148.19 | 1.43 | 1495.9 | 337.7 | 6.31 | 138.94 | 1318.9 |
+| R1 `builtinadaptive` | 150.27 | 3.51 | 1482.2 | 342.3 | 6.48 | 138.25 | 1305.5 |
+| R2 `slab` (v1) | 47.44 | 1.91 | 405.0 | 109.0 | 0.78 | 33.76 | 245.3 |
+| `slab2fixed` | 48.17 | 0.24 | 457.8 | 110.6 | 0.74 | 31.13 | 300.4 |
+| R3 `slab2` | 52.79 | 0.99 | 521.8 | 120.9 | 0.81 | 35.82 | 366.5 |
+| **`slab3fixed`** | **40.44** | 2.85 | **382.0** | **92.7** | 0.88 | **23.00** | **232.3** |
+| R4 `slab3` | 44.65 | 0.65 | 453.6 | 102.7 | 0.74 | 26.17 | 293.9 |
+
+Four things this says, each of which is a number and not an opinion:
+
+1. **A slab is 3-4x cheaper per buffer than any general-purpose allocator behind the ring.**
+   `slab3fixed` 40.44 ns / 382.0 insns against `adaptive` 148.19 ns / 1495.9 insns, and **8x fewer
+   L1d misses** (0.88 against 6.31).
+2. **R1 is R0.** 150.27 vs 148.19 ns, 1482.2 vs 1495.9 insns - the same code path
+   (`AbstractIoUringBufferRingAllocator.allocate()` is `allocator.directBuffer(nextBufferSize())`)
+   over two adaptive instances. Confirmation, not a finding; section 6 predicted it too.
+3. **The owner-thread `int` stack is worth 7.7 ns / 76 insns over the Treiber CAS**, at an identical
+   feature set: `slab3fixed` 40.44/382.0 against `slab2fixed` 48.17/457.8. That is the R4 idea and it
+   holds.
+4. **The adaptive slot size costs 4.2 ns / 71 insns** and buys nothing (8.4):
+   `slab3fixed` 40.44 -> `slab3` 44.65, `slab2fixed` 48.17 -> `slab2` 52.79.
+
+**The floor.** `ownerCycleNoSlice` repeats the op with netty's `noSliceHandoff` shape (8.3): no
+`retainedSlice`, no retain/release pair. The slice costs **150-177 instructions and 9-18 ns for every
+candidate** - 17.4 ns of `slab3fixed`'s 40.44, i.e. **43% of the best candidate's per-op cost is a
+cost no choice of allocator can remove.** The remaining 23.0 ns / 232.3 insns is the pop, the push,
+the refCnt arm and the two field reads `add()` needs. A repeat run of the no-slice cells
+(`micro/noslice.json`) reproduces them within 1.3% (adaptive 137.21 vs 138.94, slab 33.76 vs 33.76,
+slab3 26.04 vs 26.17), so the microbenchmark is stable at the resolution these differences need.
+
+### 8.2 The foreign-release path (3 forks, perfnorm)
+
+Requirement 4 of [`uring-registered-buffers.md`](../../docs/uring-registered-buffers.md):
+`allocate()` is always on the loop, `release()` is not. `cycleForeignRelease` allocates on the JMH
+thread and hands buffer and slice to a second thread through a minimal SPSC queue; `handoffOnly` is
+the same queue with the same `Object[2]` carrier and no allocator, so the queue is not charged to the
+allocator. Raw data `micro/foreign.json`.
+
+| ring allocator | pair ns/op | +-99.9% | insns/op (process) | stalled frontend cycles/op |
+|---|---|---|---|---|
+| R0 `adaptive` | 264.6 | 7.0 | 1279.1 | 82 |
+| R1 `builtinadaptive` | 256.7 | 8.0 | 1230.3 | 81 |
+| R2 `slab` (v1, Treiber) | **301.7** | 38.3 | 580.2 | **154** |
+| R3 `slab2` (Treiber) | 271.3 | 14.8 | 661.0 | 110 |
+| R4 `slab3` (loop-local + hand-back) | **171.4** | 21.7 | 585.5 | **66** |
+| control `handoffOnly` | 26.4-33.4 | 16-32 | 135.9-140.4 | - |
+
+**This is the cell where R4 stops being a micro-optimisation.** With every release coming from a
+foreign thread, slab v1's CAS-per-release Treiber stack is **slower than adaptive** (301.7 against
+264.6 ns) despite using 2.2x fewer instructions, and its stalled-frontend count doubles (154 against
+82): the owner's `pop` CAS and the releaser's `push` CAS contend on the same head word. R4, whose
+owner path never touches that word (it detaches the whole hand-back list in one `getAndSet`), is the
+fastest of all at 171.4 ns with the *lowest* stall count. The five `handoffOnly` estimates agree with
+each other (26.4-33.4 ns), so the queue is not what separates the rows.
+
+**What this cell does NOT measure.** The producer blocks on a full queue, so the ns column is the
+*pair's* throughput, not the loop's own cost, and the instruction counts are process-wide (they
+include the releaser thread). The cost of one cross-thread release *in isolation* was not isolated by
+this design, and the error bars (+-38, +-22) are large. The direction is supported by three
+independent columns; the magnitude is not established.
+
+### 8.3 Two questions asked of netty itself
+
+netty `d04ac1f4ec` adds two opt-in instruments to `IoUringBufferRing` (both `static final`, so they
+fold away when off).
+
+**(a) Can the ring reuse the retiring buffer object instead of calling `allocate()`?** No, and this is
+now measured rather than reasoned. `-Dio.netty.iouring.bufferRing.refCntTele=true` records `refCnt()`
+at the moment the ring drops its own reference:
+
+```
+h1  retireRefCnt=1:0,2:343868,3:0,...   slices=1015382
+h2  retireRefCnt=1:0,2:764111,3:0,...   slices=975548
+```
+
+**The count is 2 in 100.0% of 343,868 (h1) and 764,111 (h2) retirements and never 1.** It cannot be
+1: the `retainedSlice` that `useBuffer` is about to return to the caller is itself the second
+reference. So the ring is never the last holder at step 6/7, and the only place where "the kernel and
+the pipeline are both finished" is observable is the buffer's own `deallocate()` - which is exactly
+what a recycling allocator is. **The slab is not an alternative to reusing the retiring buffer; it is
+the only way to do it.** (The same lines also say that 1,015,382 - 343,868 = 671,514 of h1's reads,
+66%, are incremental continuations where the bid stays in the ring.)
+
+**(b) What does the slice cost end to end?** `-Dio.netty.iouring.bufferRing.noSliceHandoff=true`
+makes `useBuffer` hand the retiring buffer itself to the pipeline, transferring the ring's reference:
+one `UnpooledSlicedByteBuf` and one retain/release pair fewer per retiring read. It is correct - 0
+failed, 0 errored, all 2xx on h1 and h2 - and it is worth nothing measurable:
+
+| cell | handoffs / total reads | req/s with handoff | req/s baseline | delta |
+|---|---|---|---|---|
+| h1 `adaptive` | 340,487 / 1,005,406 (34%) | 172,684 | 172,902 | -0.1% |
+| h1 `slab3` | 341,242 / 1,007,630 (34%) | 173,405 | 173,538 | -0.1% |
+| h2 `adaptive` | 3,766,336 / 5,455,254 (69%) | 373,879 | 372,240 | +0.4% |
+| h2 `slab3` | 3,792,018 / 5,465,206 (69%) | 376,428 | 374,692 | +0.5% |
+
+Removing 3.8 million object allocations and refcount pairs over 20 s moves h2 by +0.5%, inside the
+band. The microbenchmark says the slice is 43% of the best allocator's per-op cost (8.1); the server
+says that per-op cost is not where the server's time goes (8.5). Both are true and the second one
+decides.
+
+### 8.4 End to end, 20 s per cell, one run per cell, 8 loops
+
+`B` is `tools/asprof-alloc-share.py`'s narrow filter (the general allocator on an IO loop);
+`C ring-alloc` and `D ring-total` are the two filters added for this section - C matches the ring
+allocator's own classes, D adds `IoUringBufferRing`, the slice classes and the general allocator.
+**Read 8.5 before reading column C.**
+
+| proto | ring served by | req/s | mean lat | RSS max | B | C | D | ringAllocs |
+|---|---|---|---|---|---|---|---|---|
+| h1 | R0 `adaptive` | 172,902 | 48us | 843 MB | 2.42% | 0.39% | 2.71% | 1,770,654 |
+| h1 | R1 `builtinadaptive` | 173,469 | 48us | 852 MB | 2.40% | 0.39% | 2.71% | 1,209,166 |
+| h1 | R2 `slab` | 172,973 | 53us | 848 MB | 1.77% | 0.00% | 2.15% | 1,771,390 |
+| h1 | `slab2fixed` | 172,513 | 51us | 842 MB | 2.11% | 0.00% | 2.37% | 1,766,669 |
+| h1 | R3 `slab2` | 173,262 | 57us | 845 MB | 1.71% | 0.07% | 2.34% | 1,774,352 |
+| h1 | **`slab3fixed`** | 173,065 | 50us | 848 MB | 1.75% | 0.00% | **2.11%** | 1,772,331 |
+| h1 | R4 `slab3` | **173,538** | 55us | 845 MB | 1.74% | 0.08% | 2.15% | 1,777,166 |
+| h1 | R5 `slab3huge` | 173,088 | 59us | 863 MB | **1.59%** | 0.08% | 2.21% | 1,772,563 |
+| h1 | R6 `arena` ring=false | 172,110 | 53us | 861 MB | 3.51% | 0.23% | **3.71%** | 1,762,552 |
+| h1 | R6 `arena` ring=true | 173,026 | 58us | 856 MB | 3.72% | 0.34% | 3.77% | 1,771,927 |
+| h2 | R0 `adaptive` | 372,240 | 516us | 865 MB | 9.72% | 0.86% | 11.47% | 3,750,070 |
+| h2 | R1 `builtinadaptive` | 370,644 | 507us | 901 MB | 7.66% | 0.34% | 9.50% | 1,021,422 |
+| h2 | R2 `slab` | **374,606** | 486us | 862 MB | 7.89% | 0.00% | 10.44% | 3,773,920 |
+| h2 | `slab2fixed` | 373,716 | 495us | 865 MB | 8.21% | 0.08% | 11.70% | 3,764,948 |
+| h2 | R3 `slab2` | 373,875 | 518us | 853 MB | 7.43% | 0.84% | 10.97% | 3,766,552 |
+| h2 | **`slab3fixed`** | 373,950 | 493us | 860 MB | **6.25%** | 1.22% | **9.77%** | 3,767,301 |
+| h2 | R4 `slab3` | **374,692** | 529us | 851 MB | 7.76% | 0.99% | 12.06% | 3,774,784 |
+| h2 | R5 `slab3huge` | 372,791 | 569us | 857 MB | 7.56% | 0.18% | 11.12% | 3,755,631 |
+| h2 | R6 `arena` ring=false | 372,150 | 510us | 917 MB | 10.39% | 0.16% | 12.01% | 3,749,180 |
+| h2 | R6 `arena` ring=true | 373,115 | 553us | 897 MB | 9.96% | 0.30% | 11.63% | 3,758,888 |
+
+**Throughput separates nothing**: 0.8% across ten configurations on h1 (172,110-173,538) and 1.1% on
+h2 (370,644-374,692), one run per cell. What does move is allocator CPU: on h1 the slabs sit at
+**2.11-2.37%** of loop samples (filter D) against adaptive's **2.71%** and the arena's **3.71-3.77%**.
+On h2 the D column spans 9.50-12.06% and does *not* rank the slab variants consistently
+(`slab3fixed` 9.77% but `slab3` 12.06%, `slab2fixed` 11.70% but `slab` 10.44%): with ~70,000 loop
+samples per cell a 1 pp difference is ~700 samples and one run cannot resolve it. **The h1 D column
+is the only e2e ranking this section claims.**
+
+**R5 is dropped.** `aligned=true` is confirmed in the counters, and `THPTELE` says
+`anonHugePagesKb=0 vmasWithThp=0 thpEnabled=always [madvise] never` in **every** cell. This box is in
+`madvise` mode and Java cannot call `madvise(MADV_HUGEPAGE)` - `transport-native-io_uring` exposes no
+binding for it and `java.lang.foreign` is preview on JDK 21. So the alignment is real and the huge
+page is not, the instruction says keep R5 only if `AnonHugePages` shows it, and it does not. Its
+numbers (h1 D 2.21%, h2 D 11.12%) are within the band of the unaligned R4 either way.
+
+### 8.5 Where the ring allocator's cycles actually go
+
+`tools/asprof-loop-breakdown.py` over the same h1 profiles, with the two ring rules added ahead of
+the general-allocator rule, so a sample inside adaptive reached *from* the ring is charged to the ring:
+
+| category | R0 `adaptive` | `slab3fixed` | R6 `arena` |
+|---|---|---|---|
+| socket write (syscall incl.) | **40.8%** | **40.9%** | **40.3%** |
+| loop other (pipeline, channel, tasks) | 33.7% | 34.5% | 33.6% |
+| http1 codec | 9.4% | 9.0% | 9.1% |
+| io_uring enter (submit/wait) | 7.9% | 7.9% | 8.0% |
+| socket read (syscall incl.) | 5.5% | 5.6% | 5.3% |
+| general allocator | 2.1% | **1.7%** | **3.3%** |
+| **ring allocator (own code)** | **0.4%** | **0.0%** | 0.2% |
+| ring machinery + slice | 0.2% | 0.4% | 0.2% |
+
+**The whole provided-buffer-ring allocation path is 0.4-0.6% of event-loop CPU.** Its top leaves are
+`AbstractIoUringBufferRingAllocator.allocate` (121 samples) and `RefCnt$UnsafeRefCnt.isLiveNonVolatile`
+(238 for the slab). For scale, in the same profiles `ByteBufUtil.unsafeWriteUtf8` is 10,806 samples
+(12.8% of loop CPU on its own), `ByteBufUtil.utf8ByteCount` 6,318, and `nft_do_chain [nf_tables]` -
+this box's firewall, in the send path - 2,434 (2.9%). **That is why the microbenchmark's 3.7x is
+worth 0.6 pp of loop CPU and 0% of throughput**, and it is the answer to "is it at the floor":
+`slab3fixed` contributes 0.0% of its own frames plus 0.4 pp of ring machinery, and the 1.7% general
+allocator line is the *channels*, which this section does not change.
+
+**Column C is an inlining detector, not a cost metric, and this corrects section 6.2's reading of it.**
+Counting the actual frames in the h1 collapsed files:
+
+```
+adaptive     73 CountingRingAllocator.allocate   73 IoUringBufferRingAllocator.allocate   84 IoUringBufferRing.useBuffer
+slab          0 (its own classes)                                                          6 IoUringBufferRing.useBuffer
+slab3fixed    0 (its own classes)                                                          6 IoUringBufferRing.useBuffer
+slab3         9 SlabV2BufferRingAllocator.allocate   18 CountingRingAllocator.allocate    81 IoUringBufferRing.useBuffer
+```
+
+`slab` and `slab3fixed` have **zero** samples in their own classes: their `allocate()` inlines
+completely into `IoUringBufferRing`, so filter C cannot see them and reports 0.00%. `slab3`, whose
+`allocate()` also carries the slot-size check, did **not** fully inline and so scores *higher* in C
+(0.08% h1, 0.99% h2) while being *cheaper* than adaptive in the microbenchmark. Section 6.2 read the
+slab's low "ring-alloc frame count" as a cost result; part of it was inlining. Filter D, whose regex
+always matches `IoUringBufferRing` itself, does not have this failure mode and is the column to use.
+
+**Predicted against measured.** 1,770,654 allocate() calls x 148.19 ns = 262 ms against 84.2 s of
+loop CPU = **0.31% predicted** for adaptive, **0.39% measured** (filter C). For `slab3fixed`,
+1,772,331 x 40.44 ns = 71.7 ms / 83.5 s = **0.086% predicted**, and 0.00% measured because the frames
+are inlined away. The microbenchmark and the profile agree where the profile can see the frames, and
+the slab is at the floor the microbenchmark implies.
+
+### 8.6 The slot size: an iteration that failed, then one that fired, then a decision
+
+**Iteration 1, and the bug it found.** R3's stated rule was "re-provision only on exhaustion, or when
+the estimate moves by 2x". Measured on e2e h1 at 4 loops: **14,960 re-provisions in 37,357 buffers,
+RSS 10.9 GB, 22,970 req/s against 132,211 for the baseline.** The rule is unusable against
+`AdaptiveCalculator`, which steps its index by +4 on a full read and -1 on two small ones over a table
+that doubles above 512 bytes - one step up is 16x and one step down is 2x, so "2x away" is true almost
+always and each firing allocated and abandoned a multi-MiB region. Fix: a warm-up, a minimum gap, a
+hard cap, and *persistence* (N consecutive allocations must want the same 2x-away size). RSS returned
+to 791 MB and 135,396 req/s, with `reprovSize=0`.
+
+**Iteration 2: persistence never fires, and the counters say why.** New telemetry on W3 (64 KiB
+HTTP/2 echo), the workload where the size should matter:
+
+```
+wantAway=582442 wantNear=140375 wantMin=4096 wantMax=65536 longestRun=2
+```
+
+80.6% of samples want a size at least 2x away, over a 4 KiB..64 KiB range, and **the longest run of
+the same away value is 2** against the 1024 the rule needs. The mechanism is that the feedback is
+self-referential: the slab's slot stays 8192, so a "full read" is always 8192, which the calculator
+reads as "shrink one step" and then "grow four steps", forever. It converges for
+`IoUringAdaptiveBufferRingAllocator` only because *there* the estimate becomes the very next buffer's
+size.
+
+**Iteration 3: a windowed rate, which does fire.** Over a window of 1024 samples, re-provision if the
+majority were 2x away, growth first. On W3 it does exactly what it should: `reprovSize=4` (one per
+loop), slot 8 KiB -> 64 KiB, and `allocate()` calls drop from 905,766 to **344,653** - 2.6x fewer, the
+effect section 6.2 credited to `builtinadaptive`.
+
+**And it loses.** The e2e regression cells, same build, one knob apart:
+
+| cell | fixed slot | windowed rate | delta | re-provisions | region |
+|---|---|---|---|---|---|
+| h1 `slab2` | 173,262 | 172,697 | -0.3% | 15 | 16 MB -> 63 MB |
+| h1 `slab3` | 173,538 | 172,640 | -0.5% | 18 | 16 MB -> 54 MB |
+| h2 `slab2` | 373,875 | 371,518 | -0.6% | 8 | 16 MB -> 134 MB |
+| h2 `slab3` | 374,692 | 371,177 | -0.9% | 8 | 16 MB -> 134 MB |
+
+0.3-0.9% slower for 3-8x the region, and on h1 it never settles (15-18 re-provisions in 20 s, slots
+ending at a mixture of 16/32/64 KiB across the eight loops - a milder version of the original bug).
+W3 cannot arbitrate: its spread across *nominally identical* designs is 13,036-15,442 req/s (18%),
+and the two policies disagree in direction on the two variants (slab2 13,837 rate vs 14,040 run;
+slab3 15,798 vs 13,119). **Decision: the slot size is fixed.** `slab3fixed` is the recommendation and
+the adaptive-slot path stays behind `-Diouring.slabSizePolicy` as measured, not as a default.
+
+### 8.7 Lifecycle topology W1 / W3 / W5, and the failure mode that is real
+
+| workload | ring served by | req/s | ringAllocs | fallbacks | exhaustions | growths | final slots | maxInFlight |
+|---|---|---|---|---|---|---|---|---|
+| W1 | R0 `adaptive` | 134,761 | 552,230 | - | - | - | - | - |
+| W1 | R2 `slab` | 131,524 | 538,971 | 0 | - | - | 256x8192 | - |
+| W1 | R4 `slab3` | 132,036 | 541,067 | 0 | 0 | 0 | 256x8192 | 34 |
+| W1 | R6 `arena` ring=false | **124,829** | 511,544 | - | - | - | - | - |
+| W1 | R6 `arena` ring=true | 127,419 | 522,150 | - | - | - | - | - |
+| W5 | R0 `adaptive` | 12,259 | 3,141,040 | - | - | - | - | - |
+| W5 | R2 `slab` (v1) | 11,998 | 3,074,222 | **2,145** | - | - | 256x8192 | - |
+| W5 | R4 `slab3` | 11,955 | 3,063,238 | **0** | 4 | 4 | **512x8192** | **377** |
+| W5 | `slab3fixed` | 12,080 | 3,095,162 | **0** | 4 | 4 | 512x8192 | 384 |
+
+**W5 is where "not elastic" actually costs something, and one bounded growth step fixes it.** Section
+6.2 found slab v1 taking 4,077 fallback allocations on this workload and said `depth=4` "was picked
+before the run rather than tuned". The counters now say what the right value is and why: **maxInFlight
+is 377-384 against 256 slots** - the 256 KiB aggregator holds more ring buffers in flight than the
+slab has - so v1 *must* run dry (2,145 fallbacks reproduced), and v2/v3's single doubling to 512 slots
+takes it to **0 fallbacks with 4 exhaustions and 4 growths**, reproducibly (r1 377, r2 377, r3 384).
+Throughput does not change (11,921-12,259 across every W5 cell).
+
+The in-flight histograms say *why* W5 is different from h1, on the same instrument:
+
+```
+h1  occupancy[0-25%:1778923, ...]                    lifeSeq[<1ring:1778667, <8ring:0, <64ring:0]
+W5  occupancy[0-25%:2959436, 25-50%:98965, 50-75%:4325, 75-100%:508, full:4]
+                                                     lifeSeq[<1ring:0, <8ring:3062161, <64ring:821]
+```
+
+On h1 **every** slot returns within one ring's worth of acquires; on W5 **none** does - all 3.06
+million take between one and eight - and the slab reaches full occupancy exactly 4 times, which is the
+4 exhaustions. `drains=4` with `foreignReleases=0` in every cell: the owner's hand-back drain ran only
+on those 4 exhaustions, so the loop-local path never took an atomic in any workload measured here.
+
+**RSS on W5, 4 runs each** (`w5rss/`), because the first single-run pair suggested a 35% reduction and
+that was not reproducible:
+
+| ring served by | RSS at shutdown (kB), 4 runs | mean | spread |
+|---|---|---|---|
+| R0 `adaptive` | 782,064 / 837,692 / 984,416 / 1,143,636 | 936,952 | **46%** |
+| `slab3fixed` | 737,504 / 740,320 / 746,036 / 752,500 | 744,090 | **2%** |
+
+The slab is lower in 4 of 4 samples and the *lowest* adaptive run (782,064) still exceeds the
+*highest* slab run (752,500) - but the honest statement is about variance, not a fixed saving: a fixed
+region has a fixed footprint, and the difference in the means is 193 MB (-21%) with adaptive spanning
+782-1144 MB run to run. **Where adaptive's extra 193-400 MB lives was not established** - it is far
+more than the ring's own working set (512 x 8 KiB x 4 loops = 16 MiB) and nothing here attributed it.
+
+**R6, the arena as the ring's allocator, is the worst candidate in every column that moves.** On W1 it
+is 124,829-127,419 req/s against 131,524-135,194 for the slabs and 134,761 for adaptive - **5-7%
+slower** - and on e2e h1 its filter-D share is 3.71-3.77% against the slabs' 2.11-2.37%. The
+`ARENATELE` counters say why: on W1 `arenaShare=77.94%` with `delegateDirect=112,863` of 511,544 ring
+buffers falling through to adaptive, `maxPinnedDirect=8` of 8 blocks, `blockSwitches=12,554`; on W3
+`arenaShare=79.95%`, `maxPinnedDirect=8`. A provided-ring buffer is kernel-owned for an unbounded
+number of iterations, so every block holding one is pinned at the hook, the space hits its 8-block
+bound, and a fifth of the ring's buffers are served by the allocator the arena was supposed to
+replace - while the loop-breakdown's general-allocator line rises from 2.1% to 3.3%.
+**"Maybe it is still an arena" is answered: no.**
+
+### 8.8 What section 8 does not establish
+
+* **One run per cell** in 8.4 and 8.7 (the exceptions are the 4-run W5 RSS pairs and the 3-fork
+  microbenchmarks). The h2 filter-D column does not rank the slab variants and is not read as doing so.
+* **W3 is not usable for the size question** - 18% spread across nominally identical designs.
+* **The cross-thread release cost is not isolated** (8.2): the benchmark measures a producer/consumer
+  pair, and `foreignReleases=0` in every server cell, so the path that separates R2 from R4 in the
+  microbenchmark was never *taken* in any e2e or topology workload here. W6b, the cross-loop proxy that
+  would take it, was not run in this section.
+* **No NUMA or locality measurement.** "One region per loop, first-touched by its loop" is the design;
+  nothing here measured a remote access.
+* **R5's huge pages were never obtained**, so whether a THP-backed region would move anything is
+  unknown, not answered.
+* **Where adaptive's extra W5 RSS lives** is unattributed (8.7).
+* The `slab3huge` region is reported as 33.5 MB against `slab3`'s 16.8 MB because the 2 MiB
+  over-allocation is counted; the usable body is the same 16.8 MB.
 
 ## Appendix A. The earlier builds (v2) - NOT the pinned code
 

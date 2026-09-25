@@ -1,0 +1,68 @@
+================================================================================================
+WORKLOAD w3-io_uring-adaptive-ra-slab3   (w3-io_uring-adaptive-ra-slab3.tsv)
+================================================================================================
+events: AllocateBuffer=770985 FreeBuffer=770934 ReallocateBuffer=7 IterationEnd=264
+pairs=770648  unpaired releases (alloc before window)=293  still live at window end=337  truncated stacks=770641  address reused with no release event=0
+BALANCE CHECK: allocs(770985) - pairs(770648) - live-at-end(337) - reuse(0) = 0  (must be 0)
+event-loop threads with markers: 4  iterations total=264  with reads>0=264 (100.0%)
+
+(a) lifetime in event-loop ITERATIONS of the allocating thread
+     iters : 0=96.65%  1=3.35%  2-3=0.00%  4-7=0.00%  8+=0.00%
+  read-its : 0=96.65%  1=3.35%  2-3=0.00%  4-7=0.00%  8+=0.00%   (only iterations that saw >=1 channelRead)
+  iters p50=0 p90=0 p99=1 p99.9=1 max=2
+  wall-clock lifetime us: p50=414.7 p90=747.6 p99=12409.8 p99.9=26223.0 max=171451.5
+
+(b) released on the allocating thread: 100.000%  (cross-thread: 0)
+
+(c) nesting class at release: only=0.00%  youngest=0.00%  oldest=0.39%  middle=99.61%
+     within same-iteration releases (744801, 96.65% of all): only=0.00%  youngest=0.00%  oldest=0.10%  middle=99.90%
+
+(d) size bucket (power-of-two ceiling of the requested capacity)
+     131072=0.14%  65536=0.65%  32768=0.35%  16384=0.30%  8192=0.01%  4096=0.00%  2048=0.00%  1024=0.00%  512=0.00%  256=1.47%
+     exact sizes: 9=92.61%  13=2.98%  256=1.47%  15=1.47%  65536=0.65%  32768=0.35%
+
+(e) release cause (first non-allocator frame of the FreeBuffer stack)
+     write-completion        98.548%  top site: io.netty.channel.ChannelOutboundBuffer.remove
+     other:no-site            1.447%  top site: io.netty.buffer.CompositeByteBuf$Component.free
+     decoder/cumulation       0.004%  top site: io.netty.handler.codec.ByteToMessageDecoder.channelRead
+     realloc-grow             0.001%  top site: io.netty.buffer.AdaptiveByteBuf.capacity
+
+    cause x lifetime-in-iterations (row %% of all pairs)
+    cause                         0        1      2-3      4-7       8+     share
+    write-completion        96.131%   2.418%   0.000%   0.000%   0.000%   98.548%
+    other:no-site            0.511%   0.936%   0.000%   0.000%   0.000%    1.447%
+    decoder/cumulation       0.004%   0.000%   0.000%   0.000%   0.000%    0.004%
+    realloc-grow             0.001%   0.000%   0.000%   0.000%   0.000%    0.001%
+
+    cause x size bucket (row %% of all pairs)
+    cause                         16       256     65536     32768     16384    131072
+    write-completion         97.065%    1.472%    0.003%    0.003%    0.003%    0.002%
+    other:no-site             0.000%    0.000%    0.647%    0.350%    0.302%    0.136%
+    decoder/cumulation        0.000%    0.001%    0.000%    0.000%    0.000%    0.000%
+    realloc-grow              0.000%    0.000%    0.000%    0.000%    0.000%    0.000%
+
+    max lifetime: 2 iterations (18186.2 us), size=65536, cause=other:no-site, site=io.netty.buffer.CompositeByteBuf$Component.free
+    max wall-clock: 171451.5 us (1 iterations), size=65536, cause=other:no-site
+
+(f) live buffers at end of iteration, per event-loop thread
+    thread                          iters  avgLive  maxLive   avgAlloc maxAlloc
+    multiThreadIoEventLoopGroup-3-1       71    95.68      139    2913.76     3551
+    multiThreadIoEventLoopGroup-3-2       59    99.51      143    3014.19     3562
+    multiThreadIoEventLoopGroup-3-3       59   101.10      142    2939.98     3391
+    multiThreadIoEventLoopGroup-3-4       75    96.92      137    2771.56     3402
+    live-at-marker over all markers: mean=98.098 p50=100 p90=126 p99=140 p99.9=143 max=143 ; markers with >0 live=264 (100.00%)
+    allocations per iteration (all EL threads): mean=2901.67 p50=2897 p90=3244 p99=3449 max=3562  zero-alloc iterations=0.0%
+    channelReads per iteration: mean=152.66 p50=154 p90=161 p99=165 max=169
+
+(g) the buffers that DO cross an iteration boundary (25847, 3.354% of pairs)
+     io.netty.channel.ChannelOutboundBuffer.remove               2.418% of all  iters p50=1 p99=1 max=1  bytes=3.0 MiB
+     io.netty.buffer.CompositeByteBuf$Component.free             0.936% of all  iters p50=1 p99=1 max=2  bytes=371.4 MiB
+     sizes of the crossing buffers: 131072=2.87%  65536=12.56%  32768=6.92%  16384=5.54%  8192=0.16%  4096=0.02%  2048=0.01%  1024=0.02%
+     bytes held across a boundary: 374.4 MiB of 577.9 MiB allocated in the window (64.79%)
+
+    diagnostics: pairs whose stack had no non-plumbing frame=11149 (1.447%); pairs crossing >=1 marker=25847 (3.354%)
+
+HEADLINE CLASSIFICATION
+    ii-same-iter-out-of-order                 96.646%  (744801)
+    iii-cross-iter-write-completion            2.418%  (18634)
+    vi-cross-iter-other:other:no-site          0.936%  (7213)

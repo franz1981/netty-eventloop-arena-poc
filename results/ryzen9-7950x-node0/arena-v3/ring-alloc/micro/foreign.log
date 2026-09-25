@@ -1,0 +1,1546 @@
+waiting for the bench lock (ringalloc) at 00:37:48
+got the bench lock (ringalloc) at 00:37:48
+== cell start 00:37:48 :: ./run-ringbench.sh
+== scaling_max_freq set=2300000 readback=2300000, cpus=32 governor=performance
+== loadavg 1.15 1.31 1.86 1/1266 2956039
+== runnable samples: 2 2 2 2 2 2 max=2 (limit 3)
+== ringbench: RingAllocForeignBench  alloc=adaptive,builtinadaptive,slab,slab2,slab3 inFlight=1,32 forks=3 prof=perfnorm
+# JMH version: 1.37
+# VM version: JDK 21, Java HotSpot(TM) 64-Bit Server VM, 21+35-LTS-2513
+# VM invoker: /home/forked_franz/.sdkman/candidates/java/21-oracle/bin/java
+# VM options: -Dio.netty.allocator.type=adaptive
+# Blackhole mode: compiler (auto-detected, use -Djmh.blackhole.autoDetect=false to disable)
+# Warmup: 3 iterations, 1 s each
+# Measurement: 5 iterations, 1 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Average time, time/op
+# Benchmark: poc.ring.RingAllocForeignBench.cycleForeignRelease
+# Parameters: (alloc = adaptive)
+
+# Run progress: 0.00% complete, ETA 00:04:00
+# Fork: 1 of 3
+# Preparing profilers: LinuxPerfNormProfiler 
+# Profilers consume stderr from target VM, use -v EXTRA to copy to console
+# Warmup Iteration   1: 345.021 ns/op
+# Warmup Iteration   2: 323.572 ns/op
+# Warmup Iteration   3: 322.893 ns/op
+Iteration   1: 276.471 ns/op
+Iteration   2: 269.060 ns/op
+Iteration   3: 259.327 ns/op
+Iteration   4: 261.091 ns/op
+Iteration   5: 259.075 ns/op
+# Processing profiler results: LinuxPerfNormProfiler 
+
+# Run progress: 3.33% complete, ETA 00:04:41
+# Fork: 2 of 3
+# Preparing profilers: LinuxPerfNormProfiler 
+# Profilers consume stderr from target VM, use -v EXTRA to copy to console
+# Warmup Iteration   1: 338.626 ns/op
+# Warmup Iteration   2: 325.713 ns/op
+# Warmup Iteration   3: 320.395 ns/op
+Iteration   1: 261.383 ns/op
+Iteration   2: 257.711 ns/op
+Iteration   3: 263.791 ns/op
+Iteration   4: 269.393 ns/op
+Iteration   5: 253.705 ns/op
+# Processing profiler results: LinuxPerfNormProfiler 
+
+# Run progress: 6.67% complete, ETA 00:04:31
+# Fork: 3 of 3
+# Preparing profilers: LinuxPerfNormProfiler 
+# Profilers consume stderr from target VM, use -v EXTRA to copy to console
+# Warmup Iteration   1: 332.576 ns/op
+# Warmup Iteration   2: 311.632 ns/op
+# Warmup Iteration   3: 305.793 ns/op
+Iteration   1: 265.785 ns/op
+Iteration   2: 264.056 ns/op
+Iteration   3: 273.700 ns/op
+Iteration   4: 273.004 ns/op
+Iteration   5: 260.880 ns/op
+# Processing profiler results: LinuxPerfNormProfiler 
+
+
+Result "poc.ring.RingAllocForeignBench.cycleForeignRelease":
+  264.562 ±(99.9%) 7.002 ns/op [Average]
+  (min, avg, max) = (253.705, 264.562, 276.471), stdev = 6.550
+  CI (99.9%): [257.560, 271.564] (assumes normal distribution)
+
+Secondary result "poc.ring.RingAllocForeignBench.cycleForeignRelease:CPI":
+  0.949 ±(99.9%) 0.265 clks/insn [Average]
+  (min, avg, max) = (0.934, 0.949, 0.962), stdev = 0.015
+  CI (99.9%): [0.684, 1.215] (assumes normal distribution)
+
+Secondary result "poc.ring.RingAllocForeignBench.cycleForeignRelease:IPC":
+  1.054 ±(99.9%) 0.296 insns/clk [Average]
+  (min, avg, max) = (1.039, 1.054, 1.071), stdev = 0.016
+  CI (99.9%): [0.758, 1.349] (assumes normal distribution)
+
+Secondary result "poc.ring.RingAllocForeignBench.cycleForeignRelease:L1-dcache-load-misses":
+  31.899 ±(99.9%) 6.003 #/op [Average]
+  (min, avg, max) = (31.567, 31.899, 32.225), stdev = 0.329
+  CI (99.9%): [25.896, 37.902] (assumes normal distribution)
+
+Secondary result "poc.ring.RingAllocForeignBench.cycleForeignRelease:L1-dcache-loads":
+  743.414 ±(99.9%) 515.519 #/op [Average]
+  (min, avg, max) = (715.466, 743.414, 771.971), stdev = 28.257
+  CI (99.9%): [227.896, 1258.933] (assumes normal distribution)
+
+Secondary result "poc.ring.RingAllocForeignBench.cycleForeignRelease:L1-icache-load-misses":
+  0.054 ±(99.9%) 0.107 #/op [Average]
+  (min, avg, max) = (0.048, 0.054, 0.059), stdev = 0.006
+  CI (99.9%): [≈ 0, 0.161] (assumes normal distribution)
+
+Secondary result "poc.ring.RingAllocForeignBench.cycleForeignRelease:L1-icache-loads":
+  28.726 ±(99.9%) 21.347 #/op [Average]
+  (min, avg, max) = (27.379, 28.726, 29.488), stdev = 1.170
+  CI (99.9%): [7.379, 50.072] (assumes normal distribution)
+
+Secondary result "poc.ring.RingAllocForeignBench.cycleForeignRelease:branch-misses":
+  1.417 ±(99.9%) 3.695 #/op [Average]
+  (min, avg, max) = (1.218, 1.417, 1.623), stdev = 0.203
+  CI (99.9%): [≈ 0, 5.112] (assumes normal distribution)
+
+Secondary result "poc.ring.RingAllocForeignBench.cycleForeignRelease:branches":
+  232.266 ±(99.9%) 116.895 #/op [Average]
+  (min, avg, max) = (225.204, 232.266, 237.708), stdev = 6.407
+  CI (99.9%): [115.372, 349.161] (assumes normal distribution)
+
+Secondary result "poc.ring.RingAllocForeignBench.cycleForeignRelease:cycles":
+  1214.162 ±(99.9%) 343.012 #/op [Average]
+  (min, avg, max) = (1201.839, 1214.162, 1235.803), stdev = 18.802
+  CI (99.9%): [871.150, 1557.175] (assumes normal distribution)
+
+Secondary result "poc.ring.RingAllocForeignBench.cycleForeignRelease:dTLB-load-misses":
+  0.064 ±(99.9%) 0.065 #/op [Average]
+  (min, avg, max) = (0.061, 0.064, 0.068), stdev = 0.004
+  CI (99.9%): [≈ 0, 0.129] (assumes normal distribution)
+
+Secondary result "poc.ring.RingAllocForeignBench.cycleForeignRelease:dTLB-loads":
+  2.474 ±(99.9%) 2.154 #/op [Average]
+  (min, avg, max) = (2.338, 2.474, 2.547), stdev = 0.118
+  CI (99.9%): [0.320, 4.628] (assumes normal distribution)
+
+Secondary result "poc.ring.RingAllocForeignBench.cycleForeignRelease:iTLB-load-misses":
+  0.005 ±(99.9%) 0.011 #/op [Average]
+  (min, avg, max) = (0.004, 0.005, 0.005), stdev = 0.001
+  CI (99.9%): [≈ 0, 0.016] (assumes normal distribution)
+
+Secondary result "poc.ring.RingAllocForeignBench.cycleForeignRelease:iTLB-loads":
+  0.150 ±(99.9%) 0.472 #/op [Average]
+  (min, avg, max) = (0.121, 0.150, 0.165), stdev = 0.026
+  CI (99.9%): [≈ 0, 0.623] (assumes normal distribution)
+
+Secondary result "poc.ring.RingAllocForeignBench.cycleForeignRelease:instructions":
+  1279.097 ±(99.9%) 265.412 #/op [Average]
+  (min, avg, max) = (1262.709, 1279.097, 1290.488), stdev = 14.548
+  CI (99.9%): [1013.685, 1544.509] (assumes normal distribution)
+
+Secondary result "poc.ring.RingAllocForeignBench.cycleForeignRelease:stalled-cycles-frontend":
+  82.485 ±(99.9%) 92.250 #/op [Average]
+  (min, avg, max) = (76.979, 82.485, 86.921), stdev = 5.057
+  CI (99.9%): [≈ 0, 174.735] (assumes normal distribution)
+
+
+# JMH version: 1.37
+# VM version: JDK 21, Java HotSpot(TM) 64-Bit Server VM, 21+35-LTS-2513
+# VM invoker: /home/forked_franz/.sdkman/candidates/java/21-oracle/bin/java
+# VM options: -Dio.netty.allocator.type=adaptive
+# Blackhole mode: compiler (auto-detected, use -Djmh.blackhole.autoDetect=false to disable)
+# Warmup: 3 iterations, 1 s each
+# Measurement: 5 iterations, 1 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Average time, time/op
+# Benchmark: poc.ring.RingAllocForeignBench.cycleForeignRelease
+# Parameters: (alloc = builtinadaptive)
+
+# Run progress: 10.00% complete, ETA 00:04:21
+# Fork: 1 of 3
+# Preparing profilers: LinuxPerfNormProfiler 
+# Profilers consume stderr from target VM, use -v EXTRA to copy to console
+# Warmup Iteration   1: 334.370 ns/op
+# Warmup Iteration   2: 307.312 ns/op
+# Warmup Iteration   3: 302.599 ns/op
+Iteration   1: 251.407 ns/op
+Iteration   2: 247.641 ns/op
+Iteration   3: 246.522 ns/op
+Iteration   4: 257.976 ns/op
+Iteration   5: 264.316 ns/op
+# Processing profiler results: LinuxPerfNormProfiler 
+
+# Run progress: 13.33% complete, ETA 00:04:18
+# Fork: 2 of 3
+# Preparing profilers: LinuxPerfNormProfiler 
+# Profilers consume stderr from target VM, use -v EXTRA to copy to console
+# Warmup Iteration   1: 343.333 ns/op
+# Warmup Iteration   2: 330.181 ns/op
+# Warmup Iteration   3: 326.053 ns/op
+Iteration   1: 254.523 ns/op
+Iteration   2: 249.576 ns/op
+Iteration   3: 263.802 ns/op
+Iteration   4: 268.102 ns/op
+Iteration   5: 255.765 ns/op
+# Processing profiler results: LinuxPerfNormProfiler 
+
+# Run progress: 16.67% complete, ETA 00:04:06
+# Fork: 3 of 3
+# Preparing profilers: LinuxPerfNormProfiler 
+# Profilers consume stderr from target VM, use -v EXTRA to copy to console
+# Warmup Iteration   1: 339.696 ns/op
+# Warmup Iteration   2: 318.530 ns/op
+# Warmup Iteration   3: 317.089 ns/op
+Iteration   1: 257.062 ns/op
+Iteration   2: 252.972 ns/op
+Iteration   3: 267.251 ns/op
+Iteration   4: 265.321 ns/op
+Iteration   5: 248.600 ns/op
+# Processing profiler results: LinuxPerfNormProfiler 
+
+
+Result "poc.ring.RingAllocForeignBench.cycleForeignRelease":
+  256.722 ±(99.9%) 7.956 ns/op [Average]
+  (min, avg, max) = (246.522, 256.722, 268.102), stdev = 7.442
+  CI (99.9%): [248.766, 264.679] (assumes normal distribution)
+
+Secondary result "poc.ring.RingAllocForeignBench.cycleForeignRelease:CPI":
+  0.957 ±(99.9%) 0.156 clks/insn [Average]
+  (min, avg, max) = (0.947, 0.957, 0.963), stdev = 0.009
+  CI (99.9%): [0.801, 1.113] (assumes normal distribution)
+
+Secondary result "poc.ring.RingAllocForeignBench.cycleForeignRelease:IPC":
+  1.045 ±(99.9%) 0.171 insns/clk [Average]
+  (min, avg, max) = (1.038, 1.045, 1.055), stdev = 0.009
+  CI (99.9%): [0.874, 1.216] (assumes normal distribution)
+
+Secondary result "poc.ring.RingAllocForeignBench.cycleForeignRelease:L1-dcache-load-misses":
+  30.938 ±(99.9%) 17.186 #/op [Average]
+  (min, avg, max) = (29.886, 30.938, 31.703), stdev = 0.942
+  CI (99.9%): [13.752, 48.124] (assumes normal distribution)
+
+Secondary result "poc.ring.RingAllocForeignBench.cycleForeignRelease:L1-dcache-loads":
+  709.011 ±(99.9%) 262.540 #/op [Average]
+  (min, avg, max) = (698.211, 709.011, 725.348), stdev = 14.391
+  CI (99.9%): [446.471, 971.551] (assumes normal distribution)
+
+Secondary result "poc.ring.RingAllocForeignBench.cycleForeignRelease:L1-icache-load-misses":
+  0.052 ±(99.9%) 0.104 #/op [Average]
+  (min, avg, max) = (0.046, 0.052, 0.057), stdev = 0.006
+  CI (99.9%): [≈ 0, 0.156] (assumes normal distribution)
+
+Secondary result "poc.ring.RingAllocForeignBench.cycleForeignRelease:L1-icache-loads":
+  28.717 ±(99.9%) 38.284 #/op [Average]
+  (min, avg, max) = (26.751, 28.717, 30.927), stdev = 2.098
+  CI (99.9%): [≈ 0, 67.001] (assumes normal distribution)
+
+Secondary result "poc.ring.RingAllocForeignBench.cycleForeignRelease:branch-misses":
+  1.344 ±(99.9%) 0.439 #/op [Average]
+  (min, avg, max) = (1.318, 1.344, 1.365), stdev = 0.024
+  CI (99.9%): [0.905, 1.784] (assumes normal distribution)
+
+Secondary result "poc.ring.RingAllocForeignBench.cycleForeignRelease:branches":
+  225.819 ±(99.9%) 89.164 #/op [Average]
+  (min, avg, max) = (222.168, 225.819, 231.371), stdev = 4.887
+  CI (99.9%): [136.655, 314.982] (assumes normal distribution)
+
+Secondary result "poc.ring.RingAllocForeignBench.cycleForeignRelease:cycles":
+  1177.503 ±(99.9%) 178.857 #/op [Average]
+  (min, avg, max) = (1166.446, 1177.503, 1185.133), stdev = 9.804
+  CI (99.9%): [998.646, 1356.360] (assumes normal distribution)
+
+Secondary result "poc.ring.RingAllocForeignBench.cycleForeignRelease:dTLB-load-misses":
+  0.061 ±(99.9%) 0.051 #/op [Average]
+  (min, avg, max) = (0.057, 0.061, 0.063), stdev = 0.003
+  CI (99.9%): [0.009, 0.112] (assumes normal distribution)
+
+Secondary result "poc.ring.RingAllocForeignBench.cycleForeignRelease:dTLB-loads":
+  2.340 ±(99.9%) 1.724 #/op [Average]
+  (min, avg, max) = (2.269, 2.340, 2.447), stdev = 0.095
+  CI (99.9%): [0.616, 4.064] (assumes normal distribution)
+
+Secondary result "poc.ring.RingAllocForeignBench.cycleForeignRelease:iTLB-load-misses":
+  0.004 ±(99.9%) 0.005 #/op [Average]
+  (min, avg, max) = (0.004, 0.004, 0.004), stdev = 0.001
+  CI (99.9%): [≈ 0, 0.009] (assumes normal distribution)
+
+Secondary result "poc.ring.RingAllocForeignBench.cycleForeignRelease:iTLB-loads":
+  0.076 ±(99.9%) 0.424 #/op [Average]
+  (min, avg, max) = (0.061, 0.076, 0.102), stdev = 0.023
+  CI (99.9%): [≈ 0, 0.500] (assumes normal distribution)
+
+Secondary result "poc.ring.RingAllocForeignBench.cycleForeignRelease:instructions":
+  1230.256 ±(99.9%) 329.075 #/op [Average]
+  (min, avg, max) = (1210.819, 1230.256, 1246.457), stdev = 18.038
+  CI (99.9%): [901.181, 1559.331] (assumes normal distribution)
+
+Secondary result "poc.ring.RingAllocForeignBench.cycleForeignRelease:stalled-cycles-frontend":
+  80.715 ±(99.9%) 28.599 #/op [Average]
+  (min, avg, max) = (79.714, 80.715, 82.522), stdev = 1.568
+  CI (99.9%): [52.116, 109.315] (assumes normal distribution)
+
+
+# JMH version: 1.37
+# VM version: JDK 21, Java HotSpot(TM) 64-Bit Server VM, 21+35-LTS-2513
+# VM invoker: /home/forked_franz/.sdkman/candidates/java/21-oracle/bin/java
+# VM options: -Dio.netty.allocator.type=adaptive
+# Blackhole mode: compiler (auto-detected, use -Djmh.blackhole.autoDetect=false to disable)
+# Warmup: 3 iterations, 1 s each
+# Measurement: 5 iterations, 1 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Average time, time/op
+# Benchmark: poc.ring.RingAllocForeignBench.cycleForeignRelease
+# Parameters: (alloc = slab)
+
+# Run progress: 20.00% complete, ETA 00:03:55
+# Fork: 1 of 3
+# Preparing profilers: LinuxPerfNormProfiler 
+# Profilers consume stderr from target VM, use -v EXTRA to copy to console
+# Warmup Iteration   1: 332.628 ns/op
+# Warmup Iteration   2: 350.272 ns/op
+# Warmup Iteration   3: 343.415 ns/op
+Iteration   1: 323.083 ns/op
+Iteration   2: 247.832 ns/op
+Iteration   3: 248.442 ns/op
+Iteration   4: 285.046 ns/op
+Iteration   5: 294.904 ns/op
+# Processing profiler results: LinuxPerfNormProfiler 
+
+# Run progress: 23.33% complete, ETA 00:03:48
+# Fork: 2 of 3
+# Preparing profilers: LinuxPerfNormProfiler 
+# Profilers consume stderr from target VM, use -v EXTRA to copy to console
+# Warmup Iteration   1: 309.752 ns/op
+# Warmup Iteration   2: 319.262 ns/op
+# Warmup Iteration   3: 322.571 ns/op
+Iteration   1: 330.013 ns/op
+Iteration   2: 345.710 ns/op
+Iteration   3: 345.292 ns/op
+Iteration   4: 345.421 ns/op
+Iteration   5: 333.053 ns/op
+# Processing profiler results: LinuxPerfNormProfiler 
+
+# Run progress: 26.67% complete, ETA 00:03:37
+# Fork: 3 of 3
+# Preparing profilers: LinuxPerfNormProfiler 
+# Profilers consume stderr from target VM, use -v EXTRA to copy to console
+# Warmup Iteration   1: 337.378 ns/op
+# Warmup Iteration   2: 340.659 ns/op
+# Warmup Iteration   3: 339.005 ns/op
+Iteration   1: 327.546 ns/op
+Iteration   2: 282.766 ns/op
+Iteration   3: 283.207 ns/op
+Iteration   4: 272.608 ns/op
+Iteration   5: 260.643 ns/op
+# Processing profiler results: LinuxPerfNormProfiler 
+
+
+Result "poc.ring.RingAllocForeignBench.cycleForeignRelease":
+  301.704 ±(99.9%) 38.283 ns/op [Average]
+  (min, avg, max) = (247.832, 301.704, 345.710), stdev = 35.810
+  CI (99.9%): [263.421, 339.987] (assumes normal distribution)
+
+Secondary result "poc.ring.RingAllocForeignBench.cycleForeignRelease:CPI":
+  2.366 ±(99.9%) 6.658 clks/insn [Average]
+  (min, avg, max) = (2.120, 2.366, 2.786), stdev = 0.365
+  CI (99.9%): [≈ 0, 9.025] (assumes normal distribution)
+
+Secondary result "poc.ring.RingAllocForeignBench.cycleForeignRelease:IPC":
+  0.429 ±(99.9%) 1.113 insns/clk [Average]
+  (min, avg, max) = (0.359, 0.429, 0.472), stdev = 0.061
+  CI (99.9%): [≈ 0, 1.542] (assumes normal distribution)
+
+Secondary result "poc.ring.RingAllocForeignBench.cycleForeignRelease:L1-dcache-load-misses":
+  29.113 ±(99.9%) 23.850 #/op [Average]
+  (min, avg, max) = (28.348, 29.113, 30.622), stdev = 1.307
+  CI (99.9%): [5.263, 52.963] (assumes normal distribution)
+
+Secondary result "poc.ring.RingAllocForeignBench.cycleForeignRelease:L1-dcache-loads":
+  613.427 ±(99.9%) 824.688 #/op [Average]
+  (min, avg, max) = (566.154, 613.427, 656.229), stdev = 45.204
+  CI (99.9%): [≈ 0, 1438.115] (assumes normal distribution)
+
+Secondary result "poc.ring.RingAllocForeignBench.cycleForeignRelease:L1-icache-load-misses":
+  0.024 ±(99.9%) 0.131 #/op [Average]
+  (min, avg, max) = (0.016, 0.024, 0.030), stdev = 0.007
+  CI (99.9%): [≈ 0, 0.154] (assumes normal distribution)
+
+Secondary result "poc.ring.RingAllocForeignBench.cycleForeignRelease:L1-icache-loads":
+  66.409 ±(99.9%) 360.280 #/op [Average]
+  (min, avg, max) = (46.453, 66.409, 85.942), stdev = 19.748
+  CI (99.9%): [≈ 0, 426.690] (assumes normal distribution)
+
+Secondary result "poc.ring.RingAllocForeignBench.cycleForeignRelease:branch-misses":
+  1.368 ±(99.9%) 3.529 #/op [Average]
+  (min, avg, max) = (1.147, 1.368, 1.504), stdev = 0.193
+  CI (99.9%): [≈ 0, 4.897] (assumes normal distribution)
+
+Secondary result "poc.ring.RingAllocForeignBench.cycleForeignRelease:branches":
+  101.224 ±(99.9%) 127.674 #/op [Average]
+  (min, avg, max) = (93.717, 101.224, 107.568), stdev = 6.998
+  CI (99.9%): [≈ 0, 228.898] (assumes normal distribution)
+
+Secondary result "poc.ring.RingAllocForeignBench.cycleForeignRelease:cycles":
+  1367.451 ±(99.9%) 2795.462 #/op [Average]
+  (min, avg, max) = (1261.155, 1367.451, 1543.094), stdev = 153.229
+  CI (99.9%): [≈ 0, 4162.913] (assumes normal distribution)
+
+Secondary result "poc.ring.RingAllocForeignBench.cycleForeignRelease:dTLB-load-misses":
+  0.045 ±(99.9%) 0.046 #/op [Average]
+  (min, avg, max) = (0.042, 0.045, 0.047), stdev = 0.003
+  CI (99.9%): [≈ 0, 0.091] (assumes normal distribution)
+
+Secondary result "poc.ring.RingAllocForeignBench.cycleForeignRelease:dTLB-loads":
+  0.210 ±(99.9%) 1.376 #/op [Average]
+  (min, avg, max) = (0.127, 0.210, 0.274), stdev = 0.075
+  CI (99.9%): [≈ 0, 1.586] (assumes normal distribution)
+
+Secondary result "poc.ring.RingAllocForeignBench.cycleForeignRelease:iTLB-load-misses":
+  0.004 ±(99.9%) 0.035 #/op [Average]
+  (min, avg, max) = (0.002, 0.004, 0.005), stdev = 0.002
+  CI (99.9%): [≈ 0, 0.039] (assumes normal distribution)
+
+Secondary result "poc.ring.RingAllocForeignBench.cycleForeignRelease:iTLB-loads":
+  0.026 ±(99.9%) 0.332 #/op [Average]
+  (min, avg, max) = (0.007, 0.026, 0.043), stdev = 0.018
+  CI (99.9%): [≈ 0, 0.359] (assumes normal distribution)
+
+Secondary result "poc.ring.RingAllocForeignBench.cycleForeignRelease:instructions":
+  580.225 ±(99.9%) 416.024 #/op [Average]
+  (min, avg, max) = (553.947, 580.225, 594.816), stdev = 22.804
+  CI (99.9%): [164.201, 996.249] (assumes normal distribution)
+
+Secondary result "poc.ring.RingAllocForeignBench.cycleForeignRelease:stalled-cycles-frontend":
+  154.268 ±(99.9%) 494.076 #/op [Average]
+  (min, avg, max) = (128.621, 154.268, 182.587), stdev = 27.082
+  CI (99.9%): [≈ 0, 648.344] (assumes normal distribution)
+
+
+# JMH version: 1.37
+# VM version: JDK 21, Java HotSpot(TM) 64-Bit Server VM, 21+35-LTS-2513
+# VM invoker: /home/forked_franz/.sdkman/candidates/java/21-oracle/bin/java
+# VM options: -Dio.netty.allocator.type=adaptive
+# Blackhole mode: compiler (auto-detected, use -Djmh.blackhole.autoDetect=false to disable)
+# Warmup: 3 iterations, 1 s each
+# Measurement: 5 iterations, 1 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Average time, time/op
+# Benchmark: poc.ring.RingAllocForeignBench.cycleForeignRelease
+# Parameters: (alloc = slab2)
+
+# Run progress: 30.00% complete, ETA 00:03:27
+# Fork: 1 of 3
+# Preparing profilers: LinuxPerfNormProfiler 
+# Profilers consume stderr from target VM, use -v EXTRA to copy to console
+# Warmup Iteration   1: 305.393 ns/op
+# Warmup Iteration   2: 290.903 ns/op
+# Warmup Iteration   3: 291.877 ns/op
+Iteration   1: 266.221 ns/op
+Iteration   2: 258.745 ns/op
+Iteration   3: 262.272 ns/op
+Iteration   4: 261.189 ns/op
+Iteration   5: 260.596 ns/op
+# Processing profiler results: LinuxPerfNormProfiler 
+
+# Run progress: 33.33% complete, ETA 00:03:19
+# Fork: 2 of 3
+# Preparing profilers: LinuxPerfNormProfiler 
+# Profilers consume stderr from target VM, use -v EXTRA to copy to console
+# Warmup Iteration   1: 294.561 ns/op
+# Warmup Iteration   2: 302.857 ns/op
+# Warmup Iteration   3: 292.742 ns/op
+Iteration   1: 282.740 ns/op
+Iteration   2: 276.432 ns/op
+Iteration   3: 277.341 ns/op
+Iteration   4: 255.480 ns/op
+Iteration   5: 254.976 ns/op
+# Processing profiler results: LinuxPerfNormProfiler 
+
+# Run progress: 36.67% complete, ETA 00:03:08
+# Fork: 3 of 3
+# Preparing profilers: LinuxPerfNormProfiler 
+# Profilers consume stderr from target VM, use -v EXTRA to copy to console
+# Warmup Iteration   1: 298.028 ns/op
+# Warmup Iteration   2: 289.126 ns/op
+# Warmup Iteration   3: 277.849 ns/op
+Iteration   1: 291.549 ns/op
+Iteration   2: 294.721 ns/op
+Iteration   3: 293.743 ns/op
+Iteration   4: 267.969 ns/op
+Iteration   5: 265.845 ns/op
+# Processing profiler results: LinuxPerfNormProfiler 
+
+
+Result "poc.ring.RingAllocForeignBench.cycleForeignRelease":
+  271.321 ±(99.9%) 14.834 ns/op [Average]
+  (min, avg, max) = (254.976, 271.321, 294.721), stdev = 13.875
+  CI (99.9%): [256.488, 286.155] (assumes normal distribution)
+
+Secondary result "poc.ring.RingAllocForeignBench.cycleForeignRelease:CPI":
+  1.869 ±(99.9%) 1.424 clks/insn [Average]
+  (min, avg, max) = (1.803, 1.869, 1.955), stdev = 0.078
+  CI (99.9%): [0.446, 3.293] (assumes normal distribution)
+
+Secondary result "poc.ring.RingAllocForeignBench.cycleForeignRelease:IPC":
+  0.536 ±(99.9%) 0.402 insns/clk [Average]
+  (min, avg, max) = (0.511, 0.536, 0.555), stdev = 0.022
+  CI (99.9%): [0.133, 0.938] (assumes normal distribution)
+
+Secondary result "poc.ring.RingAllocForeignBench.cycleForeignRelease:L1-dcache-load-misses":
+  29.333 ±(99.9%) 4.032 #/op [Average]
+  (min, avg, max) = (29.173, 29.333, 29.585), stdev = 0.221
+  CI (99.9%): [25.301, 33.364] (assumes normal distribution)
+
+Secondary result "poc.ring.RingAllocForeignBench.cycleForeignRelease:L1-dcache-loads":
+  610.812 ±(99.9%) 289.398 #/op [Average]
+  (min, avg, max) = (592.496, 610.812, 620.119), stdev = 15.863
+  CI (99.9%): [321.414, 900.209] (assumes normal distribution)
+
+Secondary result "poc.ring.RingAllocForeignBench.cycleForeignRelease:L1-icache-load-misses":
+  0.015 ±(99.9%) 0.106 #/op [Average]
+  (min, avg, max) = (0.012, 0.015, 0.022), stdev = 0.006
+  CI (99.9%): [≈ 0, 0.121] (assumes normal distribution)
+
+Secondary result "poc.ring.RingAllocForeignBench.cycleForeignRelease:L1-icache-loads":
+  35.183 ±(99.9%) 23.100 #/op [Average]
+  (min, avg, max) = (33.721, 35.183, 35.923), stdev = 1.266
+  CI (99.9%): [12.083, 58.283] (assumes normal distribution)
+
+Secondary result "poc.ring.RingAllocForeignBench.cycleForeignRelease:branch-misses":
+  1.248 ±(99.9%) 3.546 #/op [Average]
+  (min, avg, max) = (1.127, 1.248, 1.472), stdev = 0.194
+  CI (99.9%): [≈ 0, 4.794] (assumes normal distribution)
+
+Secondary result "poc.ring.RingAllocForeignBench.cycleForeignRelease:branches":
+  122.313 ±(99.9%) 70.656 #/op [Average]
+  (min, avg, max) = (119.094, 122.313, 126.611), stdev = 3.873
+  CI (99.9%): [51.657, 192.970] (assumes normal distribution)
+
+Secondary result "poc.ring.RingAllocForeignBench.cycleForeignRelease:cycles":
+  1235.454 ±(99.9%) 851.655 #/op [Average]
+  (min, avg, max) = (1189.557, 1235.454, 1282.884), stdev = 46.682
+  CI (99.9%): [383.798, 2087.109] (assumes normal distribution)
+
+Secondary result "poc.ring.RingAllocForeignBench.cycleForeignRelease:dTLB-load-misses":
+  0.036 ±(99.9%) 0.020 #/op [Average]
+  (min, avg, max) = (0.035, 0.036, 0.037), stdev = 0.001
+  CI (99.9%): [0.016, 0.056] (assumes normal distribution)
+
+Secondary result "poc.ring.RingAllocForeignBench.cycleForeignRelease:dTLB-loads":
+  0.166 ±(99.9%) 0.862 #/op [Average]
+  (min, avg, max) = (0.134, 0.166, 0.220), stdev = 0.047
+  CI (99.9%): [≈ 0, 1.028] (assumes normal distribution)
+
+Secondary result "poc.ring.RingAllocForeignBench.cycleForeignRelease:iTLB-load-misses":
+  0.002 ±(99.9%) 0.032 #/op [Average]
+  (min, avg, max) = (0.001, 0.002, 0.004), stdev = 0.002
+  CI (99.9%): [≈ 0, 0.034] (assumes normal distribution)
+
+Secondary result "poc.ring.RingAllocForeignBench.cycleForeignRelease:iTLB-loads":
+  0.013 ±(99.9%) 0.315 #/op [Average]
+  (min, avg, max) = (0.002, 0.013, 0.032), stdev = 0.017
+  CI (99.9%): [≈ 0, 0.328] (assumes normal distribution)
+
+Secondary result "poc.ring.RingAllocForeignBench.cycleForeignRelease:instructions":
+  660.988 ±(99.9%) 100.192 #/op [Average]
+  (min, avg, max) = (656.145, 660.988, 666.955), stdev = 5.492
+  CI (99.9%): [560.796, 761.180] (assumes normal distribution)
+
+Secondary result "poc.ring.RingAllocForeignBench.cycleForeignRelease:stalled-cycles-frontend":
+  109.808 ±(99.9%) 63.533 #/op [Average]
+  (min, avg, max) = (107.448, 109.808, 113.808), stdev = 3.482
+  CI (99.9%): [46.275, 173.341] (assumes normal distribution)
+
+
+# JMH version: 1.37
+# VM version: JDK 21, Java HotSpot(TM) 64-Bit Server VM, 21+35-LTS-2513
+# VM invoker: /home/forked_franz/.sdkman/candidates/java/21-oracle/bin/java
+# VM options: -Dio.netty.allocator.type=adaptive
+# Blackhole mode: compiler (auto-detected, use -Djmh.blackhole.autoDetect=false to disable)
+# Warmup: 3 iterations, 1 s each
+# Measurement: 5 iterations, 1 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Average time, time/op
+# Benchmark: poc.ring.RingAllocForeignBench.cycleForeignRelease
+# Parameters: (alloc = slab3)
+
+# Run progress: 40.00% complete, ETA 00:02:58
+# Fork: 1 of 3
+# Preparing profilers: LinuxPerfNormProfiler 
+# Profilers consume stderr from target VM, use -v EXTRA to copy to console
+# Warmup Iteration   1: 212.822 ns/op
+# Warmup Iteration   2: 219.007 ns/op
+# Warmup Iteration   3: 184.069 ns/op
+Iteration   1: 168.606 ns/op
+Iteration   2: 167.604 ns/op
+Iteration   3: 172.573 ns/op
+Iteration   4: 180.043 ns/op
+Iteration   5: 197.259 ns/op
+# Processing profiler results: LinuxPerfNormProfiler 
+
+# Run progress: 43.33% complete, ETA 00:02:49
+# Fork: 2 of 3
+# Preparing profilers: LinuxPerfNormProfiler 
+# Profilers consume stderr from target VM, use -v EXTRA to copy to console
+# Warmup Iteration   1: 209.338 ns/op
+# Warmup Iteration   2: 210.914 ns/op
+# Warmup Iteration   3: 190.359 ns/op
+Iteration   1: 182.500 ns/op
+Iteration   2: 174.203 ns/op
+Iteration   3: 172.622 ns/op
+Iteration   4: 171.601 ns/op
+Iteration   5: 171.638 ns/op
+# Processing profiler results: LinuxPerfNormProfiler 
+
+# Run progress: 46.67% complete, ETA 00:02:38
+# Fork: 3 of 3
+# Preparing profilers: LinuxPerfNormProfiler 
+# Profilers consume stderr from target VM, use -v EXTRA to copy to console
+# Warmup Iteration   1: 214.661 ns/op
+# Warmup Iteration   2: 237.531 ns/op
+# Warmup Iteration   3: 208.026 ns/op
+Iteration   1: 189.380 ns/op
+Iteration   2: 177.151 ns/op
+Iteration   3: 171.830 ns/op
+Iteration   4: 104.183 ns/op
+Iteration   5: 169.731 ns/op
+# Processing profiler results: LinuxPerfNormProfiler 
+
+
+Result "poc.ring.RingAllocForeignBench.cycleForeignRelease":
+  171.395 ±(99.9%) 21.717 ns/op [Average]
+  (min, avg, max) = (104.183, 171.395, 197.259), stdev = 20.314
+  CI (99.9%): [149.678, 193.112] (assumes normal distribution)
+
+Secondary result "poc.ring.RingAllocForeignBench.cycleForeignRelease:CPI":
+  1.322 ±(99.9%) 2.155 clks/insn [Average]
+  (min, avg, max) = (1.207, 1.322, 1.443), stdev = 0.118
+  CI (99.9%): [≈ 0, 3.477] (assumes normal distribution)
+
+Secondary result "poc.ring.RingAllocForeignBench.cycleForeignRelease:IPC":
+  0.761 ±(99.9%) 1.237 insns/clk [Average]
+  (min, avg, max) = (0.693, 0.761, 0.829), stdev = 0.068
+  CI (99.9%): [≈ 0, 1.997] (assumes normal distribution)
+
+Secondary result "poc.ring.RingAllocForeignBench.cycleForeignRelease:L1-dcache-load-misses":
+  23.041 ±(99.9%) 30.262 #/op [Average]
+  (min, avg, max) = (21.213, 23.041, 24.451), stdev = 1.659
+  CI (99.9%): [≈ 0, 53.303] (assumes normal distribution)
+
+Secondary result "poc.ring.RingAllocForeignBench.cycleForeignRelease:L1-dcache-loads":
+  451.241 ±(99.9%) 614.048 #/op [Average]
+  (min, avg, max) = (412.847, 451.241, 475.662), stdev = 33.658
+  CI (99.9%): [≈ 0, 1065.289] (assumes normal distribution)
+
+Secondary result "poc.ring.RingAllocForeignBench.cycleForeignRelease:L1-icache-load-misses":
+  0.014 ±(99.9%) 0.164 #/op [Average]
+  (min, avg, max) = (0.007, 0.014, 0.024), stdev = 0.009
+  CI (99.9%): [≈ 0, 0.178] (assumes normal distribution)
+
+Secondary result "poc.ring.RingAllocForeignBench.cycleForeignRelease:L1-icache-loads":
+  31.874 ±(99.9%) 48.313 #/op [Average]
+  (min, avg, max) = (29.032, 31.874, 34.272), stdev = 2.648
+  CI (99.9%): [≈ 0, 80.187] (assumes normal distribution)
+
+Secondary result "poc.ring.RingAllocForeignBench.cycleForeignRelease:branch-misses":
+  0.243 ±(99.9%) 2.758 #/op [Average]
+  (min, avg, max) = (0.106, 0.243, 0.405), stdev = 0.151
+  CI (99.9%): [≈ 0, 3.001] (assumes normal distribution)
+
+Secondary result "poc.ring.RingAllocForeignBench.cycleForeignRelease:branches":
+  106.095 ±(99.9%) 78.118 #/op [Average]
+  (min, avg, max) = (101.782, 106.095, 110.345), stdev = 4.282
+  CI (99.9%): [27.977, 184.213] (assumes normal distribution)
+
+Secondary result "poc.ring.RingAllocForeignBench.cycleForeignRelease:cycles":
+  772.452 ±(99.9%) 1062.200 #/op [Average]
+  (min, avg, max) = (706.763, 772.452, 817.690), stdev = 58.223
+  CI (99.9%): [≈ 0, 1834.652] (assumes normal distribution)
+
+Secondary result "poc.ring.RingAllocForeignBench.cycleForeignRelease:dTLB-load-misses":
+  0.036 ±(99.9%) 0.043 #/op [Average]
+  (min, avg, max) = (0.033, 0.036, 0.038), stdev = 0.002
+  CI (99.9%): [≈ 0, 0.079] (assumes normal distribution)
+
+Secondary result "poc.ring.RingAllocForeignBench.cycleForeignRelease:dTLB-loads":
+  0.228 ±(99.9%) 1.476 #/op [Average]
+  (min, avg, max) = (0.168, 0.228, 0.320), stdev = 0.081
+  CI (99.9%): [≈ 0, 1.704] (assumes normal distribution)
+
+Secondary result "poc.ring.RingAllocForeignBench.cycleForeignRelease:iTLB-load-misses":
+  0.002 ±(99.9%) 0.026 #/op [Average]
+  (min, avg, max) = (0.001, 0.002, 0.003), stdev = 0.001
+  CI (99.9%): [≈ 0, 0.027] (assumes normal distribution)
+
+Secondary result "poc.ring.RingAllocForeignBench.cycleForeignRelease:iTLB-loads":
+  0.016 ±(99.9%) 0.249 #/op [Average]
+  (min, avg, max) = (0.003, 0.016, 0.030), stdev = 0.014
+  CI (99.9%): [≈ 0, 0.265] (assumes normal distribution)
+
+Secondary result "poc.ring.RingAllocForeignBench.cycleForeignRelease:instructions":
+  585.524 ±(99.9%) 655.342 #/op [Average]
+  (min, avg, max) = (549.539, 585.524, 621.381), stdev = 35.922
+  CI (99.9%): [≈ 0, 1240.866] (assumes normal distribution)
+
+Secondary result "poc.ring.RingAllocForeignBench.cycleForeignRelease:stalled-cycles-frontend":
+  65.712 ±(99.9%) 116.426 #/op [Average]
+  (min, avg, max) = (58.373, 65.712, 69.958), stdev = 6.382
+  CI (99.9%): [≈ 0, 182.138] (assumes normal distribution)
+
+
+# JMH version: 1.37
+# VM version: JDK 21, Java HotSpot(TM) 64-Bit Server VM, 21+35-LTS-2513
+# VM invoker: /home/forked_franz/.sdkman/candidates/java/21-oracle/bin/java
+# VM options: -Dio.netty.allocator.type=adaptive
+# Blackhole mode: compiler (auto-detected, use -Djmh.blackhole.autoDetect=false to disable)
+# Warmup: 3 iterations, 1 s each
+# Measurement: 5 iterations, 1 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Average time, time/op
+# Benchmark: poc.ring.RingAllocForeignBench.handoffOnly
+# Parameters: (alloc = adaptive)
+
+# Run progress: 50.00% complete, ETA 00:02:28
+# Fork: 1 of 3
+# Preparing profilers: LinuxPerfNormProfiler 
+# Profilers consume stderr from target VM, use -v EXTRA to copy to console
+# Warmup Iteration   1: 26.330 ns/op
+# Warmup Iteration   2: 15.377 ns/op
+# Warmup Iteration   3: 18.857 ns/op
+Iteration   1: 17.471 ns/op
+Iteration   2: 18.614 ns/op
+Iteration   3: 16.474 ns/op
+Iteration   4: 31.370 ns/op
+Iteration   5: 45.663 ns/op
+# Processing profiler results: LinuxPerfNormProfiler 
+
+# Run progress: 53.33% complete, ETA 00:02:19
+# Fork: 2 of 3
+# Preparing profilers: LinuxPerfNormProfiler 
+# Profilers consume stderr from target VM, use -v EXTRA to copy to console
+# Warmup Iteration   1: 34.110 ns/op
+# Warmup Iteration   2: 17.987 ns/op
+# Warmup Iteration   3: 17.844 ns/op
+Iteration   1: 16.712 ns/op
+Iteration   2: 17.813 ns/op
+Iteration   3: 17.099 ns/op
+Iteration   4: 22.437 ns/op
+Iteration   5: 49.676 ns/op
+# Processing profiler results: LinuxPerfNormProfiler 
+
+# Run progress: 56.67% complete, ETA 00:02:09
+# Fork: 3 of 3
+# Preparing profilers: LinuxPerfNormProfiler 
+# Profilers consume stderr from target VM, use -v EXTRA to copy to console
+# Warmup Iteration   1: 25.601 ns/op
+# Warmup Iteration   2: 17.098 ns/op
+# Warmup Iteration   3: 16.842 ns/op
+Iteration   1: 15.200 ns/op
+Iteration   2: 20.718 ns/op
+Iteration   3: 18.344 ns/op
+Iteration   4: 34.055 ns/op
+Iteration   5: 64.028 ns/op
+# Processing profiler results: LinuxPerfNormProfiler 
+
+
+Result "poc.ring.RingAllocForeignBench.handoffOnly":
+  27.045 ±(99.9%) 16.003 ns/op [Average]
+  (min, avg, max) = (15.200, 27.045, 64.028), stdev = 14.969
+  CI (99.9%): [11.042, 43.048] (assumes normal distribution)
+
+Secondary result "poc.ring.RingAllocForeignBench.handoffOnly:CPI":
+  0.745 ±(99.9%) 0.747 clks/insn [Average]
+  (min, avg, max) = (0.700, 0.745, 0.778), stdev = 0.041
+  CI (99.9%): [≈ 0, 1.492] (assumes normal distribution)
+
+Secondary result "poc.ring.RingAllocForeignBench.handoffOnly:IPC":
+  1.344 ±(99.9%) 1.380 insns/clk [Average]
+  (min, avg, max) = (1.285, 1.344, 1.430), stdev = 0.076
+  CI (99.9%): [≈ 0, 2.725] (assumes normal distribution)
+
+Secondary result "poc.ring.RingAllocForeignBench.handoffOnly:L1-dcache-load-misses":
+  2.096 ±(99.9%) 1.627 #/op [Average]
+  (min, avg, max) = (2.019, 2.096, 2.194), stdev = 0.089
+  CI (99.9%): [0.469, 3.723] (assumes normal distribution)
+
+Secondary result "poc.ring.RingAllocForeignBench.handoffOnly:L1-dcache-loads":
+  87.233 ±(99.9%) 59.802 #/op [Average]
+  (min, avg, max) = (84.037, 87.233, 90.587), stdev = 3.278
+  CI (99.9%): [27.431, 147.035] (assumes normal distribution)
+
+Secondary result "poc.ring.RingAllocForeignBench.handoffOnly:L1-icache-load-misses":
+  0.001 ±(99.9%) 0.001 #/op [Average]
+  (min, avg, max) = (0.001, 0.001, 0.001), stdev = 0.001
+  CI (99.9%): [≈ 10⁻⁴, 0.002] (assumes normal distribution)
+
+Secondary result "poc.ring.RingAllocForeignBench.handoffOnly:L1-icache-loads":
+  1.631 ±(99.9%) 2.319 #/op [Average]
+  (min, avg, max) = (1.512, 1.631, 1.765), stdev = 0.127
+  CI (99.9%): [≈ 0, 3.950] (assumes normal distribution)
+
+Secondary result "poc.ring.RingAllocForeignBench.handoffOnly:branch-misses":
+  0.087 ±(99.9%) 0.460 #/op [Average]
+  (min, avg, max) = (0.058, 0.087, 0.104), stdev = 0.025
+  CI (99.9%): [≈ 0, 0.547] (assumes normal distribution)
+
+Secondary result "poc.ring.RingAllocForeignBench.handoffOnly:branches":
+  20.886 ±(99.9%) 0.549 #/op [Average]
+  (min, avg, max) = (20.853, 20.886, 20.912), stdev = 0.030
+  CI (99.9%): [20.337, 21.435] (assumes normal distribution)
+
+Secondary result "poc.ring.RingAllocForeignBench.handoffOnly:cycles":
+  101.334 ±(99.9%) 102.379 #/op [Average]
+  (min, avg, max) = (95.703, 101.334, 106.926), stdev = 5.612
+  CI (99.9%): [≈ 0, 203.713] (assumes normal distribution)
+
+Secondary result "poc.ring.RingAllocForeignBench.handoffOnly:dTLB-load-misses":
+  0.013 ±(99.9%) 0.019 #/op [Average]
+  (min, avg, max) = (0.011, 0.013, 0.013), stdev = 0.001
+  CI (99.9%): [≈ 0, 0.032] (assumes normal distribution)
+
+Secondary result "poc.ring.RingAllocForeignBench.handoffOnly:dTLB-loads":
+  0.020 ±(99.9%) 0.010 #/op [Average]
+  (min, avg, max) = (0.020, 0.020, 0.021), stdev = 0.001
+  CI (99.9%): [0.010, 0.031] (assumes normal distribution)
+
+Secondary result "poc.ring.RingAllocForeignBench.handoffOnly:iTLB-load-misses":
+  ≈ 10⁻⁴ #/op
+
+Secondary result "poc.ring.RingAllocForeignBench.handoffOnly:iTLB-loads":
+  0.001 ±(99.9%) 0.002 #/op [Average]
+  (min, avg, max) = (0.001, 0.001, 0.001), stdev = 0.001
+  CI (99.9%): [≈ 0, 0.003] (assumes normal distribution)
+
+Secondary result "poc.ring.RingAllocForeignBench.handoffOnly:instructions":
+  135.968 ±(99.9%) 36.138 #/op [Average]
+  (min, avg, max) = (133.705, 135.968, 137.386), stdev = 1.981
+  CI (99.9%): [99.830, 172.106] (assumes normal distribution)
+
+Secondary result "poc.ring.RingAllocForeignBench.handoffOnly:stalled-cycles-frontend":
+  6.718 ±(99.9%) 11.642 #/op [Average]
+  (min, avg, max) = (6.017, 6.718, 7.266), stdev = 0.638
+  CI (99.9%): [≈ 0, 18.360] (assumes normal distribution)
+
+
+# JMH version: 1.37
+# VM version: JDK 21, Java HotSpot(TM) 64-Bit Server VM, 21+35-LTS-2513
+# VM invoker: /home/forked_franz/.sdkman/candidates/java/21-oracle/bin/java
+# VM options: -Dio.netty.allocator.type=adaptive
+# Blackhole mode: compiler (auto-detected, use -Djmh.blackhole.autoDetect=false to disable)
+# Warmup: 3 iterations, 1 s each
+# Measurement: 5 iterations, 1 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Average time, time/op
+# Benchmark: poc.ring.RingAllocForeignBench.handoffOnly
+# Parameters: (alloc = builtinadaptive)
+
+# Run progress: 60.00% complete, ETA 00:01:59
+# Fork: 1 of 3
+# Preparing profilers: LinuxPerfNormProfiler 
+# Profilers consume stderr from target VM, use -v EXTRA to copy to console
+# Warmup Iteration   1: 39.119 ns/op
+# Warmup Iteration   2: 20.408 ns/op
+# Warmup Iteration   3: 16.692 ns/op
+Iteration   1: 17.548 ns/op
+Iteration   2: 15.976 ns/op
+Iteration   3: 16.984 ns/op
+Iteration   4: 20.250 ns/op
+Iteration   5: 94.252 ns/op
+# Processing profiler results: LinuxPerfNormProfiler 
+
+# Run progress: 63.33% complete, ETA 00:01:49
+# Fork: 2 of 3
+# Preparing profilers: LinuxPerfNormProfiler 
+# Profilers consume stderr from target VM, use -v EXTRA to copy to console
+# Warmup Iteration   1: 34.456 ns/op
+# Warmup Iteration   2: 19.108 ns/op
+# Warmup Iteration   3: 19.243 ns/op
+Iteration   1: 17.932 ns/op
+Iteration   2: 27.070 ns/op
+Iteration   3: 17.063 ns/op
+Iteration   4: 18.040 ns/op
+Iteration   5: 90.023 ns/op
+# Processing profiler results: LinuxPerfNormProfiler 
+
+# Run progress: 66.67% complete, ETA 00:01:39
+# Fork: 3 of 3
+# Preparing profilers: LinuxPerfNormProfiler 
+# Profilers consume stderr from target VM, use -v EXTRA to copy to console
+# Warmup Iteration   1: 31.095 ns/op
+# Warmup Iteration   2: 16.633 ns/op
+# Warmup Iteration   3: 18.063 ns/op
+Iteration   1: 16.779 ns/op
+Iteration   2: 20.199 ns/op
+Iteration   3: 19.163 ns/op
+Iteration   4: 22.331 ns/op
+Iteration   5: 87.068 ns/op
+# Processing profiler results: LinuxPerfNormProfiler 
+
+
+Result "poc.ring.RingAllocForeignBench.handoffOnly":
+  33.379 ±(99.9%) 31.745 ns/op [Average]
+  (min, avg, max) = (15.976, 33.379, 94.252), stdev = 29.694
+  CI (99.9%): [1.634, 65.124] (assumes normal distribution)
+
+Secondary result "poc.ring.RingAllocForeignBench.handoffOnly:CPI":
+  0.729 ±(99.9%) 1.236 clks/insn [Average]
+  (min, avg, max) = (0.651, 0.729, 0.773), stdev = 0.068
+  CI (99.9%): [≈ 0, 1.965] (assumes normal distribution)
+
+Secondary result "poc.ring.RingAllocForeignBench.handoffOnly:IPC":
+  1.381 ±(99.9%) 2.472 insns/clk [Average]
+  (min, avg, max) = (1.294, 1.381, 1.537), stdev = 0.136
+  CI (99.9%): [≈ 0, 3.853] (assumes normal distribution)
+
+Secondary result "poc.ring.RingAllocForeignBench.handoffOnly:L1-dcache-load-misses":
+  2.055 ±(99.9%) 1.911 #/op [Average]
+  (min, avg, max) = (1.987, 2.055, 2.176), stdev = 0.105
+  CI (99.9%): [0.144, 3.966] (assumes normal distribution)
+
+Secondary result "poc.ring.RingAllocForeignBench.handoffOnly:L1-dcache-loads":
+  85.483 ±(99.9%) 23.379 #/op [Average]
+  (min, avg, max) = (84.377, 85.483, 86.887), stdev = 1.281
+  CI (99.9%): [62.104, 108.862] (assumes normal distribution)
+
+Secondary result "poc.ring.RingAllocForeignBench.handoffOnly:L1-icache-load-misses":
+  0.001 ±(99.9%) 0.001 #/op [Average]
+  (min, avg, max) = (0.001, 0.001, 0.001), stdev = 0.001
+  CI (99.9%): [≈ 0, 0.002] (assumes normal distribution)
+
+Secondary result "poc.ring.RingAllocForeignBench.handoffOnly:L1-icache-loads":
+  1.720 ±(99.9%) 1.738 #/op [Average]
+  (min, avg, max) = (1.612, 1.720, 1.791), stdev = 0.095
+  CI (99.9%): [≈ 0, 3.458] (assumes normal distribution)
+
+Secondary result "poc.ring.RingAllocForeignBench.handoffOnly:branch-misses":
+  0.078 ±(99.9%) 0.677 #/op [Average]
+  (min, avg, max) = (0.040, 0.078, 0.114), stdev = 0.037
+  CI (99.9%): [≈ 0, 0.755] (assumes normal distribution)
+
+Secondary result "poc.ring.RingAllocForeignBench.handoffOnly:branches":
+  21.031 ±(99.9%) 2.606 #/op [Average]
+  (min, avg, max) = (20.936, 21.031, 21.196), stdev = 0.143
+  CI (99.9%): [18.425, 23.638] (assumes normal distribution)
+
+Secondary result "poc.ring.RingAllocForeignBench.handoffOnly:cycles":
+  102.043 ±(99.9%) 93.896 #/op [Average]
+  (min, avg, max) = (96.100, 102.043, 105.045), stdev = 5.147
+  CI (99.9%): [8.147, 195.940] (assumes normal distribution)
+
+Secondary result "poc.ring.RingAllocForeignBench.handoffOnly:dTLB-load-misses":
+  0.012 ±(99.9%) 0.039 #/op [Average]
+  (min, avg, max) = (0.010, 0.012, 0.014), stdev = 0.002
+  CI (99.9%): [≈ 0, 0.051] (assumes normal distribution)
+
+Secondary result "poc.ring.RingAllocForeignBench.handoffOnly:dTLB-loads":
+  0.020 ±(99.9%) 0.061 #/op [Average]
+  (min, avg, max) = (0.017, 0.020, 0.023), stdev = 0.003
+  CI (99.9%): [≈ 0, 0.082] (assumes normal distribution)
+
+Secondary result "poc.ring.RingAllocForeignBench.handoffOnly:iTLB-load-misses":
+  ≈ 10⁻⁴ #/op
+
+Secondary result "poc.ring.RingAllocForeignBench.handoffOnly:iTLB-loads":
+  0.001 ±(99.9%) 0.004 #/op [Average]
+  (min, avg, max) = (0.001, 0.001, 0.001), stdev = 0.001
+  CI (99.9%): [≈ 0, 0.005] (assumes normal distribution)
+
+Secondary result "poc.ring.RingAllocForeignBench.handoffOnly:instructions":
+  140.441 ±(99.9%) 116.162 #/op [Average]
+  (min, avg, max) = (135.800, 140.441, 147.700), stdev = 6.367
+  CI (99.9%): [24.280, 256.603] (assumes normal distribution)
+
+Secondary result "poc.ring.RingAllocForeignBench.handoffOnly:stalled-cycles-frontend":
+  6.422 ±(99.9%) 13.284 #/op [Average]
+  (min, avg, max) = (5.586, 6.422, 6.923), stdev = 0.728
+  CI (99.9%): [≈ 0, 19.706] (assumes normal distribution)
+
+
+# JMH version: 1.37
+# VM version: JDK 21, Java HotSpot(TM) 64-Bit Server VM, 21+35-LTS-2513
+# VM invoker: /home/forked_franz/.sdkman/candidates/java/21-oracle/bin/java
+# VM options: -Dio.netty.allocator.type=adaptive
+# Blackhole mode: compiler (auto-detected, use -Djmh.blackhole.autoDetect=false to disable)
+# Warmup: 3 iterations, 1 s each
+# Measurement: 5 iterations, 1 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Average time, time/op
+# Benchmark: poc.ring.RingAllocForeignBench.handoffOnly
+# Parameters: (alloc = slab)
+
+# Run progress: 70.00% complete, ETA 00:01:29
+# Fork: 1 of 3
+# Preparing profilers: LinuxPerfNormProfiler 
+# Profilers consume stderr from target VM, use -v EXTRA to copy to console
+# Warmup Iteration   1: 34.480 ns/op
+# Warmup Iteration   2: 17.224 ns/op
+# Warmup Iteration   3: 17.053 ns/op
+Iteration   1: 17.368 ns/op
+Iteration   2: 18.323 ns/op
+Iteration   3: 17.520 ns/op
+Iteration   4: 23.302 ns/op
+Iteration   5: 45.112 ns/op
+# Processing profiler results: LinuxPerfNormProfiler 
+
+# Run progress: 73.33% complete, ETA 00:01:19
+# Fork: 2 of 3
+# Preparing profilers: LinuxPerfNormProfiler 
+# Profilers consume stderr from target VM, use -v EXTRA to copy to console
+# Warmup Iteration   1: 34.396 ns/op
+# Warmup Iteration   2: 19.011 ns/op
+# Warmup Iteration   3: 17.029 ns/op
+Iteration   1: 16.745 ns/op
+Iteration   2: 16.916 ns/op
+Iteration   3: 16.369 ns/op
+Iteration   4: 28.131 ns/op
+Iteration   5: 65.955 ns/op
+# Processing profiler results: LinuxPerfNormProfiler 
+
+# Run progress: 76.67% complete, ETA 00:01:09
+# Fork: 3 of 3
+# Preparing profilers: LinuxPerfNormProfiler 
+# Profilers consume stderr from target VM, use -v EXTRA to copy to console
+# Warmup Iteration   1: 34.372 ns/op
+# Warmup Iteration   2: 16.131 ns/op
+# Warmup Iteration   3: 18.556 ns/op
+Iteration   1: 16.986 ns/op
+Iteration   2: 16.949 ns/op
+Iteration   3: 16.033 ns/op
+Iteration   4: 25.777 ns/op
+Iteration   5: 58.919 ns/op
+# Processing profiler results: LinuxPerfNormProfiler 
+
+
+Result "poc.ring.RingAllocForeignBench.handoffOnly":
+  26.694 ±(99.9%) 17.564 ns/op [Average]
+  (min, avg, max) = (16.033, 26.694, 65.955), stdev = 16.429
+  CI (99.9%): [9.130, 44.257] (assumes normal distribution)
+
+Secondary result "poc.ring.RingAllocForeignBench.handoffOnly:CPI":
+  0.721 ±(99.9%) 0.321 clks/insn [Average]
+  (min, avg, max) = (0.708, 0.721, 0.741), stdev = 0.018
+  CI (99.9%): [0.400, 1.042] (assumes normal distribution)
+
+Secondary result "poc.ring.RingAllocForeignBench.handoffOnly:IPC":
+  1.388 ±(99.9%) 0.610 insns/clk [Average]
+  (min, avg, max) = (1.350, 1.388, 1.412), stdev = 0.033
+  CI (99.9%): [0.778, 1.998] (assumes normal distribution)
+
+Secondary result "poc.ring.RingAllocForeignBench.handoffOnly:L1-dcache-load-misses":
+  1.988 ±(99.9%) 0.072 #/op [Average]
+  (min, avg, max) = (1.984, 1.988, 1.991), stdev = 0.004
+  CI (99.9%): [1.917, 2.060] (assumes normal distribution)
+
+Secondary result "poc.ring.RingAllocForeignBench.handoffOnly:L1-dcache-loads":
+  84.720 ±(99.9%) 10.397 #/op [Average]
+  (min, avg, max) = (84.340, 84.720, 85.376), stdev = 0.570
+  CI (99.9%): [74.323, 95.118] (assumes normal distribution)
+
+Secondary result "poc.ring.RingAllocForeignBench.handoffOnly:L1-icache-load-misses":
+  0.001 ±(99.9%) 0.001 #/op [Average]
+  (min, avg, max) = (0.001, 0.001, 0.001), stdev = 0.001
+  CI (99.9%): [≈ 10⁻⁴, 0.002] (assumes normal distribution)
+
+Secondary result "poc.ring.RingAllocForeignBench.handoffOnly:L1-icache-loads":
+  1.686 ±(99.9%) 1.347 #/op [Average]
+  (min, avg, max) = (1.607, 1.686, 1.754), stdev = 0.074
+  CI (99.9%): [0.339, 3.033] (assumes normal distribution)
+
+Secondary result "poc.ring.RingAllocForeignBench.handoffOnly:branch-misses":
+  0.076 ±(99.9%) 0.386 #/op [Average]
+  (min, avg, max) = (0.052, 0.076, 0.088), stdev = 0.021
+  CI (99.9%): [≈ 0, 0.462] (assumes normal distribution)
+
+Secondary result "poc.ring.RingAllocForeignBench.handoffOnly:branches":
+  20.931 ±(99.9%) 1.369 #/op [Average]
+  (min, avg, max) = (20.858, 20.931, 21.008), stdev = 0.075
+  CI (99.9%): [19.562, 22.301] (assumes normal distribution)
+
+Secondary result "poc.ring.RingAllocForeignBench.handoffOnly:cycles":
+  97.900 ±(99.9%) 20.960 #/op [Average]
+  (min, avg, max) = (96.920, 97.900, 99.164), stdev = 1.149
+  CI (99.9%): [76.940, 118.860] (assumes normal distribution)
+
+Secondary result "poc.ring.RingAllocForeignBench.handoffOnly:dTLB-load-misses":
+  0.012 ±(99.9%) 0.038 #/op [Average]
+  (min, avg, max) = (0.009, 0.012, 0.013), stdev = 0.002
+  CI (99.9%): [≈ 0, 0.050] (assumes normal distribution)
+
+Secondary result "poc.ring.RingAllocForeignBench.handoffOnly:dTLB-loads":
+  0.019 ±(99.9%) 0.040 #/op [Average]
+  (min, avg, max) = (0.017, 0.019, 0.021), stdev = 0.002
+  CI (99.9%): [≈ 0, 0.059] (assumes normal distribution)
+
+Secondary result "poc.ring.RingAllocForeignBench.handoffOnly:iTLB-load-misses":
+  ≈ 10⁻⁴ #/op
+
+Secondary result "poc.ring.RingAllocForeignBench.handoffOnly:iTLB-loads":
+  0.001 ±(99.9%) 0.001 #/op [Average]
+  (min, avg, max) = (0.001, 0.001, 0.001), stdev = 0.001
+  CI (99.9%): [≈ 0, 0.002] (assumes normal distribution)
+
+Secondary result "poc.ring.RingAllocForeignBench.handoffOnly:instructions":
+  135.875 ±(99.9%) 36.012 #/op [Average]
+  (min, avg, max) = (133.856, 135.875, 137.801), stdev = 1.974
+  CI (99.9%): [99.863, 171.887] (assumes normal distribution)
+
+Secondary result "poc.ring.RingAllocForeignBench.handoffOnly:stalled-cycles-frontend":
+  6.459 ±(99.9%) 2.821 #/op [Average]
+  (min, avg, max) = (6.364, 6.459, 6.638), stdev = 0.155
+  CI (99.9%): [3.639, 9.280] (assumes normal distribution)
+
+
+# JMH version: 1.37
+# VM version: JDK 21, Java HotSpot(TM) 64-Bit Server VM, 21+35-LTS-2513
+# VM invoker: /home/forked_franz/.sdkman/candidates/java/21-oracle/bin/java
+# VM options: -Dio.netty.allocator.type=adaptive
+# Blackhole mode: compiler (auto-detected, use -Djmh.blackhole.autoDetect=false to disable)
+# Warmup: 3 iterations, 1 s each
+# Measurement: 5 iterations, 1 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Average time, time/op
+# Benchmark: poc.ring.RingAllocForeignBench.handoffOnly
+# Parameters: (alloc = slab2)
+
+# Run progress: 80.00% complete, ETA 00:00:59
+# Fork: 1 of 3
+# Preparing profilers: LinuxPerfNormProfiler 
+# Profilers consume stderr from target VM, use -v EXTRA to copy to console
+# Warmup Iteration   1: 31.286 ns/op
+# Warmup Iteration   2: 15.615 ns/op
+# Warmup Iteration   3: 16.898 ns/op
+Iteration   1: 17.748 ns/op
+Iteration   2: 25.584 ns/op
+Iteration   3: 16.514 ns/op
+Iteration   4: 24.173 ns/op
+Iteration   5: 60.205 ns/op
+# Processing profiler results: LinuxPerfNormProfiler 
+
+# Run progress: 83.33% complete, ETA 00:00:49
+# Fork: 2 of 3
+# Preparing profilers: LinuxPerfNormProfiler 
+# Profilers consume stderr from target VM, use -v EXTRA to copy to console
+# Warmup Iteration   1: 26.632 ns/op
+# Warmup Iteration   2: 16.682 ns/op
+# Warmup Iteration   3: 15.756 ns/op
+Iteration   1: 17.523 ns/op
+Iteration   2: 18.877 ns/op
+Iteration   3: 18.030 ns/op
+Iteration   4: 31.371 ns/op
+Iteration   5: 59.013 ns/op
+# Processing profiler results: LinuxPerfNormProfiler 
+
+# Run progress: 86.67% complete, ETA 00:00:39
+# Fork: 3 of 3
+# Preparing profilers: LinuxPerfNormProfiler 
+# Profilers consume stderr from target VM, use -v EXTRA to copy to console
+# Warmup Iteration   1: 29.558 ns/op
+# Warmup Iteration   2: 18.550 ns/op
+# Warmup Iteration   3: 17.305 ns/op
+Iteration   1: 17.654 ns/op
+Iteration   2: 17.167 ns/op
+Iteration   3: 19.769 ns/op
+Iteration   4: 21.081 ns/op
+Iteration   5: 61.200 ns/op
+# Processing profiler results: LinuxPerfNormProfiler 
+
+
+Result "poc.ring.RingAllocForeignBench.handoffOnly":
+  28.394 ±(99.9%) 18.071 ns/op [Average]
+  (min, avg, max) = (16.514, 28.394, 61.200), stdev = 16.904
+  CI (99.9%): [10.323, 46.465] (assumes normal distribution)
+
+Secondary result "poc.ring.RingAllocForeignBench.handoffOnly:CPI":
+  0.766 ±(99.9%) 0.693 clks/insn [Average]
+  (min, avg, max) = (0.726, 0.766, 0.801), stdev = 0.038
+  CI (99.9%): [0.072, 1.459] (assumes normal distribution)
+
+Secondary result "poc.ring.RingAllocForeignBench.handoffOnly:IPC":
+  1.308 ±(99.9%) 1.197 insns/clk [Average]
+  (min, avg, max) = (1.248, 1.308, 1.378), stdev = 0.066
+  CI (99.9%): [0.111, 2.505] (assumes normal distribution)
+
+Secondary result "poc.ring.RingAllocForeignBench.handoffOnly:L1-dcache-load-misses":
+  2.159 ±(99.9%) 0.562 #/op [Average]
+  (min, avg, max) = (2.138, 2.159, 2.195), stdev = 0.031
+  CI (99.9%): [1.597, 2.722] (assumes normal distribution)
+
+Secondary result "poc.ring.RingAllocForeignBench.handoffOnly:L1-dcache-loads":
+  86.559 ±(99.9%) 22.352 #/op [Average]
+  (min, avg, max) = (85.297, 86.559, 87.744), stdev = 1.225
+  CI (99.9%): [64.207, 108.911] (assumes normal distribution)
+
+Secondary result "poc.ring.RingAllocForeignBench.handoffOnly:L1-icache-load-misses":
+  0.001 ±(99.9%) 0.002 #/op [Average]
+  (min, avg, max) = (0.001, 0.001, 0.001), stdev = 0.001
+  CI (99.9%): [≈ 0, 0.002] (assumes normal distribution)
+
+Secondary result "poc.ring.RingAllocForeignBench.handoffOnly:L1-icache-loads":
+  1.725 ±(99.9%) 1.953 #/op [Average]
+  (min, avg, max) = (1.626, 1.725, 1.839), stdev = 0.107
+  CI (99.9%): [≈ 0, 3.678] (assumes normal distribution)
+
+Secondary result "poc.ring.RingAllocForeignBench.handoffOnly:branch-misses":
+  0.090 ±(99.9%) 0.443 #/op [Average]
+  (min, avg, max) = (0.063, 0.090, 0.110), stdev = 0.024
+  CI (99.9%): [≈ 0, 0.533] (assumes normal distribution)
+
+Secondary result "poc.ring.RingAllocForeignBench.handoffOnly:branches":
+  20.911 ±(99.9%) 0.506 #/op [Average]
+  (min, avg, max) = (20.879, 20.911, 20.930), stdev = 0.028
+  CI (99.9%): [20.405, 21.417] (assumes normal distribution)
+
+Secondary result "poc.ring.RingAllocForeignBench.handoffOnly:cycles":
+  104.336 ±(99.9%) 73.080 #/op [Average]
+  (min, avg, max) = (99.713, 104.336, 106.783), stdev = 4.006
+  CI (99.9%): [31.256, 177.416] (assumes normal distribution)
+
+Secondary result "poc.ring.RingAllocForeignBench.handoffOnly:dTLB-load-misses":
+  0.012 ±(99.9%) 0.036 #/op [Average]
+  (min, avg, max) = (0.010, 0.012, 0.014), stdev = 0.002
+  CI (99.9%): [≈ 0, 0.048] (assumes normal distribution)
+
+Secondary result "poc.ring.RingAllocForeignBench.handoffOnly:dTLB-loads":
+  0.020 ±(99.9%) 0.045 #/op [Average]
+  (min, avg, max) = (0.018, 0.020, 0.023), stdev = 0.002
+  CI (99.9%): [≈ 0, 0.065] (assumes normal distribution)
+
+Secondary result "poc.ring.RingAllocForeignBench.handoffOnly:iTLB-load-misses":
+  ≈ 10⁻⁴ #/op
+
+Secondary result "poc.ring.RingAllocForeignBench.handoffOnly:iTLB-loads":
+  0.001 ±(99.9%) 0.002 #/op [Average]
+  (min, avg, max) = (0.001, 0.001, 0.001), stdev = 0.001
+  CI (99.9%): [≈ 0, 0.003] (assumes normal distribution)
+
+Secondary result "poc.ring.RingAllocForeignBench.handoffOnly:instructions":
+  136.283 ±(99.9%) 47.890 #/op [Average]
+  (min, avg, max) = (133.283, 136.283, 138.156), stdev = 2.625
+  CI (99.9%): [88.394, 184.173] (assumes normal distribution)
+
+Secondary result "poc.ring.RingAllocForeignBench.handoffOnly:stalled-cycles-frontend":
+  6.649 ±(99.9%) 7.961 #/op [Average]
+  (min, avg, max) = (6.229, 6.649, 7.100), stdev = 0.436
+  CI (99.9%): [≈ 0, 14.609] (assumes normal distribution)
+
+
+# JMH version: 1.37
+# VM version: JDK 21, Java HotSpot(TM) 64-Bit Server VM, 21+35-LTS-2513
+# VM invoker: /home/forked_franz/.sdkman/candidates/java/21-oracle/bin/java
+# VM options: -Dio.netty.allocator.type=adaptive
+# Blackhole mode: compiler (auto-detected, use -Djmh.blackhole.autoDetect=false to disable)
+# Warmup: 3 iterations, 1 s each
+# Measurement: 5 iterations, 1 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Average time, time/op
+# Benchmark: poc.ring.RingAllocForeignBench.handoffOnly
+# Parameters: (alloc = slab3)
+
+# Run progress: 90.00% complete, ETA 00:00:29
+# Fork: 1 of 3
+# Preparing profilers: LinuxPerfNormProfiler 
+# Profilers consume stderr from target VM, use -v EXTRA to copy to console
+# Warmup Iteration   1: 30.308 ns/op
+# Warmup Iteration   2: 16.123 ns/op
+# Warmup Iteration   3: 19.548 ns/op
+Iteration   1: 17.734 ns/op
+Iteration   2: 17.081 ns/op
+Iteration   3: 17.789 ns/op
+Iteration   4: 28.217 ns/op
+Iteration   5: 60.105 ns/op
+# Processing profiler results: LinuxPerfNormProfiler 
+
+# Run progress: 93.33% complete, ETA 00:00:19
+# Fork: 2 of 3
+# Preparing profilers: LinuxPerfNormProfiler 
+# Profilers consume stderr from target VM, use -v EXTRA to copy to console
+# Warmup Iteration   1: 24.910 ns/op
+# Warmup Iteration   2: 25.862 ns/op
+# Warmup Iteration   3: 17.384 ns/op
+Iteration   1: 17.590 ns/op
+Iteration   2: 19.021 ns/op
+Iteration   3: 16.812 ns/op
+Iteration   4: 21.059 ns/op
+Iteration   5: 38.884 ns/op
+# Processing profiler results: LinuxPerfNormProfiler 
+
+# Run progress: 96.67% complete, ETA 00:00:09
+# Fork: 3 of 3
+# Preparing profilers: LinuxPerfNormProfiler 
+# Profilers consume stderr from target VM, use -v EXTRA to copy to console
+# Warmup Iteration   1: 25.436 ns/op
+# Warmup Iteration   2: 18.287 ns/op
+# Warmup Iteration   3: 16.890 ns/op
+Iteration   1: 17.964 ns/op
+Iteration   2: 17.806 ns/op
+Iteration   3: 17.191 ns/op
+Iteration   4: 24.330 ns/op
+Iteration   5: 63.847 ns/op
+# Processing profiler results: LinuxPerfNormProfiler 
+
+
+Result "poc.ring.RingAllocForeignBench.handoffOnly":
+  26.362 ±(99.9%) 16.709 ns/op [Average]
+  (min, avg, max) = (16.812, 26.362, 63.847), stdev = 15.630
+  CI (99.9%): [9.652, 43.071] (assumes normal distribution)
+
+Secondary result "poc.ring.RingAllocForeignBench.handoffOnly:CPI":
+  0.726 ±(99.9%) 0.348 clks/insn [Average]
+  (min, avg, max) = (0.704, 0.726, 0.740), stdev = 0.019
+  CI (99.9%): [0.378, 1.074] (assumes normal distribution)
+
+Secondary result "poc.ring.RingAllocForeignBench.handoffOnly:IPC":
+  1.378 ±(99.9%) 0.670 insns/clk [Average]
+  (min, avg, max) = (1.352, 1.378, 1.420), stdev = 0.037
+  CI (99.9%): [0.708, 2.048] (assumes normal distribution)
+
+Secondary result "poc.ring.RingAllocForeignBench.handoffOnly:L1-dcache-load-misses":
+  2.081 ±(99.9%) 2.383 #/op [Average]
+  (min, avg, max) = (1.931, 2.081, 2.166), stdev = 0.131
+  CI (99.9%): [≈ 0, 4.465] (assumes normal distribution)
+
+Secondary result "poc.ring.RingAllocForeignBench.handoffOnly:L1-dcache-loads":
+  85.620 ±(99.9%) 58.511 #/op [Average]
+  (min, avg, max) = (81.923, 85.620, 87.662), stdev = 3.207
+  CI (99.9%): [27.109, 144.131] (assumes normal distribution)
+
+Secondary result "poc.ring.RingAllocForeignBench.handoffOnly:L1-icache-load-misses":
+  0.001 ±(99.9%) 0.001 #/op [Average]
+  (min, avg, max) = (0.001, 0.001, 0.001), stdev = 0.001
+  CI (99.9%): [≈ 10⁻³, 0.001] (assumes normal distribution)
+
+Secondary result "poc.ring.RingAllocForeignBench.handoffOnly:L1-icache-loads":
+  1.653 ±(99.9%) 2.330 #/op [Average]
+  (min, avg, max) = (1.510, 1.653, 1.753), stdev = 0.128
+  CI (99.9%): [≈ 0, 3.983] (assumes normal distribution)
+
+Secondary result "poc.ring.RingAllocForeignBench.handoffOnly:branch-misses":
+  0.080 ±(99.9%) 0.332 #/op [Average]
+  (min, avg, max) = (0.058, 0.080, 0.090), stdev = 0.018
+  CI (99.9%): [≈ 0, 0.412] (assumes normal distribution)
+
+Secondary result "poc.ring.RingAllocForeignBench.handoffOnly:branches":
+  20.922 ±(99.9%) 1.370 #/op [Average]
+  (min, avg, max) = (20.847, 20.922, 20.997), stdev = 0.075
+  CI (99.9%): [19.552, 22.292] (assumes normal distribution)
+
+Secondary result "poc.ring.RingAllocForeignBench.handoffOnly:cycles":
+  99.150 ±(99.9%) 76.379 #/op [Average]
+  (min, avg, max) = (94.401, 99.150, 102.309), stdev = 4.187
+  CI (99.9%): [22.770, 175.529] (assumes normal distribution)
+
+Secondary result "poc.ring.RingAllocForeignBench.handoffOnly:dTLB-load-misses":
+  0.013 ±(99.9%) 0.003 #/op [Average]
+  (min, avg, max) = (0.013, 0.013, 0.014), stdev = 0.001
+  CI (99.9%): [0.010, 0.016] (assumes normal distribution)
+
+Secondary result "poc.ring.RingAllocForeignBench.handoffOnly:dTLB-loads":
+  0.021 ±(99.9%) 0.018 #/op [Average]
+  (min, avg, max) = (0.020, 0.021, 0.022), stdev = 0.001
+  CI (99.9%): [0.003, 0.039] (assumes normal distribution)
+
+Secondary result "poc.ring.RingAllocForeignBench.handoffOnly:iTLB-load-misses":
+  ≈ 10⁻⁴ #/op
+
+Secondary result "poc.ring.RingAllocForeignBench.handoffOnly:iTLB-loads":
+  0.001 ±(99.9%) 0.003 #/op [Average]
+  (min, avg, max) = (≈ 10⁻³, 0.001, 0.001), stdev = 0.001
+  CI (99.9%): [≈ 0, 0.003] (assumes normal distribution)
+
+Secondary result "poc.ring.RingAllocForeignBench.handoffOnly:instructions":
+  136.550 ±(99.9%) 40.345 #/op [Average]
+  (min, avg, max) = (134.065, 136.550, 138.304), stdev = 2.211
+  CI (99.9%): [96.204, 176.895] (assumes normal distribution)
+
+Secondary result "poc.ring.RingAllocForeignBench.handoffOnly:stalled-cycles-frontend":
+  6.422 ±(99.9%) 4.304 #/op [Average]
+  (min, avg, max) = (6.149, 6.422, 6.569), stdev = 0.236
+  CI (99.9%): [2.117, 10.726] (assumes normal distribution)
+
+
+# Run complete. Total time: 00:04:58
+
+REMEMBER: The numbers below are just data. To gain reusable insights, you need to follow up on
+why the numbers are the way they are. Use profilers (see -prof, -lprof), design factorial
+experiments, perform baseline and negative tests that provide experimental control, make sure
+the benchmarking environment is safe on JVM/OS/HW level, ask for reviews from the domain experts.
+Do not assume the numbers tell you what you want them to tell.
+
+NOTE: Current JVM experimentally supports Compiler Blackholes, and they are in use. Please exercise
+extra caution when trusting the results, look into the generated code to check the benchmark still
+works, and factor in a small probability of new VM bugs. Additionally, while comparisons between
+different JVMs are already problematic, the performance difference caused by different Blackhole
+modes can be very significant. Please make sure you use the consistent Blackhole mode for comparisons.
+
+Benchmark                                                                  (alloc)  Mode  Cnt     Score      Error      Units
+RingAllocForeignBench.cycleForeignRelease                                 adaptive  avgt   15   264.562 ±    7.002      ns/op
+RingAllocForeignBench.cycleForeignRelease:CPI                             adaptive  avgt    3     0.949 ±    0.265  clks/insn
+RingAllocForeignBench.cycleForeignRelease:IPC                             adaptive  avgt    3     1.054 ±    0.296  insns/clk
+RingAllocForeignBench.cycleForeignRelease:L1-dcache-load-misses           adaptive  avgt    3    31.899 ±    6.003       #/op
+RingAllocForeignBench.cycleForeignRelease:L1-dcache-loads                 adaptive  avgt    3   743.414 ±  515.519       #/op
+RingAllocForeignBench.cycleForeignRelease:L1-icache-load-misses           adaptive  avgt    3     0.054 ±    0.107       #/op
+RingAllocForeignBench.cycleForeignRelease:L1-icache-loads                 adaptive  avgt    3    28.726 ±   21.347       #/op
+RingAllocForeignBench.cycleForeignRelease:branch-misses                   adaptive  avgt    3     1.417 ±    3.695       #/op
+RingAllocForeignBench.cycleForeignRelease:branches                        adaptive  avgt    3   232.266 ±  116.895       #/op
+RingAllocForeignBench.cycleForeignRelease:cycles                          adaptive  avgt    3  1214.162 ±  343.012       #/op
+RingAllocForeignBench.cycleForeignRelease:dTLB-load-misses                adaptive  avgt    3     0.064 ±    0.065       #/op
+RingAllocForeignBench.cycleForeignRelease:dTLB-loads                      adaptive  avgt    3     2.474 ±    2.154       #/op
+RingAllocForeignBench.cycleForeignRelease:iTLB-load-misses                adaptive  avgt    3     0.005 ±    0.011       #/op
+RingAllocForeignBench.cycleForeignRelease:iTLB-loads                      adaptive  avgt    3     0.150 ±    0.472       #/op
+RingAllocForeignBench.cycleForeignRelease:instructions                    adaptive  avgt    3  1279.097 ±  265.412       #/op
+RingAllocForeignBench.cycleForeignRelease:stalled-cycles-frontend         adaptive  avgt    3    82.485 ±   92.250       #/op
+RingAllocForeignBench.cycleForeignRelease                          builtinadaptive  avgt   15   256.722 ±    7.956      ns/op
+RingAllocForeignBench.cycleForeignRelease:CPI                      builtinadaptive  avgt    3     0.957 ±    0.156  clks/insn
+RingAllocForeignBench.cycleForeignRelease:IPC                      builtinadaptive  avgt    3     1.045 ±    0.171  insns/clk
+RingAllocForeignBench.cycleForeignRelease:L1-dcache-load-misses    builtinadaptive  avgt    3    30.938 ±   17.186       #/op
+RingAllocForeignBench.cycleForeignRelease:L1-dcache-loads          builtinadaptive  avgt    3   709.011 ±  262.540       #/op
+RingAllocForeignBench.cycleForeignRelease:L1-icache-load-misses    builtinadaptive  avgt    3     0.052 ±    0.104       #/op
+RingAllocForeignBench.cycleForeignRelease:L1-icache-loads          builtinadaptive  avgt    3    28.717 ±   38.284       #/op
+RingAllocForeignBench.cycleForeignRelease:branch-misses            builtinadaptive  avgt    3     1.344 ±    0.439       #/op
+RingAllocForeignBench.cycleForeignRelease:branches                 builtinadaptive  avgt    3   225.819 ±   89.164       #/op
+RingAllocForeignBench.cycleForeignRelease:cycles                   builtinadaptive  avgt    3  1177.503 ±  178.857       #/op
+RingAllocForeignBench.cycleForeignRelease:dTLB-load-misses         builtinadaptive  avgt    3     0.061 ±    0.051       #/op
+RingAllocForeignBench.cycleForeignRelease:dTLB-loads               builtinadaptive  avgt    3     2.340 ±    1.724       #/op
+RingAllocForeignBench.cycleForeignRelease:iTLB-load-misses         builtinadaptive  avgt    3     0.004 ±    0.005       #/op
+RingAllocForeignBench.cycleForeignRelease:iTLB-loads               builtinadaptive  avgt    3     0.076 ±    0.424       #/op
+RingAllocForeignBench.cycleForeignRelease:instructions             builtinadaptive  avgt    3  1230.256 ±  329.075       #/op
+RingAllocForeignBench.cycleForeignRelease:stalled-cycles-frontend  builtinadaptive  avgt    3    80.715 ±   28.599       #/op
+RingAllocForeignBench.cycleForeignRelease                                     slab  avgt   15   301.704 ±   38.283      ns/op
+RingAllocForeignBench.cycleForeignRelease:CPI                                 slab  avgt    3     2.366 ±    6.658  clks/insn
+RingAllocForeignBench.cycleForeignRelease:IPC                                 slab  avgt    3     0.429 ±    1.113  insns/clk
+RingAllocForeignBench.cycleForeignRelease:L1-dcache-load-misses               slab  avgt    3    29.113 ±   23.850       #/op
+RingAllocForeignBench.cycleForeignRelease:L1-dcache-loads                     slab  avgt    3   613.427 ±  824.688       #/op
+RingAllocForeignBench.cycleForeignRelease:L1-icache-load-misses               slab  avgt    3     0.024 ±    0.131       #/op
+RingAllocForeignBench.cycleForeignRelease:L1-icache-loads                     slab  avgt    3    66.409 ±  360.280       #/op
+RingAllocForeignBench.cycleForeignRelease:branch-misses                       slab  avgt    3     1.368 ±    3.529       #/op
+RingAllocForeignBench.cycleForeignRelease:branches                            slab  avgt    3   101.224 ±  127.674       #/op
+RingAllocForeignBench.cycleForeignRelease:cycles                              slab  avgt    3  1367.451 ± 2795.462       #/op
+RingAllocForeignBench.cycleForeignRelease:dTLB-load-misses                    slab  avgt    3     0.045 ±    0.046       #/op
+RingAllocForeignBench.cycleForeignRelease:dTLB-loads                          slab  avgt    3     0.210 ±    1.376       #/op
+RingAllocForeignBench.cycleForeignRelease:iTLB-load-misses                    slab  avgt    3     0.004 ±    0.035       #/op
+RingAllocForeignBench.cycleForeignRelease:iTLB-loads                          slab  avgt    3     0.026 ±    0.332       #/op
+RingAllocForeignBench.cycleForeignRelease:instructions                        slab  avgt    3   580.225 ±  416.024       #/op
+RingAllocForeignBench.cycleForeignRelease:stalled-cycles-frontend             slab  avgt    3   154.268 ±  494.076       #/op
+RingAllocForeignBench.cycleForeignRelease                                    slab2  avgt   15   271.321 ±   14.834      ns/op
+RingAllocForeignBench.cycleForeignRelease:CPI                                slab2  avgt    3     1.869 ±    1.424  clks/insn
+RingAllocForeignBench.cycleForeignRelease:IPC                                slab2  avgt    3     0.536 ±    0.402  insns/clk
+RingAllocForeignBench.cycleForeignRelease:L1-dcache-load-misses              slab2  avgt    3    29.333 ±    4.032       #/op
+RingAllocForeignBench.cycleForeignRelease:L1-dcache-loads                    slab2  avgt    3   610.812 ±  289.398       #/op
+RingAllocForeignBench.cycleForeignRelease:L1-icache-load-misses              slab2  avgt    3     0.015 ±    0.106       #/op
+RingAllocForeignBench.cycleForeignRelease:L1-icache-loads                    slab2  avgt    3    35.183 ±   23.100       #/op
+RingAllocForeignBench.cycleForeignRelease:branch-misses                      slab2  avgt    3     1.248 ±    3.546       #/op
+RingAllocForeignBench.cycleForeignRelease:branches                           slab2  avgt    3   122.313 ±   70.656       #/op
+RingAllocForeignBench.cycleForeignRelease:cycles                             slab2  avgt    3  1235.454 ±  851.655       #/op
+RingAllocForeignBench.cycleForeignRelease:dTLB-load-misses                   slab2  avgt    3     0.036 ±    0.020       #/op
+RingAllocForeignBench.cycleForeignRelease:dTLB-loads                         slab2  avgt    3     0.166 ±    0.862       #/op
+RingAllocForeignBench.cycleForeignRelease:iTLB-load-misses                   slab2  avgt    3     0.002 ±    0.032       #/op
+RingAllocForeignBench.cycleForeignRelease:iTLB-loads                         slab2  avgt    3     0.013 ±    0.315       #/op
+RingAllocForeignBench.cycleForeignRelease:instructions                       slab2  avgt    3   660.988 ±  100.192       #/op
+RingAllocForeignBench.cycleForeignRelease:stalled-cycles-frontend            slab2  avgt    3   109.808 ±   63.533       #/op
+RingAllocForeignBench.cycleForeignRelease                                    slab3  avgt   15   171.395 ±   21.717      ns/op
+RingAllocForeignBench.cycleForeignRelease:CPI                                slab3  avgt    3     1.322 ±    2.155  clks/insn
+RingAllocForeignBench.cycleForeignRelease:IPC                                slab3  avgt    3     0.761 ±    1.237  insns/clk
+RingAllocForeignBench.cycleForeignRelease:L1-dcache-load-misses              slab3  avgt    3    23.041 ±   30.262       #/op
+RingAllocForeignBench.cycleForeignRelease:L1-dcache-loads                    slab3  avgt    3   451.241 ±  614.048       #/op
+RingAllocForeignBench.cycleForeignRelease:L1-icache-load-misses              slab3  avgt    3     0.014 ±    0.164       #/op
+RingAllocForeignBench.cycleForeignRelease:L1-icache-loads                    slab3  avgt    3    31.874 ±   48.313       #/op
+RingAllocForeignBench.cycleForeignRelease:branch-misses                      slab3  avgt    3     0.243 ±    2.758       #/op
+RingAllocForeignBench.cycleForeignRelease:branches                           slab3  avgt    3   106.095 ±   78.118       #/op
+RingAllocForeignBench.cycleForeignRelease:cycles                             slab3  avgt    3   772.452 ± 1062.200       #/op
+RingAllocForeignBench.cycleForeignRelease:dTLB-load-misses                   slab3  avgt    3     0.036 ±    0.043       #/op
+RingAllocForeignBench.cycleForeignRelease:dTLB-loads                         slab3  avgt    3     0.228 ±    1.476       #/op
+RingAllocForeignBench.cycleForeignRelease:iTLB-load-misses                   slab3  avgt    3     0.002 ±    0.026       #/op
+RingAllocForeignBench.cycleForeignRelease:iTLB-loads                         slab3  avgt    3     0.016 ±    0.249       #/op
+RingAllocForeignBench.cycleForeignRelease:instructions                       slab3  avgt    3   585.524 ±  655.342       #/op
+RingAllocForeignBench.cycleForeignRelease:stalled-cycles-frontend            slab3  avgt    3    65.712 ±  116.426       #/op
+RingAllocForeignBench.handoffOnly                                         adaptive  avgt   15    27.045 ±   16.003      ns/op
+RingAllocForeignBench.handoffOnly:CPI                                     adaptive  avgt    3     0.745 ±    0.747  clks/insn
+RingAllocForeignBench.handoffOnly:IPC                                     adaptive  avgt    3     1.344 ±    1.380  insns/clk
+RingAllocForeignBench.handoffOnly:L1-dcache-load-misses                   adaptive  avgt    3     2.096 ±    1.627       #/op
+RingAllocForeignBench.handoffOnly:L1-dcache-loads                         adaptive  avgt    3    87.233 ±   59.802       #/op
+RingAllocForeignBench.handoffOnly:L1-icache-load-misses                   adaptive  avgt    3     0.001 ±    0.001       #/op
+RingAllocForeignBench.handoffOnly:L1-icache-loads                         adaptive  avgt    3     1.631 ±    2.319       #/op
+RingAllocForeignBench.handoffOnly:branch-misses                           adaptive  avgt    3     0.087 ±    0.460       #/op
+RingAllocForeignBench.handoffOnly:branches                                adaptive  avgt    3    20.886 ±    0.549       #/op
+RingAllocForeignBench.handoffOnly:cycles                                  adaptive  avgt    3   101.334 ±  102.379       #/op
+RingAllocForeignBench.handoffOnly:dTLB-load-misses                        adaptive  avgt    3     0.013 ±    0.019       #/op
+RingAllocForeignBench.handoffOnly:dTLB-loads                              adaptive  avgt    3     0.020 ±    0.010       #/op
+RingAllocForeignBench.handoffOnly:iTLB-load-misses                        adaptive  avgt    3    ≈ 10⁻⁴                  #/op
+RingAllocForeignBench.handoffOnly:iTLB-loads                              adaptive  avgt    3     0.001 ±    0.002       #/op
+RingAllocForeignBench.handoffOnly:instructions                            adaptive  avgt    3   135.968 ±   36.138       #/op
+RingAllocForeignBench.handoffOnly:stalled-cycles-frontend                 adaptive  avgt    3     6.718 ±   11.642       #/op
+RingAllocForeignBench.handoffOnly                                  builtinadaptive  avgt   15    33.379 ±   31.745      ns/op
+RingAllocForeignBench.handoffOnly:CPI                              builtinadaptive  avgt    3     0.729 ±    1.236  clks/insn
+RingAllocForeignBench.handoffOnly:IPC                              builtinadaptive  avgt    3     1.381 ±    2.472  insns/clk
+RingAllocForeignBench.handoffOnly:L1-dcache-load-misses            builtinadaptive  avgt    3     2.055 ±    1.911       #/op
+RingAllocForeignBench.handoffOnly:L1-dcache-loads                  builtinadaptive  avgt    3    85.483 ±   23.379       #/op
+RingAllocForeignBench.handoffOnly:L1-icache-load-misses            builtinadaptive  avgt    3     0.001 ±    0.001       #/op
+RingAllocForeignBench.handoffOnly:L1-icache-loads                  builtinadaptive  avgt    3     1.720 ±    1.738       #/op
+RingAllocForeignBench.handoffOnly:branch-misses                    builtinadaptive  avgt    3     0.078 ±    0.677       #/op
+RingAllocForeignBench.handoffOnly:branches                         builtinadaptive  avgt    3    21.031 ±    2.606       #/op
+RingAllocForeignBench.handoffOnly:cycles                           builtinadaptive  avgt    3   102.043 ±   93.896       #/op
+RingAllocForeignBench.handoffOnly:dTLB-load-misses                 builtinadaptive  avgt    3     0.012 ±    0.039       #/op
+RingAllocForeignBench.handoffOnly:dTLB-loads                       builtinadaptive  avgt    3     0.020 ±    0.061       #/op
+RingAllocForeignBench.handoffOnly:iTLB-load-misses                 builtinadaptive  avgt    3    ≈ 10⁻⁴                  #/op
+RingAllocForeignBench.handoffOnly:iTLB-loads                       builtinadaptive  avgt    3     0.001 ±    0.004       #/op
+RingAllocForeignBench.handoffOnly:instructions                     builtinadaptive  avgt    3   140.441 ±  116.162       #/op
+RingAllocForeignBench.handoffOnly:stalled-cycles-frontend          builtinadaptive  avgt    3     6.422 ±   13.284       #/op
+RingAllocForeignBench.handoffOnly                                             slab  avgt   15    26.694 ±   17.564      ns/op
+RingAllocForeignBench.handoffOnly:CPI                                         slab  avgt    3     0.721 ±    0.321  clks/insn
+RingAllocForeignBench.handoffOnly:IPC                                         slab  avgt    3     1.388 ±    0.610  insns/clk
+RingAllocForeignBench.handoffOnly:L1-dcache-load-misses                       slab  avgt    3     1.988 ±    0.072       #/op
+RingAllocForeignBench.handoffOnly:L1-dcache-loads                             slab  avgt    3    84.720 ±   10.397       #/op
+RingAllocForeignBench.handoffOnly:L1-icache-load-misses                       slab  avgt    3     0.001 ±    0.001       #/op
+RingAllocForeignBench.handoffOnly:L1-icache-loads                             slab  avgt    3     1.686 ±    1.347       #/op
+RingAllocForeignBench.handoffOnly:branch-misses                               slab  avgt    3     0.076 ±    0.386       #/op
+RingAllocForeignBench.handoffOnly:branches                                    slab  avgt    3    20.931 ±    1.369       #/op
+RingAllocForeignBench.handoffOnly:cycles                                      slab  avgt    3    97.900 ±   20.960       #/op
+RingAllocForeignBench.handoffOnly:dTLB-load-misses                            slab  avgt    3     0.012 ±    0.038       #/op
+RingAllocForeignBench.handoffOnly:dTLB-loads                                  slab  avgt    3     0.019 ±    0.040       #/op
+RingAllocForeignBench.handoffOnly:iTLB-load-misses                            slab  avgt    3    ≈ 10⁻⁴                  #/op
+RingAllocForeignBench.handoffOnly:iTLB-loads                                  slab  avgt    3     0.001 ±    0.001       #/op
+RingAllocForeignBench.handoffOnly:instructions                                slab  avgt    3   135.875 ±   36.012       #/op
+RingAllocForeignBench.handoffOnly:stalled-cycles-frontend                     slab  avgt    3     6.459 ±    2.821       #/op
+RingAllocForeignBench.handoffOnly                                            slab2  avgt   15    28.394 ±   18.071      ns/op
+RingAllocForeignBench.handoffOnly:CPI                                        slab2  avgt    3     0.766 ±    0.693  clks/insn
+RingAllocForeignBench.handoffOnly:IPC                                        slab2  avgt    3     1.308 ±    1.197  insns/clk
+RingAllocForeignBench.handoffOnly:L1-dcache-load-misses                      slab2  avgt    3     2.159 ±    0.562       #/op
+RingAllocForeignBench.handoffOnly:L1-dcache-loads                            slab2  avgt    3    86.559 ±   22.352       #/op
+RingAllocForeignBench.handoffOnly:L1-icache-load-misses                      slab2  avgt    3     0.001 ±    0.002       #/op
+RingAllocForeignBench.handoffOnly:L1-icache-loads                            slab2  avgt    3     1.725 ±    1.953       #/op
+RingAllocForeignBench.handoffOnly:branch-misses                              slab2  avgt    3     0.090 ±    0.443       #/op
+RingAllocForeignBench.handoffOnly:branches                                   slab2  avgt    3    20.911 ±    0.506       #/op
+RingAllocForeignBench.handoffOnly:cycles                                     slab2  avgt    3   104.336 ±   73.080       #/op
+RingAllocForeignBench.handoffOnly:dTLB-load-misses                           slab2  avgt    3     0.012 ±    0.036       #/op
+RingAllocForeignBench.handoffOnly:dTLB-loads                                 slab2  avgt    3     0.020 ±    0.045       #/op
+RingAllocForeignBench.handoffOnly:iTLB-load-misses                           slab2  avgt    3    ≈ 10⁻⁴                  #/op
+RingAllocForeignBench.handoffOnly:iTLB-loads                                 slab2  avgt    3     0.001 ±    0.002       #/op
+RingAllocForeignBench.handoffOnly:instructions                               slab2  avgt    3   136.283 ±   47.890       #/op
+RingAllocForeignBench.handoffOnly:stalled-cycles-frontend                    slab2  avgt    3     6.649 ±    7.961       #/op
+RingAllocForeignBench.handoffOnly                                            slab3  avgt   15    26.362 ±   16.709      ns/op
+RingAllocForeignBench.handoffOnly:CPI                                        slab3  avgt    3     0.726 ±    0.348  clks/insn
+RingAllocForeignBench.handoffOnly:IPC                                        slab3  avgt    3     1.378 ±    0.670  insns/clk
+RingAllocForeignBench.handoffOnly:L1-dcache-load-misses                      slab3  avgt    3     2.081 ±    2.383       #/op
+RingAllocForeignBench.handoffOnly:L1-dcache-loads                            slab3  avgt    3    85.620 ±   58.511       #/op
+RingAllocForeignBench.handoffOnly:L1-icache-load-misses                      slab3  avgt    3     0.001 ±    0.001       #/op
+RingAllocForeignBench.handoffOnly:L1-icache-loads                            slab3  avgt    3     1.653 ±    2.330       #/op
+RingAllocForeignBench.handoffOnly:branch-misses                              slab3  avgt    3     0.080 ±    0.332       #/op
+RingAllocForeignBench.handoffOnly:branches                                   slab3  avgt    3    20.922 ±    1.370       #/op
+RingAllocForeignBench.handoffOnly:cycles                                     slab3  avgt    3    99.150 ±   76.379       #/op
+RingAllocForeignBench.handoffOnly:dTLB-load-misses                           slab3  avgt    3     0.013 ±    0.003       #/op
+RingAllocForeignBench.handoffOnly:dTLB-loads                                 slab3  avgt    3     0.021 ±    0.018       #/op
+RingAllocForeignBench.handoffOnly:iTLB-load-misses                           slab3  avgt    3    ≈ 10⁻⁴                  #/op
+RingAllocForeignBench.handoffOnly:iTLB-loads                                 slab3  avgt    3     0.001 ±    0.003       #/op
+RingAllocForeignBench.handoffOnly:instructions                               slab3  avgt    3   136.550 ±   40.345       #/op
+RingAllocForeignBench.handoffOnly:stalled-cycles-frontend                    slab3  avgt    3     6.422 ±    4.304       #/op
+
+Benchmark result is saved to /home/forked_franz/IdeaProjects/netty-eventloop-arena-poc/results/ryzen9-7950x-node0/arena-v3/ring-alloc/micro/foreign.json
+== cell end 00:42:55 rc=0
+released (ringalloc) at 00:42:55 rc=0

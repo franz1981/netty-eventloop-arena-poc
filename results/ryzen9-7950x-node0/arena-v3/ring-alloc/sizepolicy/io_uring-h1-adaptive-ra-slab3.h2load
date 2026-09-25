@@ -1,0 +1,52 @@
+starting benchmark...
+spawning thread #0: 16 total client(s). Timing-based test with 0s of warm-up time and 20s of main duration for measurements.
+spawning thread #1: 16 total client(s). Timing-based test with 0s of warm-up time and 20s of main duration for measurements.
+spawning thread #2: 16 total client(s). Timing-based test with 0s of warm-up time and 20s of main duration for measurements.
+spawning thread #3: 16 total client(s). Timing-based test with 0s of warm-up time and 20s of main duration for measurements.
+Warm-up started for thread #Warm-up started for thread #Warm-up started for thread #1Warm-up started for thread #.02.
+3.
+.
+
+progress: 6% of clients started
+progress: 12% of clients started
+progress: 18% of clients started
+progress: 25% of clients started
+progress: 31% of clients started
+progress: 37% of clients started
+progress: 43% of clients started
+progress: 50% of clients started
+progress: 56% of clients started
+progress: 62% of clients started
+progress: 68% of clients started
+progress: 75% of clients started
+progress: 81% of clients started
+progress: 87% of clients started
+progress: 93% of clients started
+Warm-up phase is over for thread #1.
+Main benchmark duration is started for thread #1.
+Warm-up phase is over for thread #2.
+Main benchmark duration is started for thread #2.
+Warm-up phase is over for thread #3.
+Main benchmark duration is started for thread #3.
+progress: 100% of clients started
+Warm-up phase is over for thread #0.
+Main benchmark duration is started for thread #0.
+Application protocol: http/1.1
+Main benchmark duration is over for thread #1. Stopping all clients.
+Stopped all clients for thread #1
+Main benchmark duration is over for thread #2. Stopping all clients.
+Stopped all clients for thread #2
+Main benchmark duration is over for thread #3. Stopping all clients.
+Stopped all clients for thread #3
+Main benchmark duration is over for thread #0. Stopping all clients.
+Stopped all clients for thread #0
+
+finished in 20.00s, 172639.65 req/s, 745.52MB/s
+requests: 3452793 total, 3452857 started, 3452793 done, 3452793 succeeded, 0 failed, 0 errored, 0 timeout
+status codes: 3452793 2xx, 0 3xx, 0 4xx, 0 5xx
+traffic: 14.56GB (15634684877) total, 385.27MB (403980642) headers (space savings 0.00%), 14.06GB (15096193379) data
+                     min         max         mean         sd        +/- sd
+time for request:       50us    156.70ms       377us       905us    99.69%
+time for connect:        2us       203us       103us        57us    59.38%
+time to 1st byte:   155.03ms    156.77ms    156.06ms       454us    75.00%
+req/s           :    2679.15     2731.25     2697.46       11.80    60.94%

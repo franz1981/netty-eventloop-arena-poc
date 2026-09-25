@@ -1,7 +1,18 @@
 # Does io_uring need a different arena, or is adaptive the right tool there?
 
 **Recommendation: no arena on io_uring.** Use `AdaptiveByteBufAllocator` for the channels, and a
-fixed per-loop slab for the provided buffer ring. Do not ship a second, io_uring-shaped arena.
+**fixed-slot, loop-local slab** for the provided buffer ring. Do not ship a second, io_uring-shaped
+arena.
+
+Section 8 iterated on that ring allocator and settled its shape: one region per loop, a fixed slot
+size, the owning loop popping and pushing a plain `int` free stack with no atomic, foreign releases
+through an MPSC hand-back, and one bounded growth step when the free list runs dry. It is **3.7x
+cheaper per buffer** than adaptive (40.44 ns / 382 instructions against 148.19 / 1496) - and that is
+worth **0.4 pp of event-loop CPU and 0% of throughput**, because the whole ring-allocation path is
+0.4-0.6% of the loop against 40.8% for the socket-write syscall. The arena as the ring's allocator is
+the worst of the candidates measured: **5-7% slower on W1** with a fifth of the ring's buffers
+delegated away. Details in RESULTS.md section 8 and
+[`uring-registered-buffers.md`](uring-registered-buffers.md) section 7.
 
 Everything below is measured on one machine (the reference machine of
 [`../results/ryzen9-7950x-node0/RESULTS.md`](../results/ryzen9-7950x-node0/RESULTS.md)), mostly one
@@ -67,15 +78,23 @@ a cross-thread release path, which Invariant A exists to avoid. What is left aft
 
 1. **Channels: adaptive.** It is within run-to-run spread of everything else on throughput, it has no
    confinement rule to violate, and it already handles the kernel-owned lifetimes.
-2. **The provided buffer ring: a fixed per-loop slab.** One preallocated direct region per ring, one
-   ring per loop, carved into equal chunks, refilled as the consumer finishes, never trimmed. That is
-   what liburing (x2), folly and Zig all do - 4 of 4 PBUF_RING implementations surveyed - and the
-   measurement agrees: the slab has the lowest allocator CPU in three of four e2e columns (0.93% h1,
-   5.54% h2 against the control's 2.05% / 9.35%) with `slabFallbacks=0`, i.e. zero allocation after
-   start-up, measured rather than assumed (§6).
-   * **Size it, and count the fallbacks.** W5 (256 KiB aggregator) ran a 256-chunk-per-loop slab dry:
-     4,077 fallbacks out of 3,068,667 `allocate()` calls. `depth` was picked before the run, not
-     tuned.
+2. **The provided buffer ring: a fixed-slot, loop-local slab.** One preallocated direct region per
+   ring, one ring per loop, carved into equal chunks, refilled as the consumer finishes, never trimmed.
+   That is what liburing (x2), folly and Zig all do - 4 of 4 PBUF_RING implementations surveyed - and
+   the measurement agrees: 3.7x fewer instructions per buffer than adaptive and the lowest
+   ring-allocator CPU share on h1 (2.11% against 2.71%), with zero allocation after start-up measured
+   rather than assumed (§6, §8).
+   * **Make the loop's own path atomic-free.** A plain `int` free stack with an MPSC hand-back for
+     foreign releases saves 7.7 ns per buffer over a Treiber stack, and when every release comes from
+     a foreign thread the Treiber version is *slower than adaptive* (301.7 ns against 264.6) while the
+     hand-back is the fastest of all (171.4 ns) - §8.2.
+   * **Size it by `maxInFlight`, and count the fallbacks.** W5 (256 KiB aggregator) holds **377-384**
+     ring buffers in flight against 256 slots, so a fixed population must run dry: v1 took 2,145
+     fallbacks there. One bounded doubling to 512 slots takes it to **0**, reproducibly, at no cost in
+     throughput (§8.7). `depth` is not a constant to guess; `maxInFlight` is the counter that tells you.
+   * **Do not make the slot size adaptive.** It costs 4.2 ns per buffer, and the policy that makes it
+     fire costs 0.3-0.9% throughput for 3-8x the region. `AdaptiveCalculator` cannot converge when it
+     does not also control the next buffer's size (§8.6).
    * **On a workload where the buffer SIZE matters, netty's own `IoUringAdaptiveBufferRingAllocator`
      wins instead**: on W3 it reached 98.14% arena share and 19,009 req/s on a quarter of the
      `allocate()` calls, because it grows the ring buffers towards 64 KiB. A fixed-chunk slab cannot

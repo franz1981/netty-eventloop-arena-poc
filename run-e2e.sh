@@ -52,6 +52,7 @@ require_tools java javac mvn h2load
 : "${STREAMS:=32}"
 : "${LOGBACK_CONFIG:=$ROOT/e2e/logback-off.xml}"
 : "${ARENA_PROPS:=}"
+: "${SERVER_PROPS:=}"       # extra -D flags for the server (ring-allocator knobs, netty instruments)
 : "${TRANSPORT:=nio}"
 : "${TAG_SUFFIX:=}"
 : "${ASPROF:=}"          # path to async-profiler's asprof: when set, one CPU profile per allocator
@@ -83,13 +84,16 @@ CP="$EXAMPLE_JAR:$MIMALLOC_JAR:$NATIVE_CP:$(cat "$DEP_CP_FILE")"
 # The launcher and the shared transport helper are compiled once (they used to be run in java source
 # mode, which cannot see a second source file).
 E2E_CLASSES="$ROOT/target/e2e-classes"
+E2E_SRC=("$ROOT/e2e/E2EServer.java" "$ROOT/lib/java/Transports.java"
+         "$ROOT/lib/java/RegisteredSlabBufferRingAllocator.java"
+         "$ROOT/lib/java/SlabV2BufferRingAllocator.java")
 mkdir -p "$E2E_CLASSES"
-if [ "$ROOT/e2e/E2EServer.java" -nt "$E2E_CLASSES/E2EServer.class" ] \
-   || [ "$ROOT/lib/java/Transports.java" -nt "$E2E_CLASSES/Transports.class" ] \
-   || [ "$ROOT/lib/java/RegisteredSlabBufferRingAllocator.java" \
-        -nt "$E2E_CLASSES/RegisteredSlabBufferRingAllocator.class" ]; then
-    javac -nowarn -d "$E2E_CLASSES" -cp "$CP" "$ROOT/e2e/E2EServer.java" "$ROOT/lib/java/Transports.java" \
-        "$ROOT/lib/java/RegisteredSlabBufferRingAllocator.java"
+STAMP="$E2E_CLASSES/.compiled"
+NEED=0
+for f in "${E2E_SRC[@]}"; do [ "$f" -nt "$STAMP" ] && NEED=1; done
+if [ "$NEED" = 1 ]; then
+    javac -nowarn -d "$E2E_CLASSES" -cp "$CP" "${E2E_SRC[@]}"
+    touch "$STAMP"
 fi
 CP="$E2E_CLASSES:$CP"
 
@@ -128,6 +132,8 @@ for A in $ALLOCATORS; do
     [ -n "$LOGBACK_CONFIG" ] && ARENA_OPT+=("-Dlogback.configurationFile=$LOGBACK_CONFIG")
     # shellcheck disable=SC2206
     [ -n "$ARENA_PROPS" ] && ARENA_OPT+=($ARENA_PROPS)
+    # shellcheck disable=SC2206
+    [ -n "$SERVER_PROPS" ] && ARENA_OPT+=($SERVER_PROPS)
     ARENA_OPT+=("-Dtransport=$TRANSPORT")
     [ -n "${BUFFER_RING:-}" ] && ARENA_OPT+=("-DbufferRing=$BUFFER_RING")
     [ -n "${BUFFER_RING_ALLOC:-}" ] && ARENA_OPT+=("-DbufferRingAlloc=$BUFFER_RING_ALLOC")

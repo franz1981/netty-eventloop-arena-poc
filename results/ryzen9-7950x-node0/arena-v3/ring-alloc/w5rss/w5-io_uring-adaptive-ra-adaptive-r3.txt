@@ -1,0 +1,76 @@
+================================================================================================
+WORKLOAD w5-io_uring-adaptive-ra-adaptive-r3   (w5-io_uring-adaptive-ra-adaptive-r3.tsv)
+================================================================================================
+events: AllocateBuffer=792557 FreeBuffer=792564 ReallocateBuffer=0 IterationEnd=4677763
+pairs=792221  unpaired releases (alloc before window)=343  still live at window end=336  truncated stacks=792221  address reused with no release event=0
+BALANCE CHECK: allocs(792557) - pairs(792221) - live-at-end(336) - reuse(0) = 0  (must be 0)
+event-loop threads with markers: 4  iterations total=4677763  with reads>0=76821 (1.6%)
+
+(a) lifetime in event-loop ITERATIONS of the allocating thread
+     iters : 0=43.23%  1=0.43%  2-3=0.16%  4-7=0.40%  8+=55.78%
+  read-its : 0=43.23%  1=2.45%  2-3=4.37%  4-7=8.25%  8+=41.69%   (only iterations that saw >=1 channelRead)
+  iters p50=58 p90=1362 p99=2821 p99.9=4412 max=5490
+  wall-clock lifetime us: p50=750.1 p90=1177.5 p99=1583.7 p99.9=4411.6 max=7794.6
+
+(b) released on the allocating thread: 100.000%  (cross-thread: 0)
+
+(c) nesting class at release: only=0.00%  youngest=0.00%  oldest=75.60%  middle=24.40%
+     within same-iteration releases (342459, 43.23% of all): only=0.00%  youngest=0.00%  oldest=66.77%  middle=33.23%
+
+(d) size bucket (power-of-two ceiling of the requested capacity)
+     16384=0.03%  8192=94.09%  64=2.94%  2=2.94%
+     exact sizes: 8192=94.09%  2=2.94%  52=2.94%  16384=0.03%
+
+(e) release cause (first non-allocator frame of the FreeBuffer stack)
+     aggregator              94.062%  top site: io.netty.handler.codec.http.HttpObjectAggregator$AggregatedFullHttpMessage.release
+     codec-encoder            2.940%  top site: io.netty.handler.codec.http.HttpObjectEncoder.encodeFullHttpMessage
+     write-completion         2.940%  top site: io.netty.channel.ChannelOutboundBuffer.remove
+     decoder/cumulation       0.053%  top site: io.netty.handler.codec.ByteToMessageDecoder$1.cumulate
+     other:no-site            0.005%  top site: io.netty.buffer.CompositeByteBuf$Component.free
+
+    cause x lifetime-in-iterations (row %% of all pairs)
+    cause                         0        1      2-3      4-7       8+     share
+    aggregator              37.328%   0.429%   0.161%   0.398%  55.746%   94.062%
+    codec-encoder            2.940%   0.000%   0.000%   0.000%   0.000%    2.940%
+    write-completion         2.935%   0.005%   0.000%   0.000%   0.000%    2.940%
+    decoder/cumulation       0.022%   0.000%   0.000%   0.000%   0.030%    0.053%
+    other:no-site            0.003%   0.000%   0.000%   0.000%   0.003%    0.005%
+
+    cause x size bucket (row %% of all pairs)
+    cause                       8192         2        64     16384
+    aggregator               94.031%    0.000%    0.000%    0.030%
+    codec-encoder             0.000%    2.940%    0.000%    0.000%
+    write-completion          0.000%    0.000%    2.940%    0.000%
+    decoder/cumulation        0.053%    0.000%    0.000%    0.000%
+    other:no-site             0.005%    0.000%    0.000%    0.000%
+
+    max lifetime: 5490 iterations (2135.3 us), size=8192, cause=aggregator, site=io.netty.handler.codec.http.HttpObjectAggregator$AggregatedFullHttpMessage.release
+    max wall-clock: 7794.6 us (0 iterations), size=8192, cause=aggregator
+
+(f) live buffers at end of iteration, per event-loop thread
+    thread                          iters  avgLive  maxLive   avgAlloc maxAlloc
+    multiThreadIoEventLoopGroup-3-1  1228478    72.40      124       0.16     4354
+    multiThreadIoEventLoopGroup-3-2  1148746    72.94      124       0.17     4354
+    multiThreadIoEventLoopGroup-3-3  1166486    71.64      124       0.17     4354
+    multiThreadIoEventLoopGroup-3-4  1134053    71.35      125       0.17     4355
+    live-at-marker over all markers: mean=72.088 p50=64 p90=90 p99=106 p99.9=120 max=125 ; markers with >0 live=4677763 (100.00%)
+    allocations per iteration (all EL threads): mean=0.17 p50=0 p90=0 p99=2 max=4355  zero-alloc iterations=98.4%
+    channelReads per iteration: mean=0.19 p50=0 p90=0 p99=3 max=4225
+
+(g) the buffers that DO cross an iteration boundary (449762, 56.772% of pairs)
+     io.netty.handler.codec.http.HttpObjectAggregator$Aggregate 56.734% of all  iters p50=535 p99=3136 max=5490  bytes=3512.1 MiB
+     io.netty.handler.codec.ByteToMessageDecoder$1.cumulate      0.019% of all  iters p50=587 p99=2817 max=4879  bytes=1.2 MiB
+     io.netty.handler.codec.ByteToMessageDecoder.expandCumulati  0.011% of all  iters p50=460 p99=2631 max=2631  bytes=0.7 MiB
+     io.netty.channel.ChannelOutboundBuffer.remove               0.005% of all  iters p50=1 p99=1 max=1  bytes=0.0 MiB
+     io.netty.buffer.CompositeByteBuf$Component.free             0.003% of all  iters p50=776 p99=2771 max=2771  bytes=0.2 MiB
+     io.netty.handler.codec.ByteToMessageDecoder.channelRead     0.000% of all  iters p50=543 p99=785 max=785  bytes=0.0 MiB
+     sizes of the crossing buffers: 16384=0.02%  8192=99.97%  64=0.01%
+     bytes held across a boundary: 3514.2 MiB of 5828.3 MiB allocated in the window (60.29%)
+
+    diagnostics: pairs whose stack had no non-plumbing frame=42 (0.005%); pairs crossing >=1 marker=449762 (56.772%)
+
+HEADLINE CLASSIFICATION
+    iv-cross-iter-cumulation/aggregation      56.764%  (449698)
+    ii-same-iter-out-of-order                 43.228%  (342459)
+    iii-cross-iter-write-completion            0.005%  (43)
+    vi-cross-iter-other:other:no-site          0.003%  (21)

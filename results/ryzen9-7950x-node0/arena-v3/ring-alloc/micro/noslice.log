@@ -1,0 +1,626 @@
+waiting for the bench lock (ringalloc) at 00:35:41
+got the bench lock (ringalloc) at 00:35:41
+== cell start 00:35:41 :: ./run-ringbench.sh
+== scaling_max_freq set=2300000 readback=2300000, cpus=32 governor=performance
+== loadavg 1.17 1.41 1.97 1/1262 2951814
+== runnable samples: 2 2 3 2 2 2 max=3 (limit 3)
+== ringbench: RingAllocBench.ownerCycleNoSlice  alloc=adaptive,builtinadaptive,slab,slab3 inFlight=32 forks=3 prof=perfnorm
+# JMH version: 1.37
+# VM version: JDK 21, Java HotSpot(TM) 64-Bit Server VM, 21+35-LTS-2513
+# VM invoker: /home/forked_franz/.sdkman/candidates/java/21-oracle/bin/java
+# VM options: -Dio.netty.allocator.type=adaptive
+# Blackhole mode: compiler (auto-detected, use -Djmh.blackhole.autoDetect=false to disable)
+# Warmup: 3 iterations, 1 s each
+# Measurement: 5 iterations, 1 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Average time, time/op
+# Benchmark: poc.ring.RingAllocBench.ownerCycleNoSlice
+# Parameters: (alloc = adaptive, inFlight = 32)
+
+# Run progress: 0.00% complete, ETA 00:01:36
+# Fork: 1 of 3
+# Preparing profilers: LinuxPerfNormProfiler 
+# Profilers consume stderr from target VM, use -v EXTRA to copy to console
+# Warmup Iteration   1: 147.719 ns/op
+# Warmup Iteration   2: 129.632 ns/op
+# Warmup Iteration   3: 136.755 ns/op
+Iteration   1: 137.808 ns/op
+Iteration   2: 137.326 ns/op
+Iteration   3: 137.462 ns/op
+Iteration   4: 137.054 ns/op
+Iteration   5: 137.095 ns/op
+# Processing profiler results: LinuxPerfNormProfiler 
+
+# Run progress: 8.33% complete, ETA 00:01:47
+# Fork: 2 of 3
+# Preparing profilers: LinuxPerfNormProfiler 
+# Profilers consume stderr from target VM, use -v EXTRA to copy to console
+# Warmup Iteration   1: 142.711 ns/op
+# Warmup Iteration   2: 130.738 ns/op
+# Warmup Iteration   3: 135.853 ns/op
+Iteration   1: 137.251 ns/op
+Iteration   2: 137.329 ns/op
+Iteration   3: 136.996 ns/op
+Iteration   4: 136.677 ns/op
+Iteration   5: 136.695 ns/op
+# Processing profiler results: LinuxPerfNormProfiler 
+
+# Run progress: 16.67% complete, ETA 00:01:37
+# Fork: 3 of 3
+# Preparing profilers: LinuxPerfNormProfiler 
+# Profilers consume stderr from target VM, use -v EXTRA to copy to console
+# Warmup Iteration   1: 142.635 ns/op
+# Warmup Iteration   2: 130.791 ns/op
+# Warmup Iteration   3: 136.856 ns/op
+Iteration   1: 137.662 ns/op
+Iteration   2: 137.306 ns/op
+Iteration   3: 137.253 ns/op
+Iteration   4: 137.088 ns/op
+Iteration   5: 137.086 ns/op
+# Processing profiler results: LinuxPerfNormProfiler 
+
+
+Result "poc.ring.RingAllocBench.ownerCycleNoSlice":
+  137.206 ±(99.9%) 0.329 ns/op [Average]
+  (min, avg, max) = (136.677, 137.206, 137.808), stdev = 0.308
+  CI (99.9%): [136.877, 137.535] (assumes normal distribution)
+
+Secondary result "poc.ring.RingAllocBench.ownerCycleNoSlice:CPI":
+  0.239 ±(99.9%) 0.004 clks/insn [Average]
+  (min, avg, max) = (0.239, 0.239, 0.239), stdev = 0.001
+  CI (99.9%): [0.235, 0.242] (assumes normal distribution)
+
+Secondary result "poc.ring.RingAllocBench.ownerCycleNoSlice:IPC":
+  4.188 ±(99.9%) 0.062 insns/clk [Average]
+  (min, avg, max) = (4.185, 4.188, 4.191), stdev = 0.003
+  CI (99.9%): [4.126, 4.250] (assumes normal distribution)
+
+Secondary result "poc.ring.RingAllocBench.ownerCycleNoSlice:L1-dcache-load-misses":
+  6.215 ±(99.9%) 2.560 #/op [Average]
+  (min, avg, max) = (6.069, 6.215, 6.349), stdev = 0.140
+  CI (99.9%): [3.656, 8.775] (assumes normal distribution)
+
+Secondary result "poc.ring.RingAllocBench.ownerCycleNoSlice:L1-dcache-loads":
+  441.062 ±(99.9%) 11.633 #/op [Average]
+  (min, avg, max) = (440.542, 441.062, 441.774), stdev = 0.638
+  CI (99.9%): [429.430, 452.695] (assumes normal distribution)
+
+Secondary result "poc.ring.RingAllocBench.ownerCycleNoSlice:L1-icache-load-misses":
+  0.115 ±(99.9%) 0.415 #/op [Average]
+  (min, avg, max) = (0.094, 0.115, 0.139), stdev = 0.023
+  CI (99.9%): [≈ 0, 0.530] (assumes normal distribution)
+
+Secondary result "poc.ring.RingAllocBench.ownerCycleNoSlice:L1-icache-loads":
+  13.299 ±(99.9%) 7.590 #/op [Average]
+  (min, avg, max) = (12.914, 13.299, 13.740), stdev = 0.416
+  CI (99.9%): [5.709, 20.888] (assumes normal distribution)
+
+Secondary result "poc.ring.RingAllocBench.ownerCycleNoSlice:branch-misses":
+  0.486 ±(99.9%) 0.597 #/op [Average]
+  (min, avg, max) = (0.465, 0.486, 0.523), stdev = 0.033
+  CI (99.9%): [≈ 0, 1.083] (assumes normal distribution)
+
+Secondary result "poc.ring.RingAllocBench.ownerCycleNoSlice:branches":
+  264.720 ±(99.9%) 1.438 #/op [Average]
+  (min, avg, max) = (264.643, 264.720, 264.800), stdev = 0.079
+  CI (99.9%): [263.282, 266.158] (assumes normal distribution)
+
+Secondary result "poc.ring.RingAllocBench.ownerCycleNoSlice:cycles":
+  310.860 ±(99.9%) 8.274 #/op [Average]
+  (min, avg, max) = (310.346, 310.860, 311.202), stdev = 0.454
+  CI (99.9%): [302.586, 319.134] (assumes normal distribution)
+
+Secondary result "poc.ring.RingAllocBench.ownerCycleNoSlice:dTLB-load-misses":
+  0.022 ±(99.9%) 0.028 #/op [Average]
+  (min, avg, max) = (0.020, 0.022, 0.023), stdev = 0.002
+  CI (99.9%): [≈ 0, 0.050] (assumes normal distribution)
+
+Secondary result "poc.ring.RingAllocBench.ownerCycleNoSlice:dTLB-loads":
+  2.310 ±(99.9%) 0.491 #/op [Average]
+  (min, avg, max) = (2.289, 2.310, 2.340), stdev = 0.027
+  CI (99.9%): [1.819, 2.801] (assumes normal distribution)
+
+Secondary result "poc.ring.RingAllocBench.ownerCycleNoSlice:iTLB-load-misses":
+  0.019 ±(99.9%) 0.021 #/op [Average]
+  (min, avg, max) = (0.018, 0.019, 0.021), stdev = 0.001
+  CI (99.9%): [≈ 0, 0.041] (assumes normal distribution)
+
+Secondary result "poc.ring.RingAllocBench.ownerCycleNoSlice:iTLB-loads":
+  0.166 ±(99.9%) 0.577 #/op [Average]
+  (min, avg, max) = (0.129, 0.166, 0.185), stdev = 0.032
+  CI (99.9%): [≈ 0, 0.743] (assumes normal distribution)
+
+Secondary result "poc.ring.RingAllocBench.ownerCycleNoSlice:instructions":
+  1301.870 ±(99.9%) 17.865 #/op [Average]
+  (min, avg, max) = (1300.762, 1301.870, 1302.619), stdev = 0.979
+  CI (99.9%): [1284.005, 1319.735] (assumes normal distribution)
+
+Secondary result "poc.ring.RingAllocBench.ownerCycleNoSlice:stalled-cycles-frontend":
+  19.120 ±(99.9%) 9.995 #/op [Average]
+  (min, avg, max) = (18.699, 19.120, 19.739), stdev = 0.548
+  CI (99.9%): [9.125, 29.115] (assumes normal distribution)
+
+
+# JMH version: 1.37
+# VM version: JDK 21, Java HotSpot(TM) 64-Bit Server VM, 21+35-LTS-2513
+# VM invoker: /home/forked_franz/.sdkman/candidates/java/21-oracle/bin/java
+# VM options: -Dio.netty.allocator.type=adaptive
+# Blackhole mode: compiler (auto-detected, use -Djmh.blackhole.autoDetect=false to disable)
+# Warmup: 3 iterations, 1 s each
+# Measurement: 5 iterations, 1 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Average time, time/op
+# Benchmark: poc.ring.RingAllocBench.ownerCycleNoSlice
+# Parameters: (alloc = builtinadaptive, inFlight = 32)
+
+# Run progress: 25.00% complete, ETA 00:01:27
+# Fork: 1 of 3
+# Preparing profilers: LinuxPerfNormProfiler 
+# Profilers consume stderr from target VM, use -v EXTRA to copy to console
+# Warmup Iteration   1: 155.489 ns/op
+# Warmup Iteration   2: 132.675 ns/op
+# Warmup Iteration   3: 137.152 ns/op
+Iteration   1: 139.522 ns/op
+Iteration   2: 138.489 ns/op
+Iteration   3: 138.552 ns/op
+Iteration   4: 138.433 ns/op
+Iteration   5: 138.300 ns/op
+# Processing profiler results: LinuxPerfNormProfiler 
+
+# Run progress: 33.33% complete, ETA 00:01:19
+# Fork: 2 of 3
+# Preparing profilers: LinuxPerfNormProfiler 
+# Profilers consume stderr from target VM, use -v EXTRA to copy to console
+# Warmup Iteration   1: 143.788 ns/op
+# Warmup Iteration   2: 131.414 ns/op
+# Warmup Iteration   3: 138.354 ns/op
+Iteration   1: 139.481 ns/op
+Iteration   2: 139.478 ns/op
+Iteration   3: 138.596 ns/op
+Iteration   4: 138.525 ns/op
+Iteration   5: 138.424 ns/op
+# Processing profiler results: LinuxPerfNormProfiler 
+
+# Run progress: 41.67% complete, ETA 00:01:09
+# Fork: 3 of 3
+# Preparing profilers: LinuxPerfNormProfiler 
+# Profilers consume stderr from target VM, use -v EXTRA to copy to console
+# Warmup Iteration   1: 146.504 ns/op
+# Warmup Iteration   2: 130.008 ns/op
+# Warmup Iteration   3: 136.961 ns/op
+Iteration   1: 138.652 ns/op
+Iteration   2: 137.695 ns/op
+Iteration   3: 137.202 ns/op
+Iteration   4: 137.245 ns/op
+Iteration   5: 137.256 ns/op
+# Processing profiler results: LinuxPerfNormProfiler 
+
+
+Result "poc.ring.RingAllocBench.ownerCycleNoSlice":
+  138.390 ±(99.9%) 0.824 ns/op [Average]
+  (min, avg, max) = (137.202, 138.390, 139.522), stdev = 0.771
+  CI (99.9%): [137.566, 139.214] (assumes normal distribution)
+
+Secondary result "poc.ring.RingAllocBench.ownerCycleNoSlice:CPI":
+  0.240 ±(99.9%) 0.025 clks/insn [Average]
+  (min, avg, max) = (0.239, 0.240, 0.242), stdev = 0.001
+  CI (99.9%): [0.215, 0.265] (assumes normal distribution)
+
+Secondary result "poc.ring.RingAllocBench.ownerCycleNoSlice:IPC":
+  4.167 ±(99.9%) 0.429 insns/clk [Average]
+  (min, avg, max) = (4.141, 4.167, 4.186), stdev = 0.024
+  CI (99.9%): [3.738, 4.596] (assumes normal distribution)
+
+Secondary result "poc.ring.RingAllocBench.ownerCycleNoSlice:L1-dcache-load-misses":
+  6.217 ±(99.9%) 6.089 #/op [Average]
+  (min, avg, max) = (5.980, 6.217, 6.599), stdev = 0.334
+  CI (99.9%): [0.128, 12.306] (assumes normal distribution)
+
+Secondary result "poc.ring.RingAllocBench.ownerCycleNoSlice:L1-dcache-loads":
+  443.429 ±(99.9%) 39.865 #/op [Average]
+  (min, avg, max) = (441.817, 443.429, 445.916), stdev = 2.185
+  CI (99.9%): [403.564, 483.293] (assumes normal distribution)
+
+Secondary result "poc.ring.RingAllocBench.ownerCycleNoSlice:L1-icache-load-misses":
+  0.145 ±(99.9%) 0.893 #/op [Average]
+  (min, avg, max) = (0.112, 0.145, 0.202), stdev = 0.049
+  CI (99.9%): [≈ 0, 1.038] (assumes normal distribution)
+
+Secondary result "poc.ring.RingAllocBench.ownerCycleNoSlice:L1-icache-loads":
+  14.119 ±(99.9%) 3.285 #/op [Average]
+  (min, avg, max) = (13.930, 14.119, 14.289), stdev = 0.180
+  CI (99.9%): [10.834, 17.403] (assumes normal distribution)
+
+Secondary result "poc.ring.RingAllocBench.ownerCycleNoSlice:branch-misses":
+  0.470 ±(99.9%) 0.053 #/op [Average]
+  (min, avg, max) = (0.467, 0.470, 0.473), stdev = 0.003
+  CI (99.9%): [0.417, 0.524] (assumes normal distribution)
+
+Secondary result "poc.ring.RingAllocBench.ownerCycleNoSlice:branches":
+  265.616 ±(99.9%) 3.245 #/op [Average]
+  (min, avg, max) = (265.411, 265.616, 265.729), stdev = 0.178
+  CI (99.9%): [262.371, 268.861] (assumes normal distribution)
+
+Secondary result "poc.ring.RingAllocBench.ownerCycleNoSlice:cycles":
+  313.433 ±(99.9%) 28.747 #/op [Average]
+  (min, avg, max) = (311.646, 313.433, 314.625), stdev = 1.576
+  CI (99.9%): [284.686, 342.179] (assumes normal distribution)
+
+Secondary result "poc.ring.RingAllocBench.ownerCycleNoSlice:dTLB-load-misses":
+  0.023 ±(99.9%) 0.023 #/op [Average]
+  (min, avg, max) = (0.022, 0.023, 0.024), stdev = 0.001
+  CI (99.9%): [≈ 10⁻³, 0.045] (assumes normal distribution)
+
+Secondary result "poc.ring.RingAllocBench.ownerCycleNoSlice:dTLB-loads":
+  2.362 ±(99.9%) 0.828 #/op [Average]
+  (min, avg, max) = (2.315, 2.362, 2.406), stdev = 0.045
+  CI (99.9%): [1.535, 3.190] (assumes normal distribution)
+
+Secondary result "poc.ring.RingAllocBench.ownerCycleNoSlice:iTLB-load-misses":
+  0.019 ±(99.9%) 0.003 #/op [Average]
+  (min, avg, max) = (0.019, 0.019, 0.019), stdev = 0.001
+  CI (99.9%): [0.015, 0.022] (assumes normal distribution)
+
+Secondary result "poc.ring.RingAllocBench.ownerCycleNoSlice:iTLB-loads":
+  0.177 ±(99.9%) 0.322 #/op [Average]
+  (min, avg, max) = (0.166, 0.177, 0.198), stdev = 0.018
+  CI (99.9%): [≈ 0, 0.499] (assumes normal distribution)
+
+Secondary result "poc.ring.RingAllocBench.ownerCycleNoSlice:instructions":
+  1306.056 ±(99.9%) 76.878 #/op [Average]
+  (min, avg, max) = (1302.778, 1306.056, 1310.809), stdev = 4.214
+  CI (99.9%): [1229.178, 1382.934] (assumes normal distribution)
+
+Secondary result "poc.ring.RingAllocBench.ownerCycleNoSlice:stalled-cycles-frontend":
+  19.581 ±(99.9%) 1.244 #/op [Average]
+  (min, avg, max) = (19.502, 19.581, 19.623), stdev = 0.068
+  CI (99.9%): [18.337, 20.825] (assumes normal distribution)
+
+
+# JMH version: 1.37
+# VM version: JDK 21, Java HotSpot(TM) 64-Bit Server VM, 21+35-LTS-2513
+# VM invoker: /home/forked_franz/.sdkman/candidates/java/21-oracle/bin/java
+# VM options: -Dio.netty.allocator.type=adaptive
+# Blackhole mode: compiler (auto-detected, use -Djmh.blackhole.autoDetect=false to disable)
+# Warmup: 3 iterations, 1 s each
+# Measurement: 5 iterations, 1 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Average time, time/op
+# Benchmark: poc.ring.RingAllocBench.ownerCycleNoSlice
+# Parameters: (alloc = slab, inFlight = 32)
+
+# Run progress: 50.00% complete, ETA 00:00:59
+# Fork: 1 of 3
+# Preparing profilers: LinuxPerfNormProfiler 
+# Profilers consume stderr from target VM, use -v EXTRA to copy to console
+# Warmup Iteration   1: 31.779 ns/op
+# Warmup Iteration   2: 30.148 ns/op
+# Warmup Iteration   3: 33.763 ns/op
+Iteration   1: 34.151 ns/op
+Iteration   2: 33.778 ns/op
+Iteration   3: 33.790 ns/op
+Iteration   4: 33.767 ns/op
+Iteration   5: 33.766 ns/op
+# Processing profiler results: LinuxPerfNormProfiler 
+
+# Run progress: 58.33% complete, ETA 00:00:49
+# Fork: 2 of 3
+# Preparing profilers: LinuxPerfNormProfiler 
+# Profilers consume stderr from target VM, use -v EXTRA to copy to console
+# Warmup Iteration   1: 31.670 ns/op
+# Warmup Iteration   2: 30.122 ns/op
+# Warmup Iteration   3: 33.652 ns/op
+Iteration   1: 33.621 ns/op
+Iteration   2: 33.683 ns/op
+Iteration   3: 33.654 ns/op
+Iteration   4: 33.656 ns/op
+Iteration   5: 33.621 ns/op
+# Processing profiler results: LinuxPerfNormProfiler 
+
+# Run progress: 66.67% complete, ETA 00:00:39
+# Fork: 3 of 3
+# Preparing profilers: LinuxPerfNormProfiler 
+# Profilers consume stderr from target VM, use -v EXTRA to copy to console
+# Warmup Iteration   1: 31.809 ns/op
+# Warmup Iteration   2: 30.201 ns/op
+# Warmup Iteration   3: 33.792 ns/op
+Iteration   1: 33.748 ns/op
+Iteration   2: 33.814 ns/op
+Iteration   3: 33.798 ns/op
+Iteration   4: 33.786 ns/op
+Iteration   5: 33.782 ns/op
+# Processing profiler results: LinuxPerfNormProfiler 
+
+
+Result "poc.ring.RingAllocBench.ownerCycleNoSlice":
+  33.761 ±(99.9%) 0.136 ns/op [Average]
+  (min, avg, max) = (33.621, 33.761, 34.151), stdev = 0.127
+  CI (99.9%): [33.625, 33.897] (assumes normal distribution)
+
+Secondary result "poc.ring.RingAllocBench.ownerCycleNoSlice:CPI":
+  0.312 ±(99.9%) 0.016 clks/insn [Average]
+  (min, avg, max) = (0.311, 0.312, 0.312), stdev = 0.001
+  CI (99.9%): [0.296, 0.327] (assumes normal distribution)
+
+Secondary result "poc.ring.RingAllocBench.ownerCycleNoSlice:IPC":
+  3.210 ±(99.9%) 0.161 insns/clk [Average]
+  (min, avg, max) = (3.204, 3.210, 3.220), stdev = 0.009
+  CI (99.9%): [3.048, 3.371] (assumes normal distribution)
+
+Secondary result "poc.ring.RingAllocBench.ownerCycleNoSlice:L1-dcache-load-misses":
+  0.023 ±(99.9%) 0.021 #/op [Average]
+  (min, avg, max) = (0.022, 0.023, 0.024), stdev = 0.001
+  CI (99.9%): [0.002, 0.045] (assumes normal distribution)
+
+Secondary result "poc.ring.RingAllocBench.ownerCycleNoSlice:L1-dcache-loads":
+  83.073 ±(99.9%) 2.622 #/op [Average]
+  (min, avg, max) = (82.938, 83.073, 83.224), stdev = 0.144
+  CI (99.9%): [80.451, 85.695] (assumes normal distribution)
+
+Secondary result "poc.ring.RingAllocBench.ownerCycleNoSlice:L1-icache-load-misses":
+  0.001 ±(99.9%) 0.003 #/op [Average]
+  (min, avg, max) = (0.001, 0.001, 0.001), stdev = 0.001
+  CI (99.9%): [≈ 0, 0.003] (assumes normal distribution)
+
+Secondary result "poc.ring.RingAllocBench.ownerCycleNoSlice:L1-icache-loads":
+  0.520 ±(99.9%) 0.315 #/op [Average]
+  (min, avg, max) = (0.504, 0.520, 0.538), stdev = 0.017
+  CI (99.9%): [0.205, 0.835] (assumes normal distribution)
+
+Secondary result "poc.ring.RingAllocBench.ownerCycleNoSlice:branch-misses":
+  0.010 ±(99.9%) 0.012 #/op [Average]
+  (min, avg, max) = (0.009, 0.010, 0.010), stdev = 0.001
+  CI (99.9%): [≈ 0, 0.022] (assumes normal distribution)
+
+Secondary result "poc.ring.RingAllocBench.ownerCycleNoSlice:branches":
+  43.122 ±(99.9%) 0.268 #/op [Average]
+  (min, avg, max) = (43.106, 43.122, 43.134), stdev = 0.015
+  CI (99.9%): [42.854, 43.391] (assumes normal distribution)
+
+Secondary result "poc.ring.RingAllocBench.ownerCycleNoSlice:cycles":
+  76.483 ±(99.9%) 3.848 #/op [Average]
+  (min, avg, max) = (76.252, 76.483, 76.665), stdev = 0.211
+  CI (99.9%): [72.635, 80.331] (assumes normal distribution)
+
+Secondary result "poc.ring.RingAllocBench.ownerCycleNoSlice:dTLB-load-misses":
+  ≈ 10⁻⁴ #/op
+
+Secondary result "poc.ring.RingAllocBench.ownerCycleNoSlice:dTLB-loads":
+  0.002 ±(99.9%) 0.004 #/op [Average]
+  (min, avg, max) = (0.002, 0.002, 0.003), stdev = 0.001
+  CI (99.9%): [≈ 0, 0.006] (assumes normal distribution)
+
+Secondary result "poc.ring.RingAllocBench.ownerCycleNoSlice:iTLB-load-misses":
+  ≈ 10⁻⁴ #/op
+
+Secondary result "poc.ring.RingAllocBench.ownerCycleNoSlice:iTLB-loads":
+  ≈ 10⁻⁴ #/op
+
+Secondary result "poc.ring.RingAllocBench.ownerCycleNoSlice:instructions":
+  245.474 ±(99.9%) 2.844 #/op [Average]
+  (min, avg, max) = (245.304, 245.474, 245.610), stdev = 0.156
+  CI (99.9%): [242.630, 248.318] (assumes normal distribution)
+
+Secondary result "poc.ring.RingAllocBench.ownerCycleNoSlice:stalled-cycles-frontend":
+  2.159 ±(99.9%) 0.475 #/op [Average]
+  (min, avg, max) = (2.135, 2.159, 2.187), stdev = 0.026
+  CI (99.9%): [1.684, 2.634] (assumes normal distribution)
+
+
+# JMH version: 1.37
+# VM version: JDK 21, Java HotSpot(TM) 64-Bit Server VM, 21+35-LTS-2513
+# VM invoker: /home/forked_franz/.sdkman/candidates/java/21-oracle/bin/java
+# VM options: -Dio.netty.allocator.type=adaptive
+# Blackhole mode: compiler (auto-detected, use -Djmh.blackhole.autoDetect=false to disable)
+# Warmup: 3 iterations, 1 s each
+# Measurement: 5 iterations, 1 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Average time, time/op
+# Benchmark: poc.ring.RingAllocBench.ownerCycleNoSlice
+# Parameters: (alloc = slab3, inFlight = 32)
+
+# Run progress: 75.00% complete, ETA 00:00:29
+# Fork: 1 of 3
+# Preparing profilers: LinuxPerfNormProfiler 
+# Profilers consume stderr from target VM, use -v EXTRA to copy to console
+# Warmup Iteration   1: 28.625 ns/op
+# Warmup Iteration   2: 28.033 ns/op
+# Warmup Iteration   3: 26.041 ns/op
+Iteration   1: 26.044 ns/op
+Iteration   2: 26.056 ns/op
+Iteration   3: 26.122 ns/op
+Iteration   4: 26.059 ns/op
+Iteration   5: 26.051 ns/op
+# Processing profiler results: LinuxPerfNormProfiler 
+
+# Run progress: 83.33% complete, ETA 00:00:19
+# Fork: 2 of 3
+# Preparing profilers: LinuxPerfNormProfiler 
+# Profilers consume stderr from target VM, use -v EXTRA to copy to console
+# Warmup Iteration   1: 28.409 ns/op
+# Warmup Iteration   2: 27.883 ns/op
+# Warmup Iteration   3: 25.911 ns/op
+Iteration   1: 25.913 ns/op
+Iteration   2: 25.905 ns/op
+Iteration   3: 25.906 ns/op
+Iteration   4: 25.903 ns/op
+Iteration   5: 25.903 ns/op
+# Processing profiler results: LinuxPerfNormProfiler 
+
+# Run progress: 91.67% complete, ETA 00:00:09
+# Fork: 3 of 3
+# Preparing profilers: LinuxPerfNormProfiler 
+# Profilers consume stderr from target VM, use -v EXTRA to copy to console
+# Warmup Iteration   1: 28.458 ns/op
+# Warmup Iteration   2: 27.870 ns/op
+# Warmup Iteration   3: 26.081 ns/op
+Iteration   1: 26.117 ns/op
+Iteration   2: 26.143 ns/op
+Iteration   3: 26.089 ns/op
+Iteration   4: 26.078 ns/op
+Iteration   5: 26.291 ns/op
+# Processing profiler results: LinuxPerfNormProfiler 
+
+
+Result "poc.ring.RingAllocBench.ownerCycleNoSlice":
+  26.039 ±(99.9%) 0.121 ns/op [Average]
+  (min, avg, max) = (25.903, 26.039, 26.291), stdev = 0.114
+  CI (99.9%): [25.917, 26.160] (assumes normal distribution)
+
+Secondary result "poc.ring.RingAllocBench.ownerCycleNoSlice:CPI":
+  0.201 ±(99.9%) 0.015 clks/insn [Average]
+  (min, avg, max) = (0.200, 0.201, 0.202), stdev = 0.001
+  CI (99.9%): [0.186, 0.216] (assumes normal distribution)
+
+Secondary result "poc.ring.RingAllocBench.ownerCycleNoSlice:IPC":
+  4.974 ±(99.9%) 0.377 insns/clk [Average]
+  (min, avg, max) = (4.955, 4.974, 4.996), stdev = 0.021
+  CI (99.9%): [4.597, 5.351] (assumes normal distribution)
+
+Secondary result "poc.ring.RingAllocBench.ownerCycleNoSlice:L1-dcache-load-misses":
+  0.021 ±(99.9%) 0.046 #/op [Average]
+  (min, avg, max) = (0.018, 0.021, 0.023), stdev = 0.003
+  CI (99.9%): [≈ 0, 0.067] (assumes normal distribution)
+
+Secondary result "poc.ring.RingAllocBench.ownerCycleNoSlice:L1-dcache-loads":
+  114.826 ±(99.9%) 1.489 #/op [Average]
+  (min, avg, max) = (114.758, 114.826, 114.917), stdev = 0.082
+  CI (99.9%): [113.337, 116.316] (assumes normal distribution)
+
+Secondary result "poc.ring.RingAllocBench.ownerCycleNoSlice:L1-icache-load-misses":
+  0.001 ±(99.9%) 0.002 #/op [Average]
+  (min, avg, max) = (≈ 10⁻³, 0.001, 0.001), stdev = 0.001
+  CI (99.9%): [≈ 0, 0.002] (assumes normal distribution)
+
+Secondary result "poc.ring.RingAllocBench.ownerCycleNoSlice:L1-icache-loads":
+  0.129 ±(99.9%) 0.150 #/op [Average]
+  (min, avg, max) = (0.122, 0.129, 0.138), stdev = 0.008
+  CI (99.9%): [≈ 0, 0.279] (assumes normal distribution)
+
+Secondary result "poc.ring.RingAllocBench.ownerCycleNoSlice:branch-misses":
+  0.009 ±(99.9%) 0.013 #/op [Average]
+  (min, avg, max) = (0.008, 0.009, 0.009), stdev = 0.001
+  CI (99.9%): [≈ 0, 0.022] (assumes normal distribution)
+
+Secondary result "poc.ring.RingAllocBench.ownerCycleNoSlice:branches":
+  58.107 ±(99.9%) 0.877 #/op [Average]
+  (min, avg, max) = (58.066, 58.107, 58.160), stdev = 0.048
+  CI (99.9%): [57.230, 58.984] (assumes normal distribution)
+
+Secondary result "poc.ring.RingAllocBench.ownerCycleNoSlice:cycles":
+  58.981 ±(99.9%) 4.853 #/op [Average]
+  (min, avg, max) = (58.688, 58.981, 59.207), stdev = 0.266
+  CI (99.9%): [54.128, 63.835] (assumes normal distribution)
+
+Secondary result "poc.ring.RingAllocBench.ownerCycleNoSlice:dTLB-load-misses":
+  ≈ 10⁻⁴ #/op
+
+Secondary result "poc.ring.RingAllocBench.ownerCycleNoSlice:dTLB-loads":
+  0.002 ±(99.9%) 0.006 #/op [Average]
+  (min, avg, max) = (0.002, 0.002, 0.002), stdev = 0.001
+  CI (99.9%): [≈ 0, 0.008] (assumes normal distribution)
+
+Secondary result "poc.ring.RingAllocBench.ownerCycleNoSlice:iTLB-load-misses":
+  ≈ 10⁻⁴ #/op
+
+Secondary result "poc.ring.RingAllocBench.ownerCycleNoSlice:iTLB-loads":
+  ≈ 10⁻⁴ #/op
+
+Secondary result "poc.ring.RingAllocBench.ownerCycleNoSlice:instructions":
+  293.356 ±(99.9%) 2.889 #/op [Average]
+  (min, avg, max) = (293.195, 293.356, 293.512), stdev = 0.158
+  CI (99.9%): [290.467, 296.246] (assumes normal distribution)
+
+Secondary result "poc.ring.RingAllocBench.ownerCycleNoSlice:stalled-cycles-frontend":
+  0.306 ±(99.9%) 0.260 #/op [Average]
+  (min, avg, max) = (0.290, 0.306, 0.318), stdev = 0.014
+  CI (99.9%): [0.046, 0.565] (assumes normal distribution)
+
+
+# Run complete. Total time: 00:01:58
+
+REMEMBER: The numbers below are just data. To gain reusable insights, you need to follow up on
+why the numbers are the way they are. Use profilers (see -prof, -lprof), design factorial
+experiments, perform baseline and negative tests that provide experimental control, make sure
+the benchmarking environment is safe on JVM/OS/HW level, ask for reviews from the domain experts.
+Do not assume the numbers tell you what you want them to tell.
+
+NOTE: Current JVM experimentally supports Compiler Blackholes, and they are in use. Please exercise
+extra caution when trusting the results, look into the generated code to check the benchmark still
+works, and factor in a small probability of new VM bugs. Additionally, while comparisons between
+different JVMs are already problematic, the performance difference caused by different Blackhole
+modes can be very significant. Please make sure you use the consistent Blackhole mode for comparisons.
+
+Benchmark                                                         (alloc)  (inFlight)  Mode  Cnt     Score    Error      Units
+RingAllocBench.ownerCycleNoSlice                                 adaptive          32  avgt   15   137.206 ±  0.329      ns/op
+RingAllocBench.ownerCycleNoSlice:CPI                             adaptive          32  avgt    3     0.239 ±  0.004  clks/insn
+RingAllocBench.ownerCycleNoSlice:IPC                             adaptive          32  avgt    3     4.188 ±  0.062  insns/clk
+RingAllocBench.ownerCycleNoSlice:L1-dcache-load-misses           adaptive          32  avgt    3     6.215 ±  2.560       #/op
+RingAllocBench.ownerCycleNoSlice:L1-dcache-loads                 adaptive          32  avgt    3   441.062 ± 11.633       #/op
+RingAllocBench.ownerCycleNoSlice:L1-icache-load-misses           adaptive          32  avgt    3     0.115 ±  0.415       #/op
+RingAllocBench.ownerCycleNoSlice:L1-icache-loads                 adaptive          32  avgt    3    13.299 ±  7.590       #/op
+RingAllocBench.ownerCycleNoSlice:branch-misses                   adaptive          32  avgt    3     0.486 ±  0.597       #/op
+RingAllocBench.ownerCycleNoSlice:branches                        adaptive          32  avgt    3   264.720 ±  1.438       #/op
+RingAllocBench.ownerCycleNoSlice:cycles                          adaptive          32  avgt    3   310.860 ±  8.274       #/op
+RingAllocBench.ownerCycleNoSlice:dTLB-load-misses                adaptive          32  avgt    3     0.022 ±  0.028       #/op
+RingAllocBench.ownerCycleNoSlice:dTLB-loads                      adaptive          32  avgt    3     2.310 ±  0.491       #/op
+RingAllocBench.ownerCycleNoSlice:iTLB-load-misses                adaptive          32  avgt    3     0.019 ±  0.021       #/op
+RingAllocBench.ownerCycleNoSlice:iTLB-loads                      adaptive          32  avgt    3     0.166 ±  0.577       #/op
+RingAllocBench.ownerCycleNoSlice:instructions                    adaptive          32  avgt    3  1301.870 ± 17.865       #/op
+RingAllocBench.ownerCycleNoSlice:stalled-cycles-frontend         adaptive          32  avgt    3    19.120 ±  9.995       #/op
+RingAllocBench.ownerCycleNoSlice                          builtinadaptive          32  avgt   15   138.390 ±  0.824      ns/op
+RingAllocBench.ownerCycleNoSlice:CPI                      builtinadaptive          32  avgt    3     0.240 ±  0.025  clks/insn
+RingAllocBench.ownerCycleNoSlice:IPC                      builtinadaptive          32  avgt    3     4.167 ±  0.429  insns/clk
+RingAllocBench.ownerCycleNoSlice:L1-dcache-load-misses    builtinadaptive          32  avgt    3     6.217 ±  6.089       #/op
+RingAllocBench.ownerCycleNoSlice:L1-dcache-loads          builtinadaptive          32  avgt    3   443.429 ± 39.865       #/op
+RingAllocBench.ownerCycleNoSlice:L1-icache-load-misses    builtinadaptive          32  avgt    3     0.145 ±  0.893       #/op
+RingAllocBench.ownerCycleNoSlice:L1-icache-loads          builtinadaptive          32  avgt    3    14.119 ±  3.285       #/op
+RingAllocBench.ownerCycleNoSlice:branch-misses            builtinadaptive          32  avgt    3     0.470 ±  0.053       #/op
+RingAllocBench.ownerCycleNoSlice:branches                 builtinadaptive          32  avgt    3   265.616 ±  3.245       #/op
+RingAllocBench.ownerCycleNoSlice:cycles                   builtinadaptive          32  avgt    3   313.433 ± 28.747       #/op
+RingAllocBench.ownerCycleNoSlice:dTLB-load-misses         builtinadaptive          32  avgt    3     0.023 ±  0.023       #/op
+RingAllocBench.ownerCycleNoSlice:dTLB-loads               builtinadaptive          32  avgt    3     2.362 ±  0.828       #/op
+RingAllocBench.ownerCycleNoSlice:iTLB-load-misses         builtinadaptive          32  avgt    3     0.019 ±  0.003       #/op
+RingAllocBench.ownerCycleNoSlice:iTLB-loads               builtinadaptive          32  avgt    3     0.177 ±  0.322       #/op
+RingAllocBench.ownerCycleNoSlice:instructions             builtinadaptive          32  avgt    3  1306.056 ± 76.878       #/op
+RingAllocBench.ownerCycleNoSlice:stalled-cycles-frontend  builtinadaptive          32  avgt    3    19.581 ±  1.244       #/op
+RingAllocBench.ownerCycleNoSlice                                     slab          32  avgt   15    33.761 ±  0.136      ns/op
+RingAllocBench.ownerCycleNoSlice:CPI                                 slab          32  avgt    3     0.312 ±  0.016  clks/insn
+RingAllocBench.ownerCycleNoSlice:IPC                                 slab          32  avgt    3     3.210 ±  0.161  insns/clk
+RingAllocBench.ownerCycleNoSlice:L1-dcache-load-misses               slab          32  avgt    3     0.023 ±  0.021       #/op
+RingAllocBench.ownerCycleNoSlice:L1-dcache-loads                     slab          32  avgt    3    83.073 ±  2.622       #/op
+RingAllocBench.ownerCycleNoSlice:L1-icache-load-misses               slab          32  avgt    3     0.001 ±  0.003       #/op
+RingAllocBench.ownerCycleNoSlice:L1-icache-loads                     slab          32  avgt    3     0.520 ±  0.315       #/op
+RingAllocBench.ownerCycleNoSlice:branch-misses                       slab          32  avgt    3     0.010 ±  0.012       #/op
+RingAllocBench.ownerCycleNoSlice:branches                            slab          32  avgt    3    43.122 ±  0.268       #/op
+RingAllocBench.ownerCycleNoSlice:cycles                              slab          32  avgt    3    76.483 ±  3.848       #/op
+RingAllocBench.ownerCycleNoSlice:dTLB-load-misses                    slab          32  avgt    3    ≈ 10⁻⁴                #/op
+RingAllocBench.ownerCycleNoSlice:dTLB-loads                          slab          32  avgt    3     0.002 ±  0.004       #/op
+RingAllocBench.ownerCycleNoSlice:iTLB-load-misses                    slab          32  avgt    3    ≈ 10⁻⁴                #/op
+RingAllocBench.ownerCycleNoSlice:iTLB-loads                          slab          32  avgt    3    ≈ 10⁻⁴                #/op
+RingAllocBench.ownerCycleNoSlice:instructions                        slab          32  avgt    3   245.474 ±  2.844       #/op
+RingAllocBench.ownerCycleNoSlice:stalled-cycles-frontend             slab          32  avgt    3     2.159 ±  0.475       #/op
+RingAllocBench.ownerCycleNoSlice                                    slab3          32  avgt   15    26.039 ±  0.121      ns/op
+RingAllocBench.ownerCycleNoSlice:CPI                                slab3          32  avgt    3     0.201 ±  0.015  clks/insn
+RingAllocBench.ownerCycleNoSlice:IPC                                slab3          32  avgt    3     4.974 ±  0.377  insns/clk
+RingAllocBench.ownerCycleNoSlice:L1-dcache-load-misses              slab3          32  avgt    3     0.021 ±  0.046       #/op
+RingAllocBench.ownerCycleNoSlice:L1-dcache-loads                    slab3          32  avgt    3   114.826 ±  1.489       #/op
+RingAllocBench.ownerCycleNoSlice:L1-icache-load-misses              slab3          32  avgt    3     0.001 ±  0.002       #/op
+RingAllocBench.ownerCycleNoSlice:L1-icache-loads                    slab3          32  avgt    3     0.129 ±  0.150       #/op
+RingAllocBench.ownerCycleNoSlice:branch-misses                      slab3          32  avgt    3     0.009 ±  0.013       #/op
+RingAllocBench.ownerCycleNoSlice:branches                           slab3          32  avgt    3    58.107 ±  0.877       #/op
+RingAllocBench.ownerCycleNoSlice:cycles                             slab3          32  avgt    3    58.981 ±  4.853       #/op
+RingAllocBench.ownerCycleNoSlice:dTLB-load-misses                   slab3          32  avgt    3    ≈ 10⁻⁴                #/op
+RingAllocBench.ownerCycleNoSlice:dTLB-loads                         slab3          32  avgt    3     0.002 ±  0.006       #/op
+RingAllocBench.ownerCycleNoSlice:iTLB-load-misses                   slab3          32  avgt    3    ≈ 10⁻⁴                #/op
+RingAllocBench.ownerCycleNoSlice:iTLB-loads                         slab3          32  avgt    3    ≈ 10⁻⁴                #/op
+RingAllocBench.ownerCycleNoSlice:instructions                       slab3          32  avgt    3   293.356 ±  2.889       #/op
+RingAllocBench.ownerCycleNoSlice:stalled-cycles-frontend            slab3          32  avgt    3     0.306 ±  0.260       #/op
+
+Benchmark result is saved to /home/forked_franz/IdeaProjects/netty-eventloop-arena-poc/results/ryzen9-7950x-node0/arena-v3/ring-alloc/micro/noslice.json
+== cell end 00:37:48 rc=0
+released (ringalloc) at 00:37:48 rc=0

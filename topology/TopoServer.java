@@ -73,7 +73,10 @@ public final class TopoServer {
         final ByteBufAllocator allocator = newAllocator(alloc);
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
             System.out.println(Transports.ringCounters());
-            if ("arena".equals(alloc)) {
+            System.out.println(Transports.hugePageCounters());
+            // The arena's counters are printed whenever an arena is in play: as the CHANNEL allocator
+            // (arg/-Dtopo.alloc) or as the RING's allocator (BUFFER_RING_ALLOC=arena, candidate R6).
+            if ("arena".equals(alloc) || Transports.arenaAsRing() != null) {
                 System.out.println(io.netty.buffer.CycleArenaAllocator.counters());
             }
             System.out.flush();
