@@ -69,11 +69,14 @@ Every knob is a system property, read once in `CycleArenaAllocator`.
  |  block metadata = columns, no Block object on any hot path:                                  |
  |     int[] allocs, int[] frees        (block empty <=> allocs[id] == frees[id])               |
  |     int   reusableMask               (next block = numberOfTrailingZeros(mask))              |
- |     long[] base / byte[][] mem       (touched only on a block switch)                        |
- |     flat: curId, curBump, curMemory / curAddress                                             |
+ |     AbstractByteBuf[] roots          (the block's backing buffer; read on a block switch)    |
+ |     flat: curId, curBump, curLimit                                                           |
+ |     ring only (-Darena.ring=true): tailBump/tailLimit/freeBase/freeLimit/freeHint/hintFrees  |
+ |                                     and long[][] startBits, one bit per live buffer start    |
  |                                                                                              |
  |  ArenaBuf objects: preallocated array + int[] free stack; each holds                         |
- |     int blockId, int start, int length, int refCnt   (no reference to a block, no header)    |
+ |     int blockId, start, length, refCnt + the block's root parent (guarded store, no header)  |
+ |     element access forwards to that root parent at start + i, as AdaptiveByteBuf does        |
  +---------------------------------------------------------------------------------------------+
         |  size > cap, bound reached, pool exhausted, off-loop thread
         v
@@ -131,7 +134,7 @@ What remains is "is there an empty block, and which one": one `int` answers it.
          else:               exhausted = true; return null          (-> delegate until the next hook)
      id = numberOfTrailingZeros(reusableMask)     # lowest set bit: one instruction, no walk
      reusableMask &= reusableMask - 1             # clear it
-     curId = id; curBump = 0; curMemory/curAddress = mem[id]/base[id]
+     curId = id; curBump = 0; curLimit = BLOCK_SIZE; curRoot = roots[id]
      (blockReuses++)
 
  hook():                                          # end of the event-loop iteration

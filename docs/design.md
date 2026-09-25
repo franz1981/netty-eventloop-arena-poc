@@ -102,22 +102,25 @@ visible immediately instead of corrupting memory.
 
 **Layout (D, decided during the PoC).** There is no block object on any path that runs per allocation, per
 release, per block switch or per hook. A block is an `int` id in `[0, maxBlocks)` and a column of flat
-per-space arrays: `int[] allocs` and `int[] frees` (the pair that replaced the plan's `int[] live`; a block is empty iff they are equal), `long[] base` (direct), `byte[][] mem` (heap), `ByteBuffer[] nio` (the source
-the per-buffer views are duplicated from), `AbstractByteBuf[] roots` (the chunk, for the bulk paths and to
-give the memory back). Two `int` bit masks hold the rest: `allocatedMask` (slot holds a chunk) and
+per-space arrays: `int[] allocs` and `int[] frees` (the pair that replaced the plan's `int[] live`; a block is empty iff they are equal) and `AbstractByteBuf[] roots` (the chunk the block was carved from: the
+buffers' root parent, the bulk paths, and the handle used to give the memory back). The earlier
+`long[] base` / `byte[][] mem` / `ByteBuffer[] nio` columns are gone: they existed only to feed a buffer's own
+`memory`/`address` fields, which the root-parent rewrite removed. Two `int` bit masks hold the rest: `allocatedMask` (slot holds a chunk) and
 `reusableMask` (bit i = block i was empty at the LAST hook and its bump is 0). The current block is flat
-fields of the space - `curId`, `curBump`, `curMemory`, `curAddress` - so allocation touches the space's own
-fields and the `int[]` object stack, nothing else. There is no `bump[]` column: only the current block is
+fields of the space - `curId`, `curBump`, `curLimit` and the current block's root parent - so allocation
+touches the space's own fields and the `int[]` object stack, nothing else. There is no `bump[]` column: only the current block is
 ever bumped, and a block switched away from is never bumped again. Block switch is
 `id = numberOfTrailingZeros(reusableMask)`; a zero mask means grow if under `maxBlocks`, else delegate, and
 is also the latch that stops rescanning. The hook scans the `maxBlocks` `allocs`/`frees` pairs, resets the CURRENT
 block's bump in place when it is empty (steady state on request/response: no switch ever happens) and
-rebuilds the mask; it touches no buffer object. A buffer holds an `int blockId`, not a block reference, so
-allocation writes ints and one `long` address; a HEAP buffer also keeps a `byte[] memory` field with a
-guarded store (`if (memory != cur) memory = cur`), because every get/set needs the array and an indirection
-through `roots[blockId]` on the data path is worse - that is the only reference store on a hot path and it
-is paid once per block switch, not once per allocation. A DIRECT buffer keeps a plain `long address` and no
-NIO root: views fetch `nio[blockId]` on demand. Release is `refCnt--`, `frees[blockId]++`, push the object
+rebuilds the mask; it touches no buffer object. A buffer holds an `int blockId`, not a block reference. It also
+keeps the block's root parent in one field with a guarded store (`if (rootParent != cur) rootParent = cur`),
+and every `_getX`/`_setX` forwards to that root parent at `start + i`, exactly as `AdaptiveByteBuf` does -
+one reference store on a hot path, paid once per block switch rather than once per allocation. This replaced
+an earlier layout in which the buffer carried its own `byte[] memory` (heap) or `long address` (direct) and
+each accessor branched on which of the two it was; the forwarding version is 18 accessors shorter, keeps the
+same inlining (`_getByte` 13 bytes, `inline (hot)`), and measured level with it on the cycle cell within
+fork spread. Release is `refCnt--`, `frees[blockId]++`, push the object
 index. The DELEGATED state is the column slot `maxBlocks`, so release needs no test on block identity
 before the decrement.
 
